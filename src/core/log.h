@@ -24,6 +24,7 @@
 #include <string>
 #include <iostream>
 #include <stdint.h>
+#include <unistd.h>
 
 namespace ns3 {
 
