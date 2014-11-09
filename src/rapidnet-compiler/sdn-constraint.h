@@ -99,6 +99,23 @@ private:
 	Expression* leftE;
 	Expression* rightE;
 };
+
+/*
+ * Components of Constraint pool
+ */
+//Execution tree
+class Derivation: public RefCountBase{};
+
+typedef vector<constraint> ConstraintList;
+typedef pair<Derivation, ConstraintList> ConstraintPair;
+typedef vector<ConstraintPair> ConstraintPairList;
+typedef map<TupleInst, ConstraintPairList> ConstraintPool;
+
+class Cpool: public RefCountBase
+{
+private:
+	 ConstraintPool pool;
+};
 }	// namespace ns3
 }	// namespace rapidnet_sdn_veri
 
