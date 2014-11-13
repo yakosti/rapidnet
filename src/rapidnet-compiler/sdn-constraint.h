@@ -11,6 +11,8 @@
 #include<string>
 #include<vector>
 
+#include "parse-util.h"
+
 using namespace std;
 
 namespace ns3{
@@ -21,13 +23,23 @@ class Formula;
 /*
  * Expression
  */
-class Expression;
+class Expression
+{
+public:
+	virtual ~Expression(){}
+};
 
-class Term: public Expression{};
+class Term: public Expression
+{
+public:
+	virtual ~Term(){}
+};
+
 class Variable: public Term
 {
 public:
-	Variable();
+	Variable(ParseExpr*);
+
 	enum TypeCode
 		  {
 		      STRING,
@@ -49,24 +61,28 @@ private:
 };
 
 //See if template can be used here
-class Value: public Expression{};
+class Value: public Expression
+{
+public:
+	virtual ~Value(){}
+};
 
 class IntVal: public Value
 {
+public:
+	IntVal(ValInt32*);
+
 private:
 	int value;
 };
 
 class DoubleVal: public Value
 {
+public:
+	DoubleVal(ValDouble*);
+
 private:
 	double value;
-};
-
-class BoolVal: public Value
-{
-private:
-	bool value;
 };
 
 class Arithmetic: public Expression
@@ -84,9 +100,13 @@ private:
 	Expression* rightE;
 };
 
-class constraint: public Formula
+class Constraint: public Formula
 {
 public:
+	Constraint(Operator, Expression*, Expression*);
+
+	~Constraint();
+
 	enum Operator
 	{
 		EQUAL,
@@ -103,7 +123,32 @@ private:
 /*
  * Components of Constraint pool
  */
-//Execution tree
+//class Rule;						//struct Rule in ol-context.h
+//
+//class TupleInst: public RefCountBase
+//{
+//public:
+//	TupleInst(const TupleNode*);
+//private:
+//	string name;
+//	vector<Variable*> args;
+//};
+//
+//class RuleInst: public RefCountBase
+//{
+//public:
+//	RuleInst(const RuleNode, const vector<TupleInst*>&);
+//private:
+//	string ruleID;
+//	TupleInst* head;
+//	TupleInst* event;
+//	vector<TupleInst*> bodies;
+//	vector<Constraint*> constraints;
+//	vector<RuleInst*> inboundRules;
+//	//Vector of rules that derive bodies
+//};
+
+/*Execution tree*/
 class Derivation: public RefCountBase{};
 
 typedef vector<constraint> ConstraintList;
