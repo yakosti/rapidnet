@@ -11,14 +11,11 @@
 #include<string>
 #include<vector>
 
-#include "parse-util.h"
-
 using namespace std;
 
-namespace ns3{
-namespace rapidnet_sdn_veri{
-
-class Formula;
+/*
+ * Components of constraint pool
+ */
 
 /*
  * Expression
@@ -38,7 +35,7 @@ public:
 class Variable: public Term
 {
 public:
-	Variable(ParseExpr*);
+	Variable(TypeCode);
 
 	enum TypeCode
 		  {
@@ -47,11 +44,14 @@ public:
 		      DOUBLE,
 		  };
 
+	static int varCount;
+
 private:
 	string name;
 	TypeCode varType;
-	static int varCount;
 };
+
+int Variable::varCount = 0;
 
 class UserFunction: public Term
 {
@@ -70,7 +70,8 @@ public:
 class IntVal: public Value
 {
 public:
-	IntVal(ValInt32*);
+	//IntVal(ValInt32*);
+	IntVal(int v):value(v){}
 
 private:
 	int value;
@@ -79,7 +80,9 @@ private:
 class DoubleVal: public Value
 {
 public:
-	DoubleVal(ValDouble*);
+	//DoubleVal(ValDouble*);
+
+	DoubleVal(double v):value(v){}
 
 private:
 	double value;
@@ -88,6 +91,9 @@ private:
 class Arithmetic: public Expression
 {
 public:
+	Arithmetic(Expression* exprL, Expression* exprR):
+		leftE(exprL), rightE(exprR){}
+
 	enum ArithType
 	{
 		PLUS,
@@ -100,68 +106,41 @@ private:
 	Expression* rightE;
 };
 
-class Constraint: public Formula
+class Constraint
 {
 public:
-	Constraint(Operator, Expression*, Expression*);
+	Constraint(Operator opt, Expression* exprL, Expression* exprR):
+		op(opt),leftE(exprL),rightE(exprR){}
 
 	~Constraint();
 
 	enum Operator
-	{
-		EQUAL,
-		GREATERTHAN,
-		SMALLERTHAN,
-		UNEQUAL
-	};
+		{
+			EQ,		//Equal to
+			UEQ,	//Unequal to
+			GT,		//Greater than
+			ST,		//Smaller than
+		};
+
 private:
 	Operator op;
 	Expression* leftE;
 	Expression* rightE;
 };
 
-/*
- * Components of Constraint pool
- */
-//class Rule;						//struct Rule in ol-context.h
-//
-//class TupleInst: public RefCountBase
-//{
-//public:
-//	TupleInst(const TupleNode*);
-//private:
-//	string name;
-//	vector<Variable*> args;
-//};
-//
-//class RuleInst: public RefCountBase
-//{
-//public:
-//	RuleInst(const RuleNode, const vector<TupleInst*>&);
-//private:
-//	string ruleID;
-//	TupleInst* head;
-//	TupleInst* event;
-//	vector<TupleInst*> bodies;
-//	vector<Constraint*> constraints;
-//	vector<RuleInst*> inboundRules;
-//	//Vector of rules that derive bodies
-//};
-
 /*Execution tree*/
-class Derivation: public RefCountBase{};
+class Derivation;
 
-typedef vector<constraint> ConstraintList;
-typedef pair<Derivation, ConstraintList> ConstraintPair;
-typedef vector<ConstraintPair> ConstraintPairList;
-typedef map<TupleInst, ConstraintPairList> ConstraintPool;
+typedef vector<Constraint*> ConstraintList;
+//typedef pair<Derivation, ConstraintList> ConstraintPair;
+//typedef vector<ConstraintPair> ConstraintPairList;
+//typedef map<TupleInst, ConstraintPairList> ConstraintPool;
 
-class Cpool: public RefCountBase
+class Cpool
 {
 private:
-	 ConstraintPool pool;
+	//ConstraintPool pool;
+	ConstraintList pool;
 };
-}	// namespace ns3
-}	// namespace rapidnet_sdn_veri
 
 #endif /* SDN_CONSTRAINT_H_ */
