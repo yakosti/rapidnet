@@ -35,7 +35,7 @@ public:
 class Variable: public Term
 {
 public:
-	Variable(TypeCode);
+	//Variable(TypeCode);
 
 	enum TypeCode
 		  {
@@ -43,6 +43,8 @@ public:
 		      INT,
 		      DOUBLE,
 		  };
+
+	Variable(TypeCode);
 
 	static int varCount;
 
@@ -106,11 +108,13 @@ private:
 	Expression* rightE;
 };
 
+
+
 class Constraint
 {
 public:
 	Constraint(Operator opt, Expression* exprL, Expression* exprR):
-		op(opt),leftE(exprL),rightE(exprR){}
+		Op(opt),leftE(exprL),rightE(exprR){}
 
 	~Constraint();
 
@@ -121,6 +125,7 @@ public:
 			GT,		//Greater than
 			ST,		//Smaller than
 		};
+
 
 private:
 	Operator op;
