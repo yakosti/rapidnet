@@ -35,8 +35,6 @@ public:
 class Variable: public Term
 {
 public:
-	//Variable(TypeCode);
-
 	enum TypeCode
 		  {
 		      STRING,
@@ -108,16 +106,9 @@ private:
 	Expression* rightE;
 };
 
-
-
 class Constraint
 {
 public:
-	Constraint(Operator opt, Expression* exprL, Expression* exprR):
-		Op(opt),leftE(exprL),rightE(exprR){}
-
-	~Constraint();
-
 	enum Operator
 		{
 			EQ,		//Equal to
@@ -125,6 +116,11 @@ public:
 			GT,		//Greater than
 			ST,		//Smaller than
 		};
+	
+	Constraint(Operator opt, Expression* exprL, Expression* exprR):
+		op(opt),leftE(exprL),rightE(exprR){}
+
+	~Constraint();
 
 
 private:
