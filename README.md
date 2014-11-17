@@ -116,10 +116,10 @@ a copy of the development version with the following command:
 
 `-l`: indicates we want to use the CVC4 libraries
 
-'-L': where the implementation of the header files can be found
+`-L`: where the implementation of the header files can be found
 
     Run g++ -I<path-to-rapidnet>/src/rapidnet-compiler -lcvc4 -<path-to-rapidnet>/lkloh/rapidnet/src/rapidnet-compiler <file-using-data-structures>.cc -o <file-using-data-structures>
 
-Example:
+Example: I clone this folder to my home directory, with path `/home/lkloh`. To run the file `hellpeworld.cpp` which sources the data structure files from rapidnet, I cd into the location where `helloworld.cpp` may be found, and type:
 
     g++ -I/home/lkloh/rapidnet/src/rapidnet-compiler -lcvc4 -L/home/lkloh/rapidnet/src/rapidnet-compiler helloworld.cpp -o helloworld
