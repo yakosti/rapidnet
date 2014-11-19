@@ -36,11 +36,11 @@ class Variable: public Term
 {
 public:
 	enum TypeCode
-		  {
-		      STRING,
-		      INT,
-		      DOUBLE,
-		  };
+	{
+		STRING,
+		INT,
+		DOUBLE
+	};
 
 	Variable(TypeCode);
 
@@ -91,17 +91,19 @@ private:
 class Arithmetic: public Expression
 {
 public:
-	Arithmetic(Expression* exprL, Expression* exprR):
-		leftE(exprL), rightE(exprR){}
-
-	enum ArithType
+	enum ArithOp
 	{
 		PLUS,
 		MINUS,
-		TIME,
+		TIMES,
 		DIVIDE
 	};
+
+	Arithmetic(ArithOp opt, Expression* exprL, Expression* exprR):
+		op(opt), leftE(exprL), rightE(exprR){}
+
 private:
+	ArithOp op;
 	Expression* leftE;
 	Expression* rightE;
 };
@@ -110,18 +112,17 @@ class Constraint
 {
 public:
 	enum Operator
-		{
-			EQ,		//Equal to
-			UEQ,	//Unequal to
-			GT,		//Greater than
-			ST,		//Smaller than
-		};
-	
+	{
+		EQ,		//Equal to
+		NEQ,	//Unequal to
+		GT,		//Greater than
+		LT,		//Smaller than
+	};
+
 	Constraint(Operator opt, Expression* exprL, Expression* exprR):
 		op(opt),leftE(exprL),rightE(exprR){}
 
 	~Constraint();
-
 
 private:
 	Operator op;
