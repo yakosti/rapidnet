@@ -18,6 +18,8 @@ def build(bld):
         'localize-context.cc',
         'eca-context.cc',
         'ol-parser.cc',
+        'sdn-context.cc',
+        'sdn-constraint.cc'
         ]
 
     headers = bld.new_task_gen('ns3header')
@@ -32,8 +34,13 @@ def build(bld):
         'ol-parser.hh',
         'localize-context.h',
         'all-values.h',
+        'sdn-constraint.h',
+        'sdn-context.h',
+        'sdn-formula.h'
         ]
 
     obj = bld.create_ns3_program('rapidnet-compiler')
     obj.source = 'rapidnet-compiler.cc'
+    objdp = bld.create_ns3_program('rapidnet-dpgraph-generator')
+    objdp.source = 'rapidnet-dpgraph-generator.cc'
     bld.env.append_value('LINKFLAGS', '-lgmp')
