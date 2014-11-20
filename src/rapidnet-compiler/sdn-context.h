@@ -30,9 +30,9 @@ using namespace rapidnet_compiler;
 class Node
 {
 public:
-	Node(string);
+	Node(string nName):name(nName){}
 
-	virtual void PrintNode(){}
+	virtual void PrintNode();
 
 	string GetName(){return name;}
 
@@ -45,7 +45,7 @@ protected:
 class TupleNode: public Node
 {
 public:
-	TupleNode(const ParseFunctor*);
+	TupleNode(ParseFunctor*);
 
 	int GetArgLength(){return args.size();}
 
@@ -62,57 +62,61 @@ private:
 class RuleNode: public Node
 {
 public:
+	RuleNode(string rName):Node(rName){}
+
 	vector<Constraint*>& GetConstraints(){return constraints;}
 
-	void UpdateUnif(const Variable*, const Variable*);
+	void UpdateUnif(Variable*, Variable*);
 
-	void UpdateConstraint(const Constraint*);
+	void UpdateConstraint(Constraint*);
 
 	void PrintNode();
 
 	~RuleNode();
+
 private:
 	TupleNode* head;			//Outbound edge
 	vector<TupleNode*> bodies;	//Inbound edges
-	vector<const Constraint*> constraints;
+	vector<Constraint*> constraints;
 };
 
 class DPGraph: public RefCountBase
 {
 public:
 	//Rule format: head :- body1, body2,...bodyn, cstraint1, cstraint2...
-	DPGraph(const OlContext*);
+	DPGraph(Ptr<OlContext>);
 
-	~DPGraph(){}
+	~DPGraph();
 
-	void ProcessRule(const OlContext::Rule*);
+	void ProcessRule(OlContext::Rule*);
 
-	void ProcessFunctor(const ParseFunctor*, RuleNode*);
+	void ProcessFunctor(ParseFunctor*,
+						map<string, Variable*>&,
+						RuleNode*);
 
-	void ProcessAssign(const ParseAssign*,
-					   const map<string, Variable*>&,
+	void ProcessAssign(ParseAssign*,
+					   map<string, Variable*>&,
 					   RuleNode*);
 
-	void ProcessSelect(const ParseSelect*,
-					   const map<string, Variable*>&,
+	void ProcessSelect(ParseSelect*,
+					   map<string, Variable*>&,
 					   RuleNode*);
 
-	const Expression* ProcessExpr(const ParseExpr*,
-								  const map<string, Variable*>&);
+	Expression* ProcessExpr(ParseExpr*,
+							map<string, Variable*>&);
 
-	const Expression* ProcessParseVal(const ParseVal*,
-									  const map<string, Variable*>&);
+	Expression* ProcessParseVal(ParseVal*);
 
-	const Expression* ProcessParseVar(const ParseVar*,
-									  const map<string, Variable*>&);
+	Expression* ProcessParseVar(ParseVar*,
+								map<string, Variable*>&);
 
-	const Constraint* ProcessParseBool(const ParseBool*,
-								 	   const map<string, Variable*>&);
+	Constraint* ProcessParseBool(ParseBool*,
+								 map<string, Variable*>&);
 
-	const Expression* ProcessParseMath(const ParseMath*,
-									   const map<string, Variable*>&);
+	Expression* ProcessParseMath(ParseMath*,
+								 map<string, Variable*>&);
 
-	const TupleNode* FindTupleNode(const ParseFunctor*);
+	TupleNode* FindTupleNode(ParseFunctor*);
 
 	void PrintGraph();
 

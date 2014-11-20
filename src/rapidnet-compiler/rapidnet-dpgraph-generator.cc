@@ -167,7 +167,7 @@ void compile (string overlogFile, string baseOverlogFile,
   Ptr<TableStore> tableStore (new TableStore (ctxt));
   parseOverlog (overlogFile, ctxt, tableStore, provenanceEnabled);
 
-  Ptr<DPGraph> graphNdlog = Create<DPGraph>(ctxt->GetRules());
+  Ptr<DPGraph> graphNdlog = Create<DPGraph>(ctxt);
   graphNdlog->PrintGraph();
 }
 

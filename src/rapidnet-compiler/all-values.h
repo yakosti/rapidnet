@@ -211,6 +211,11 @@ public:
     return p;
   }
 
+  double GetDoubleValue()
+  {
+    return d;
+  }
+
 private:
   double d;
 };
