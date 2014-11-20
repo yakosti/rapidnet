@@ -52,8 +52,6 @@ private:
 	TypeCode varType;
 };
 
-int Variable::varCount = 0;
-
 class UserFunction: public Term
 {
 private:
@@ -109,7 +107,7 @@ private:
 	Expression* rightE;
 };
 
-class Constraint
+class Constraint: public Expression
 {
 public:
 	enum Operator

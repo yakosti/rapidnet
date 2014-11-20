@@ -8,15 +8,15 @@
 #include <sstream>
 #include "sdn-constraint.h"
 
-IntVal::IntVal(ValInt32* intPtr):
-		value(intPtr->i)
-{
-}
-
-DoubleVal::DoubleVal(ValDouble* dbPtr):
-		value(dbPtr->d)
-{
-}
+//IntVal::IntVal(ValInt32* intPtr):
+//		value(intPtr->i)
+//{
+//}
+//
+//DoubleVal::DoubleVal(ValDouble* dbPtr):
+//		value(dbPtr->d)
+//{
+//}
 
 Constraint::~Constraint()
 {
@@ -34,3 +34,5 @@ Variable::Variable(TypeCode type):
 
 	varCount++;
 }
+
+int Variable::varCount = 0;
