@@ -1,0 +1,71 @@
+#!/usr/bin/python
+import os, sys, re
+import optparse
+
+options = None
+args = None
+
+# Returns true if the given filename has extension .olg
+def isolg (filename):
+  return re.match ('.*\.olg$', filename) != None
+
+
+# Returns the Ndlog filename and error message if any
+def getNDlogFile (arg):
+  if os.path.isdir (arg):
+    app_dir = arg
+    files = os.listdir (app_dir)
+    olgfiles = filter (isolg, files)
+    if len (olgfiles) == 0:
+      return None, 'No NDlog (*.olg) files found in ' + arg
+    if len (olgfiles) > 1:
+      return None, 'Found multiple NDlog files in ' + arg
+    ndlog_file = os.path.join (app_dir, olgfiles[0])
+  elif os.path.isfile (arg):
+    ndlog_file = arg
+  else:
+    return None, arg + ' is not a file or directory.'
+
+  return ndlog_file, 'Found NDlog file'
+
+# Get paths of other generated files
+def getFile (ndlog_file, ext):
+  basename = ndlog_file.rpartition ('.')[0]
+  if ext == '.h' or ext == '.cc':
+    return basename + ext
+  elif ext == '.cpp' or ext == '.eca':
+    return ndlog_file + ext
+  else:
+    return None
+
+#Compile
+def rn_compile (ndlog_file):
+  print 'Compiling %s' % ndlog_file
+
+  # Run compiler
+  cmd = './waf --run rapidnet-dpcompiler --command-template=" %%s ''--ndlog=%s"' % (ndlog_file)
+  print cmd
+  os.system (cmd)
+
+def parse_args ():
+  global options, args
+  usage = "usage: %prog application [options]"
+  parser = optparse.OptionParser (usage)
+  (options, args) = parser.parse_args()
+  if len(args) != 1:
+    parser.print_help ()
+    parser.error("application file/folder path missing.")
+
+def main():
+  parse_args ()
+  app_file, msg = getNDlogFile (args[0])
+  if app_file == None:
+    print msg
+    sys.exit (0)
+
+  rn_compile (app_file)
+
+if __name__== "__main__":
+  main()
+
+

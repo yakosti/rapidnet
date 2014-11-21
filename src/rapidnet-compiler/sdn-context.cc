@@ -7,13 +7,24 @@
 
 #include <iostream>
 #include <deque>
-#include "ol-context.h"
 #include "sdn-context.h"
 
 void
 Node::PrintNode()
 {
 	cout << name << endl;
+}
+
+void
+RuleNode::UpdateHead(TupleNode* hTuple)
+{
+	head = hTuple;
+}
+
+void
+RuleNode::UpdateBody(TupleNode* bTuple)
+{
+	bodies.push_back(bTuple);
 }
 
 void
@@ -33,15 +44,16 @@ void
 RuleNode::PrintNode()
 {
 	cout << "Rule ID: " << name << endl;
-	cout << "Head node:" << head->GetName() << endl;
+	cout << "Head node:" << endl << head->GetName() << endl;
 	cout << "Body nodes:" << endl;
 	vector<TupleNode*>::iterator itb;
 	for (itb = bodies.begin(); itb != bodies.end(); itb++)
 	{
-		cout << (*itb)->GetName();
+		cout << (*itb)->GetName() << endl;
 	}
 
 	//TODO: Print out constraints
+	cout << "Constraints:" << endl;
 }
 
 RuleNode::~RuleNode()
@@ -65,20 +77,25 @@ TupleNode::TupleNode(ParseFunctor* tuple):
 		{
 			ValuePtr vPtr = varPtr->value;
 			ParsedValue::TypeCode tp = vPtr->GetTypeCode();
-			if (tp == ParsedValue::STR)
+			if (tp == ParsedValue::STR || tp == ParsedValue::IP_ADDR)
 			{
 				args.push_back(new Variable(Variable::STRING));
-				break;
+				continue;
 			}
 			if (tp == ParsedValue::DOUBLE)
 			{
 				args.push_back(new Variable(Variable::DOUBLE));
-				break;
+				continue;
 			}
 			if (tp == ParsedValue::INT32)
 			{
 				args.push_back(new Variable(Variable::INT));
-				break;
+				continue;
+			}
+			if (tp == ParsedValue::LIST)
+			{
+				args.push_back(new Variable(Variable::LIST));
+				continue;
 			}
 		}
 		else
@@ -95,8 +112,10 @@ TupleNode::PrintNode()
 	vector<Variable*>::iterator it;
 	for (it = args.begin(); it != args.end(); it++)
 	{
-		//TODO: Print out variables
+		(*it)->PrintVar();
+		cout << ",";
 	}
+	cout << ")";
 }
 
 TupleNode::~TupleNode()
@@ -118,7 +137,6 @@ DPGraph::DPGraph(Ptr<OlContext> ctxt)
 	{
 		ProcessRule(*it);
 	}
-	PrintGraph();
 }
 
 DPGraph::~DPGraph()
@@ -144,7 +162,8 @@ DPGraph::ProcessRule(OlContext::Rule* r)
 
 	//Process head tuple
 	//Assumption: head tuple does not have duplicate arguments
-	ProcessFunctor(r->head, unifier, rnode);
+	TupleNode* hTuple = ProcessFunctor(r->head, unifier, rnode);
+	rnode->UpdateHead(hTuple);
 
 	//Process body terms
 	list<ParseTerm*>::iterator it;
@@ -154,29 +173,32 @@ DPGraph::ProcessRule(OlContext::Rule* r)
 	for (it = r->terms.begin(); it != r->terms.end(); it++)
 	{
 		functor = dynamic_cast<ParseFunctor *>(*it);
-		assign = dynamic_cast<ParseAssign *>(*it);
-		select = dynamic_cast<ParseSelect *>(*it);
 		if (functor != NULL)
 		{
-			ProcessFunctor(functor, unifier, rnode);
-			break;
+			TupleNode* bTuple = ProcessFunctor(functor, unifier, rnode);
+			rnode->UpdateBody(bTuple);
+			continue;
 		}
 
+		assign = dynamic_cast<ParseAssign *>(*it);
 		if (assign != NULL)
 		{
 			ProcessAssign(assign, unifier, rnode);
-			break;
+			continue;
 		}
 
+		select = dynamic_cast<ParseSelect *>(*it);
 		if (select != NULL)
 		{
-
-			break;
+			ProcessSelect(select, unifier, rnode);
+			continue;
 		}
 	}
+
+	rnodeList.push_back(rnode);
 }
 
-void
+TupleNode*
 DPGraph::ProcessFunctor(ParseFunctor* fct,
 						map<string, Variable*>& unifier,
 						RuleNode* rnode)
@@ -206,6 +228,8 @@ DPGraph::ProcessFunctor(ParseFunctor* fct,
 			rnode->UpdateUnif(ret.first->second,(*itv));
 		}
 	}
+
+	return tnode;
 }
 
 //Process ParseAssign
@@ -240,7 +264,7 @@ DPGraph::ProcessSelect(ParseSelect* select,
 					   RuleNode* rnode)
 {
 	ParseBool* pBool = select->select;
-	Constraint* cPtr = ProcessParseBool(pBool, unifier);
+	Constraint* cPtr = ProcessConstraint(pBool, unifier);
 	rnode->UpdateConstraint(cPtr);
 }
 
@@ -248,9 +272,9 @@ Term*
 DPGraph::ProcessExpr(ParseExpr* pExpr,
 					 map<string, Variable*>& unifier)
 {
+	//Currently we do not process ParseBool in ParseExpr
 	ParseVal* pVal = NULL;
 	ParseVar* pVar = NULL;
-	ParseBool* pBool = NULL;
 	ParseMath* pMath = NULL;
 
 	pVal = dynamic_cast<ParseVal*>(pExpr);
@@ -264,12 +288,6 @@ DPGraph::ProcessExpr(ParseExpr* pExpr,
 	{
 		//pExpr points to ParseVar type
 		return ProcessParseVar(pVar, unifier);
-	}
-	pBool = dynamic_cast<ParseBool*>(pExpr);
-	if (pBool != NULL)
-	{
-		//pExpr points to ParseBool type
-		return ProcessParseBool(pBool, unifier);
 	}
 	pMath = dynamic_cast<ParseMath*>(pExpr);
 	if (pMath != NULL)
@@ -316,9 +334,16 @@ DPGraph::ProcessParseVar(ParseVar* pVar,
 	}
 }
 
-Constraint*
-DPGraph::ProcessParseBool(ParseBool* pBool,
+Term*
+DPGraph::ProcessParseFunc(ParseFunction* pFunc,
 						  map<string, Variable*>& unifier)
+{
+
+}
+
+Constraint*
+DPGraph::ProcessConstraint(ParseBool* pBool,
+						   map<string, Variable*>& unifier)
 {
 	Constraint::Operator op;
 	if (pBool->oper == ParseBool::EQ)
@@ -382,6 +407,7 @@ DPGraph::FindTupleNode(ParseFunctor* tuple)
 		string tname = (*it)->GetName();
 		if (tname == headName)
 		{
+			//cout << "Find duplicate predicate!" << endl;
 			return (*it);
 		}
 	}
@@ -396,6 +422,7 @@ DPGraph::PrintGraph()
 	for (itt = tnodeList.begin();itt != tnodeList.end();itt++)
 	{
 		(*itt)->PrintNode();
+		cout << endl;
 	}
 
 	cout << "Rule nodes:" << endl;
@@ -403,5 +430,6 @@ DPGraph::PrintGraph()
 	for (itr = rnodeList.begin();itr != rnodeList.end();itr++)
 	{
 		(*itr)->PrintNode();
+		cout << endl;
 	}
 }

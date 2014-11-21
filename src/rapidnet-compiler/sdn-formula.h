@@ -54,6 +54,7 @@ public:
 		INT,
 		DOUBLE,
 		STRING
+		LIST
 	};
 
 	/*
