@@ -35,4 +35,10 @@ Variable::Variable(TypeCode type):
 	varCount++;
 }
 
+void
+Variable::PrintVar()
+{
+  cout << name;
+}
+
 int Variable::varCount = 0;

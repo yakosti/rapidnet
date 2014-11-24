@@ -8,6 +8,7 @@
 #ifndef SDN_CONSTRAINT_H_
 #define SDN_CONSTRAINT_H_
 
+#include <iostream>
 #include <string>
 #include <vector>
 //#include "parser-util.h"
@@ -44,6 +45,8 @@ public:
 	};
 
 	Variable(TypeCode);
+
+	void PrintVar();
 
 	static int varCount;
 
