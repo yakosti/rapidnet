@@ -9,7 +9,6 @@
 #include <deque>
 #include "ol-context.h"
 #include "sdn-context.h"
-#include "sdn-constraint.h"
 
 void
 Node::PrintNode()
@@ -230,7 +229,7 @@ DPGraph::ProcessAssign(ParseAssign* assign,
 		//ERROR: Not a ParseVal
 		return;
 	}
-	Expression* vPtr = ProcessParseVal(pValue);
+	Term* vPtr = ProcessParseVal(pValue);
 	Constraint* cPtr = new Constraint(Constraint::EQ, it->second, vPtr);
 	rnode->UpdateConstraint(cPtr);
 }
@@ -245,7 +244,7 @@ DPGraph::ProcessSelect(ParseSelect* select,
 	rnode->UpdateConstraint(cPtr);
 }
 
-Expression*
+Term*
 DPGraph::ProcessExpr(ParseExpr* pExpr,
 					 map<string, Variable*>& unifier)
 {
@@ -282,7 +281,7 @@ DPGraph::ProcessExpr(ParseExpr* pExpr,
 	return NULL;
 }
 
-Expression*
+Term*
 DPGraph::ProcessParseVal(ParseVal* value)
 {
 	ValuePtr vPtr = value->Value();
@@ -301,7 +300,7 @@ DPGraph::ProcessParseVal(ParseVal* value)
 	return NULL;
 }
 
-Expression*
+Term*
 DPGraph::ProcessParseVar(ParseVar* pVar,
 						 map<string, Variable*>& unifier)
 {
@@ -339,12 +338,12 @@ DPGraph::ProcessParseBool(ParseBool* pBool,
 		op = Constraint::LT;
 	}
 
-	Expression* leftE = ProcessExpr(pBool->lhs, unifier);
-	Expression* rightE = ProcessExpr(pBool->rhs, unifier);
+	Term* leftE = ProcessExpr(pBool->lhs, unifier);
+	Term* rightE = ProcessExpr(pBool->rhs, unifier);
 	return (new Constraint(op, leftE, rightE));
 }
 
-Expression*
+Term*
 DPGraph::ProcessParseMath(ParseMath* pMath,
 						  map<string, Variable*>& unifier)
 {
@@ -366,8 +365,8 @@ DPGraph::ProcessParseMath(ParseMath* pMath,
 		op = Arithmetic::DIVIDE;
 	}
 
-	Expression* leftE = ProcessExpr(pMath->lhs, unifier);
-	Expression* rightE = ProcessExpr(pMath->rhs, unifier);
+	Term* leftE = ProcessExpr(pMath->lhs, unifier);
+	Term* rightE = ProcessExpr(pMath->rhs, unifier);
 	return (new Arithmetic(op, leftE, rightE));
 }
 
