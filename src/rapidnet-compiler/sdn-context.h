@@ -16,7 +16,7 @@
 #include "ns3/ref-count-base.h"
 #include "ns3/ptr.h"
 
-#include "sdn-constraint.h"
+#include "sdn-formula.h"
 #include "ol-context.h"
 #include "parser-util.h"
 
@@ -102,18 +102,18 @@ public:
 					   map<string, Variable*>&,
 					   RuleNode*);
 
-	Expression* ProcessExpr(ParseExpr*,
+	Term* ProcessExpr(ParseExpr*,
 							map<string, Variable*>&);
 
-	Expression* ProcessParseVal(ParseVal*);
+	Term* ProcessParseVal(ParseVal*);
 
-	Expression* ProcessParseVar(ParseVar*,
+	Term* ProcessParseVar(ParseVar*,
 								map<string, Variable*>&);
 
 	Constraint* ProcessParseBool(ParseBool*,
 								 map<string, Variable*>&);
 
-	Expression* ProcessParseMath(ParseMath*,
+	Term* ProcessParseMath(ParseMath*,
 								 map<string, Variable*>&);
 
 	TupleNode* FindTupleNode(ParseFunctor*);

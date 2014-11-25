@@ -10,16 +10,102 @@
 
 #include <vector>
 #include <string>
-#include <sdn-constraint.h>
+#include <iostream>
+#include <sstream>
 
 using namespace std;
+
+/*
+ * Term
+ */
+class Term
+{
+public:
+	virtual ~Term(){}
+};
+
+class Variable: public Term
+{
+public:
+	enum TypeCode
+	{
+		STRING,
+		INT,
+		DOUBLE
+	};
+
+	Variable(TypeCode);
+
+	void PrintVar();
+
+	static int varCount;
+
+private:
+	string name;
+	TypeCode varType;
+};
+
+class UserFunction: public Term
+{
+private:
+	string fName;
+	vector<Variable*> args;
+};
+
+//See if template can be used here
+class Value: public Term
+{
+public:
+	virtual ~Value(){}
+};
+
+class IntVal: public Value
+{
+public:
+	//IntVal(ValInt32*);
+	IntVal(int v):value(v){}
+
+private:
+	int value;
+};
+
+class DoubleVal: public Value
+{
+public:
+	//DoubleVal(ValDouble*);
+
+	DoubleVal(double v):value(v){}
+
+private:
+	double value;
+};
+
+class Arithmetic: public Term
+{
+public:
+	enum ArithOp
+	{
+		PLUS,
+		MINUS,
+		TIMES,
+		DIVIDE
+	};
+
+	Arithmetic(ArithOp opt, Term* exprL, Term* exprR):
+		op(opt), leftE(exprL), rightE(exprR){}
+
+private:
+	ArithOp op;
+	Term* leftE;
+	Term* rightE;
+};
 
 /*
  * Parse tree for formula
  */
 class Formula;
 
-class LogicConnective: public Formula
+class Connective: public Formula
 {
 public:
 	enum ConnType
@@ -40,14 +126,36 @@ private:
 	Formula* quantifiedF;
 };
 
-class LogicForall: public Quantifier{};
-class LogicExist: public Quantifier{};
+class Forall: public Quantifier{};
+class Exist: public Quantifier{};
 
-class LogicPredicate: public Formula
+class Predicate: public Formula
 {
 private:
 	string name;
 	vector<Term*> args;
+};
+
+class Constraint: public Formula
+{
+public:
+	enum Operator
+	{
+		EQ,		//Equal to
+		NEQ,	//Unequal to
+		GT,		//Greater than
+		LT,		//Smaller than
+	};
+
+	Constraint(Operator opt, Term* exprL, Term* exprR):
+		op(opt),leftE(exprL),rightE(exprR){}
+
+	~Constraint();
+
+private:
+	Operator op;
+	Term* leftE;
+	Term* rightE;
 };
 
 #endif /* SDN_FORMULA_H_ */
