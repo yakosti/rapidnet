@@ -32,10 +32,13 @@ class Term
 public:
 	virtual ~Term(){}
 
-	virtual int getValue() { //dummy return
+	virtual int GetValue() { //dummy return
 		return 0;
 	}
 };
+
+
+int varCount = 0;
 
 class Variable: public Term
 {
@@ -48,19 +51,20 @@ public:
 		STRING
 	};
 
-	Variable(TypeCode t, string n):varType(t),name(n){}
+	Variable(TypeCode t):varType(t){
+		varCount = varCount+1;
+		name =  "variable"+std::to_string(varCount);
+	}
 
 	virtual ~Variable(){}
 
-	string getVariableName() {
-		return name;
-	}
-
-	TypeCode getVarType() {
+	TypeCode GetVariableType() {
 		return varType;
 	}
 
-	static int varCount;
+	string GetVariableName() {
+		return name;
+	}
 
 private:
 	string name;
@@ -161,15 +165,15 @@ public:
 	Arithmetic(ArithOp opt, Term* exprL, Term* exprR):
 		op(opt), leftE(exprL), rightE(exprR){}
 
-	ArithOp getArithOp() {
+	ArithOp GetArithOp() {
 		return op;
 	}
 
-	Term* getLeftE() {
+	Term* GetLeftE() {
 		return leftE;
 	}
 
-	Term* getRightE() {
+	Term* GetRightE() {
 		return rightE;
 	}
 
@@ -234,15 +238,15 @@ public:
 
 	virtual ~Connective(){}
 
-	virtual ConnType getConnType() {
+	virtual ConnType GetConnType() {
 		return conntype;
 	}
 
-	virtual Formula* getLeftF() {
+	virtual Formula* GetLeftF() {
 		return leftF;
 	}
 
-	virtual Formula* getRightF() {
+	virtual Formula* GetRightF() {
 		return rightF;
 	}
 
@@ -272,16 +276,16 @@ public:
 	virtual ~Quantifier(){}
 
 
-	virtual vector<Variable*> getBoundVariables() {
+	virtual vector<Variable*> GetBoundVariables() {
 		return boundVar;
 	}
 
-	virtual QuanType getQuantifierType() {
+	virtual QuanType GetQuantifierType() {
 		return quantype;
 	}
 
 
-	virtual Formula* getQuantifierFormula() {
+	virtual Formula* GetQuantifierFormula() {
 		return quantifiedF;
 	}
 
@@ -339,20 +343,16 @@ public:
 
 	~Constraint(){}
 
-	Operator getOperator() {
+	Operator GetOperator() {
 		return op;
 	}
 
-	Term* getLeftE() {
+	Term* GetLeftE() {
 		return leftE;
 	}
 
-	Term* getRightE() {
+	Term* GetRightE() {
 		return rightE;
-	}
-
-	virtual string getClass() {
-		return "Constraint";
 	}
 
 private:
@@ -370,3 +370,7 @@ private:
  */
 
 #endif /* SDN_FORMULA_H_ */
+
+
+
+/* END OF FILE */
