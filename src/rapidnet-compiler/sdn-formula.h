@@ -15,6 +15,15 @@
 
 using namespace std;
 
+/* 
+ * ******************************************************************************** *
+ *                                                                                  *
+ *                               Parse tree for Term                                *
+ *                                                                                  *
+ * ******************************************************************************** *
+ */
+
+
 /*
  * Term
  */
@@ -22,6 +31,10 @@ class Term
 {
 public:
 	virtual ~Term(){}
+
+	virtual int getValue() { //dummy return
+		return 0;
+	}
 };
 
 class Variable: public Term
@@ -29,14 +42,23 @@ class Variable: public Term
 public:
 	enum TypeCode
 	{
-		STRING,
+		BOOL,
 		INT,
-		DOUBLE
+		DOUBLE,
+		STRING
 	};
 
-	Variable(TypeCode);
+	Variable(TypeCode t, string n):varType(t),name(n){}
 
-	void PrintVar();
+	virtual ~Variable(){}
+
+	string getVariableName() {
+		return name;
+	}
+
+	TypeCode getVarType() {
+		return varType;
+	}
 
 	static int varCount;
 
@@ -47,12 +69,18 @@ private:
 
 class UserFunction: public Term
 {
+public:
+	UserFunction(){}
+
+	virtual ~UserFunction(){}
+
 private:
 	string fName;
 	vector<Variable*> args;
 };
 
 //See if template can be used here
+// these are CONSTANTS
 class Value: public Term
 {
 public:
@@ -62,8 +90,13 @@ public:
 class IntVal: public Value
 {
 public:
-	//IntVal(ValInt32*);
 	IntVal(int v):value(v){}
+
+	virtual ~IntVal(){}
+
+	int GetIntValue() {
+		return value;
+	}
 
 private:
 	int value;
@@ -72,12 +105,46 @@ private:
 class DoubleVal: public Value
 {
 public:
-	//DoubleVal(ValDouble*);
-
 	DoubleVal(double v):value(v){}
+
+	~DoubleVal(){}
+
+	double GetDoubleValue() {
+		return value;
+	}
 
 private:
 	double value;
+};
+
+class StringVal: public Value
+{
+public:
+	StringVal(string v):value(v){}
+
+	~StringVal(){}
+
+	string GetStringValue() {
+		return value;
+	}
+
+private:
+	string value;
+};
+
+class BoolVal: public Value
+{
+public:
+	BoolVal(double v):value(v){}
+
+	~BoolVal(){}
+
+	bool GetBoolValue() {
+		return value;
+	}
+
+private:
+	bool value;
 };
 
 class Arithmetic: public Term
@@ -94,16 +161,63 @@ public:
 	Arithmetic(ArithOp opt, Term* exprL, Term* exprR):
 		op(opt), leftE(exprL), rightE(exprR){}
 
+	ArithOp getArithOp() {
+		return op;
+	}
+
+	Term* getLeftE() {
+		return leftE;
+	}
+
+	Term* getRightE() {
+		return rightE;
+	}
+
 private:
 	ArithOp op;
 	Term* leftE;
 	Term* rightE;
 };
 
-/*
- * Parse tree for formula
+/* 
+ * ******************************************************************************** *
+ *                                                                                  *
+ *                               Parse tree for Term                                *
+ *                                                                                  *
+ * ******************************************************************************** *
  */
-class Formula;
+
+
+
+
+
+
+
+
+
+
+
+/* 
+ * ******************************************************************************** *
+ *                                                                                  *
+ *                               Parse tree for formula                             *
+ *                                                                                  *
+ * ******************************************************************************** *
+ */
+
+class Formula 
+{
+public:
+	Formula(){}
+
+	virtual ~Formula(){}
+
+};
+
+
+
+
+
 
 class Connective: public Formula
 {
@@ -114,27 +228,100 @@ public:
 		OR,
 		AND
 	};
+
+	Connective(ConnType ct, Formula* formL, Formula* formR):
+		conntype(ct), leftF(formL), rightF(formR){}
+
+	virtual ~Connective(){}
+
+	virtual ConnType getConnType() {
+		return conntype;
+	}
+
+	virtual Formula* getLeftF() {
+		return leftF;
+	}
+
+	virtual Formula* getRightF() {
+		return rightF;
+	}
+
 private:
+	ConnType conntype;
 	Formula* leftF;
 	Formula* rightF;
 };
 
+
+
+
+
+
+
 class Quantifier: public Formula
 {
+public:
+	enum QuanType {
+		FORALL,
+		EXISTS
+	};
+
+	Quantifier(QuanType q, vector<Variable*> b, Formula* f):
+		quantype(q),boundVar(b),quantifiedF(f){}
+
+	virtual ~Quantifier(){}
+
+
+	virtual vector<Variable*> getBoundVariables() {
+		return boundVar;
+	}
+
+	virtual QuanType getQuantifierType() {
+		return quantype;
+	}
+
+
+	virtual Formula* getQuantifierFormula() {
+		return quantifiedF;
+	}
+
 private:
-	vector<Variable*> boundVars;
+	QuanType quantype;
+	vector<Variable*> boundVar;
 	Formula* quantifiedF;
 };
 
-class Forall: public Quantifier{};
-class Exist: public Quantifier{};
 
-class Predicate: public Formula
+
+
+
+class PredicateF: public Formula
 {
+public:
+	PredicateF(string n, vector<Term*> a):
+		name(n),args(a){}
+
+	virtual ~PredicateF(){}
+
+	virtual string GetPredicateName() {
+		return name;
+	}
+
+	virtual vector<Term*> GetPredicateArgs() {
+		return args;
+	}
+
 private:
 	string name;
 	vector<Term*> args;
 };
+
+
+
+
+
+
+
 
 class Constraint: public Formula
 {
@@ -150,12 +337,36 @@ public:
 	Constraint(Operator opt, Term* exprL, Term* exprR):
 		op(opt),leftE(exprL),rightE(exprR){}
 
-	~Constraint();
+	~Constraint(){}
+
+	Operator getOperator() {
+		return op;
+	}
+
+	Term* getLeftE() {
+		return leftE;
+	}
+
+	Term* getRightE() {
+		return rightE;
+	}
+
+	virtual string getClass() {
+		return "Constraint";
+	}
 
 private:
 	Operator op;
 	Term* leftE;
 	Term* rightE;
 };
+
+/* 
+ * ******************************************************************************** *
+ *                                                                                  *
+ *                               Parse tree for formula                             *
+ *                                                                                  *
+ * ******************************************************************************** *
+ */
 
 #endif /* SDN_FORMULA_H_ */
