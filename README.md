@@ -123,3 +123,12 @@ a copy of the development version with the following command:
 Example: I clone this folder to my home directory, with path `/home/lkloh`. To run the file `hellpeworld.cpp` which sources the data structure files from rapidnet, I cd into the location where `helloworld.cpp` may be found, and type:
 
     g++ -I/home/lkloh/rapidnet/src/rapidnet-compiler -L/home/lkloh/rapidnet/src/rapidnet-compiler helloworld.cpp -o helloworld -lcvc4
+
+7) Remove DS_Store before pushing.
+----------------------------------
+
+At the top level of the repository, type
+
+    find . -name .DS_Store -print0 | xargs -0 git rm -f --ignore-unmatch
+    
+As suggested [here](http://stackoverflow.com/questions/107701/how-can-i-remove-ds-store-files-from-a-git-repository).
