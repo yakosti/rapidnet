@@ -279,13 +279,13 @@ public:
 		EXISTS
 	};
 
-	Quantifier(QuanType q, vector<Variable*> b, Formula* f):
-		quantype(q),boundVarList(b),formula(f){}
+	Quantifier(QuanType q, vector<Variable*>* b, Formula* f):
+		quantype(q),boundVarList(b),fml(f){}
 
 	virtual ~Quantifier(){}
 
 
-	virtual vector<Variable*> GetBoundVariables() {
+	virtual vector<Variable*>* GetBoundVariables() {
 		return boundVarList;
 	}
 
@@ -295,13 +295,13 @@ public:
 
 
 	virtual Formula* GetQuantifierFormula() {
-		return formula;
+		return fml;
 	}
 
 private:
 	QuanType quantype;
-	vector<Variable*> boundVarList;
-	Formula* formula;
+	vector<Variable*>* boundVarList;
+	Formula* fml;
 };
 
 
@@ -314,11 +314,11 @@ public:
 
 	virtual ~PredicateFunction(){}
 
-	virtual string GetPredicateFunctionName() {
+	string GetName() {
 		return name;
 	}
 
-	virtual vector<Variable::TypeCode> GetPredicateFunctionTypes () {
+	vector<Variable::TypeCode> GetTypes () {
 		return types;
 	}
 
@@ -336,11 +336,11 @@ public:
 
 	virtual ~PredicateInstance(){}
 
-	virtual PredicateFunction* GetPredicateFunction() {
+	PredicateFunction* GetPredicate() {
 		return predicateDef;
 	}
 
-	virtual vector<Term*> GetPredicateInstanceArgs() {
+	vector<Term*> GetArgs() {
 		return args;
 	}
 
