@@ -202,7 +202,26 @@ private:
 
 
 
+class Schema
+{
+public:
+	Schema(string n, vector<Variable::TypeCode> t):
+		name(n),types(t){}
 
+	virtual ~Schema(){}
+
+	string GetName() {
+		return name;
+	}
+
+	vector<Variable::TypeCode> GetTypes () {
+		return types;
+	}
+
+private:
+	string name;
+	vector<Variable::TypeCode> types;
+};
 
 
 
@@ -306,38 +325,17 @@ private:
 
 
 
-class PredicateFunction: public Formula 
-{
-public:
-	PredicateFunction(string n, vector<Variable::TypeCode> t):
-		name(n),types(t){}
-
-	virtual ~PredicateFunction(){}
-
-	string GetName() {
-		return name;
-	}
-
-	vector<Variable::TypeCode> GetTypes () {
-		return types;
-	}
-
-private:
-	string name;
-	vector<Variable::TypeCode> types;
-};
-
 
 class PredicateInstance: public Formula
 {
 public:
-	PredicateInstance(PredicateFunction* p, vector<Term*> a):
-		predicateDef(p),args(a){}
+	PredicateInstance(Schema* s, vector<Term*> a):
+		schema(s),args(a){}
 
 	virtual ~PredicateInstance(){}
 
-	PredicateFunction* GetPredicate() {
-		return predicateDef;
+	Schema* GetSchema() {
+		return schema;
 	}
 
 	vector<Term*> GetArgs() {
@@ -345,7 +343,7 @@ public:
 	}
 
 private:
-	PredicateFunction* predicateDef;
+	Schema* schema;
 	vector<Term*> args;
 };
 
