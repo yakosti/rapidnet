@@ -51,7 +51,11 @@ public:
 		STRING
 	};
 
-	Variable(TypeCode t):varType(t){
+	/*
+	 * t: BOOL/INT/DOUBLE/STRING type
+	 * b: free or bound variable?
+	 */
+	Variable(TypeCode t, bool b):varType(t),isbound(b){
 		varCount = varCount+1;
 		name =  "variable"+std::to_string(varCount);
 	}
@@ -66,9 +70,14 @@ public:
 		return name;
 	}
 
+	bool GetFreeOrBound() {
+		return isbound;
+	}
+
 private:
 	string name;
 	TypeCode varType;
+	bool isbound;
 };
 
 class UserFunction: public Term
@@ -271,13 +280,13 @@ public:
 	};
 
 	Quantifier(QuanType q, vector<Variable*> b, Formula* f):
-		quantype(q),boundVar(b),quantifiedF(f){}
+		quantype(q),boundVarList(b),formula(f){}
 
 	virtual ~Quantifier(){}
 
 
 	virtual vector<Variable*> GetBoundVariables() {
-		return boundVar;
+		return boundVarList;
 	}
 
 	virtual QuanType GetQuantifierType() {
@@ -286,37 +295,57 @@ public:
 
 
 	virtual Formula* GetQuantifierFormula() {
-		return quantifiedF;
+		return formula;
 	}
 
 private:
 	QuanType quantype;
-	vector<Variable*> boundVar;
-	Formula* quantifiedF;
+	vector<Variable*> boundVarList;
+	Formula* formula;
 };
 
 
 
-
-
-class PredicateF: public Formula
+class PredicateFunction: public Formula 
 {
 public:
-	PredicateF(string n, vector<Term*> a):
-		name(n),args(a){}
+	PredicateFunction(string n, vector<Variable::TypeCode> t):
+		name(n),types(t){}
 
-	virtual ~PredicateF(){}
+	virtual ~PredicateFunction(){}
 
-	virtual string GetPredicateName() {
+	virtual string GetPredicateFunctionName() {
 		return name;
 	}
 
-	virtual vector<Term*> GetPredicateArgs() {
-		return args;
+	virtual vector<Variable::TypeCode> GetPredicateFunctionTypes () {
+		return types;
 	}
 
 private:
 	string name;
+	vector<Variable::TypeCode> types;
+};
+
+
+class PredicateInstance: public Formula
+{
+public:
+	PredicateInstance(PredicateFunction* p, vector<Term*> a):
+		predicateDef(p),args(a){}
+
+	virtual ~PredicateInstance(){}
+
+	virtual PredicateFunction* GetPredicateFunction() {
+		return predicateDef;
+	}
+
+	virtual vector<Term*> GetPredicateInstanceArgs() {
+		return args;
+	}
+
+private:
+	PredicateFunction* predicateDef;
 	vector<Term*> args;
 };
 
@@ -374,3 +403,8 @@ private:
 
 
 /* END OF FILE */
+
+
+
+
+ 
