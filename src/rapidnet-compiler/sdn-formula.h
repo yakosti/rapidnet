@@ -214,7 +214,7 @@ public:
 		return name;
 	}
 
-	vector<Variable::TypeCode> GetTypes () {
+	vector<Variable::TypeCode>& GetTypes () {
 		return types;
 	}
 
@@ -298,13 +298,13 @@ public:
 		EXISTS
 	};
 
-	Quantifier(QuanType q, vector<Variable*>* b, Formula* f):
+	Quantifier(QuanType q, vector<Variable*> b, Formula* f):
 		quantype(q),boundVarList(b),fml(f){}
 
 	virtual ~Quantifier(){}
 
 
-	virtual vector<Variable*>* GetBoundVariables() {
+	virtual vector<Variable*>& GetBoundVariables() {
 		return boundVarList;
 	}
 
@@ -319,7 +319,7 @@ public:
 
 private:
 	QuanType quantype;
-	vector<Variable*>* boundVarList;
+	vector<Variable*> boundVarList;
 	Formula* fml;
 };
 
@@ -338,7 +338,7 @@ public:
 		return schema;
 	}
 
-	vector<Term*> GetArgs() {
+	vector<Term*>& GetArgs() {
 		return args;
 	}
 
