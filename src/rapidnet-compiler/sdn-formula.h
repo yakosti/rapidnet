@@ -51,7 +51,11 @@ public:
 		STRING
 	};
 
-	Variable(TypeCode t):varType(t){
+	/*
+	 * t: BOOL/INT/DOUBLE/STRING type
+	 * b: free or bound variable?
+	 */
+	Variable(TypeCode t, bool b):varType(t),isbound(b){
 		varCount = varCount+1;
 		name =  "variable"+std::to_string(varCount);
 	}
@@ -66,9 +70,14 @@ public:
 		return name;
 	}
 
+	bool GetFreeOrBound() {
+		return isbound;
+	}
+
 private:
 	string name;
 	TypeCode varType;
+	bool isbound;
 };
 
 class UserFunction: public Term
@@ -193,7 +202,26 @@ private:
 
 
 
+class Schema
+{
+public:
+	Schema(string n, vector<Variable::TypeCode> t):
+		name(n),types(t){}
 
+	virtual ~Schema(){}
+
+	string GetName() {
+		return name;
+	}
+
+	vector<Variable::TypeCode>& GetTypes () {
+		return types;
+	}
+
+private:
+	string name;
+	vector<Variable::TypeCode> types;
+};
 
 
 
@@ -271,13 +299,13 @@ public:
 	};
 
 	Quantifier(QuanType q, vector<Variable*> b, Formula* f):
-		quantype(q),boundVar(b),quantifiedF(f){}
+		quantype(q),boundVarList(b),fml(f){}
 
 	virtual ~Quantifier(){}
 
 
-	virtual vector<Variable*> GetBoundVariables() {
-		return boundVar;
+	virtual vector<Variable*>& GetBoundVariables() {
+		return boundVarList;
 	}
 
 	virtual QuanType GetQuantifierType() {
@@ -286,37 +314,36 @@ public:
 
 
 	virtual Formula* GetQuantifierFormula() {
-		return quantifiedF;
+		return fml;
 	}
 
 private:
 	QuanType quantype;
-	vector<Variable*> boundVar;
-	Formula* quantifiedF;
+	vector<Variable*> boundVarList;
+	Formula* fml;
 };
 
 
 
 
-
-class PredicateF: public Formula
+class PredicateInstance: public Formula
 {
 public:
-	PredicateF(string n, vector<Term*> a):
-		name(n),args(a){}
+	PredicateInstance(Schema* s, vector<Term*> a):
+		schema(s),args(a){}
 
-	virtual ~PredicateF(){}
+	virtual ~PredicateInstance(){}
 
-	virtual string GetPredicateName() {
-		return name;
+	Schema* GetSchema() {
+		return schema;
 	}
 
-	virtual vector<Term*> GetPredicateArgs() {
+	vector<Term*>& GetArgs() {
 		return args;
 	}
 
 private:
-	string name;
+	Schema* schema;
 	vector<Term*> args;
 };
 
@@ -374,3 +401,8 @@ private:
 
 
 /* END OF FILE */
+
+
+
+
+ 
