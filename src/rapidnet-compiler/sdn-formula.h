@@ -15,6 +15,11 @@
 
 using namespace std;
 
+
+
+
+
+
 /* 
  * ******************************************************************************** *
  *                                                                                  *
@@ -80,17 +85,60 @@ private:
 	bool isbound;
 };
 
+
+
+class FunctionSchema
+{
+public:
+	FunctionSchema(string n, vector<Variable::TypeCode> d, Variable::TypeCode r):
+		name(n),domain(d),range(r){}
+
+	virtual ~FunctionSchema(){}
+
+	string GetName() {
+		return name;
+	}
+
+	vector<Variable::TypeCode>& GetDomainTypes () {
+		return domain;
+	}
+
+	Variable::TypeCode GetRangeType() {
+		return range;
+	}
+
+private:
+	string name;
+	vector<Variable::TypeCode> domain;
+	Variable::TypeCode range;
+};
+
+
+// CVC4: mkFunctionType
 class UserFunction: public Term
 {
 public:
-	UserFunction(){}
+	UserFunction(FunctionSchema* s, vector<Term*> a):
+		schema(s),args(a){}
 
 	virtual ~UserFunction(){}
 
+	FunctionSchema* GetSchema() {
+		return schema;
+	}
+
+	vector<Term*>& GetArgs() {
+		return args;
+	}
+
 private:
-	string fName;
-	vector<Variable*> args;
+	FunctionSchema* schema;
+	vector<Term*> args;
 };
+
+
+
+
 
 //See if template can be used here
 // these are CONSTANTS
@@ -202,27 +250,6 @@ private:
 
 
 
-class Schema
-{
-public:
-	Schema(string n, vector<Variable::TypeCode> t):
-		name(n),types(t){}
-
-	virtual ~Schema(){}
-
-	string GetName() {
-		return name;
-	}
-
-	vector<Variable::TypeCode>& GetTypes () {
-		return types;
-	}
-
-private:
-	string name;
-	vector<Variable::TypeCode> types;
-};
-
 
 
 
@@ -245,8 +272,6 @@ public:
 	virtual ~Formula(){}
 
 };
-
-
 
 
 
@@ -326,15 +351,39 @@ private:
 
 
 
+class PredicateSchema
+{
+public:
+	PredicateSchema(string n, vector<Variable::TypeCode> t):
+		name(n),types(t){}
+
+	virtual ~PredicateSchema(){}
+
+	string GetName() {
+		return name;
+	}
+
+	vector<Variable::TypeCode>& GetTypes () {
+		return types;
+	}
+
+private:
+	string name;
+	vector<Variable::TypeCode> types;
+};
+
+
+
+
 class PredicateInstance: public Formula
 {
 public:
-	PredicateInstance(Schema* s, vector<Term*> a):
+	PredicateInstance(PredicateSchema* s, vector<Term*> a):
 		schema(s),args(a){}
 
 	virtual ~PredicateInstance(){}
 
-	Schema* GetSchema() {
+	PredicateSchema* GetSchema() {
 		return schema;
 	}
 
@@ -343,7 +392,7 @@ public:
 	}
 
 private:
-	Schema* schema;
+	PredicateSchema* schema;
 	vector<Term*> args;
 };
 
