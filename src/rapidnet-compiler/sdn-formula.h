@@ -43,7 +43,7 @@ public:
 };
 
 
-int varCount = 0;
+
 
 class Variable: public Term
 {
@@ -53,17 +53,15 @@ public:
 		BOOL,
 		INT,
 		DOUBLE,
-		STRING
+		STRING,
+		LIST
 	};
 
 	/*
 	 * t: BOOL/INT/DOUBLE/STRING type
 	 * b: free or bound variable?
 	 */
-	Variable(TypeCode t, bool b):varType(t),isbound(b){
-		varCount = varCount+1;
-		name =  "variable"+std::to_string(varCount);
-	}
+	Variable(TypeCode t, bool b);
 
 	virtual ~Variable(){}
 
@@ -83,6 +81,7 @@ private:
 	string name;
 	TypeCode varType;
 	bool isbound;
+	static int varCount;
 };
 
 
@@ -417,7 +416,7 @@ public:
 	Constraint(Operator opt, Term* exprL, Term* exprR):
 		op(opt),leftE(exprL),rightE(exprR){}
 
-	~Constraint(){}
+	~Constraint();
 
 	Operator GetOperator() {
 		return op;
@@ -454,4 +453,4 @@ private:
 
 
 
- 
+

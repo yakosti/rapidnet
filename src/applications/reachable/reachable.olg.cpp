@@ -1,5 +1,3 @@
-
-
 materialize(link,infinity,infinity,keys(1,2)).
 materialize(path,infinity,infinity,keys(4:list)).
 
