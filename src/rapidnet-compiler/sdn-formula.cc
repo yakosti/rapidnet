@@ -13,24 +13,16 @@ Constraint::~Constraint()
 	delete rightE;
 }
 
-Variable::Variable(TypeCode type):
-		varType(type)
-{
-	//Assign a new name
-	ostringstream nameString;
-	nameString << "x" << varCount;
-	name = nameString.str();
-
-	varCount++;
-}
-
-void
-Variable::PrintVar()
-{
-  cout << name;
-}
-
 int Variable::varCount = 0;
+
+Variable::Variable(TypeCode t, bool b):
+  varType(t),isbound(b)
+{
+        Variable::varCount = Variable::varCount + 1;
+	ostringstream countStream;
+	countStream << Variable::varCount;  
+	name =  "variable"+ countStream.str();
+}
 
 
 

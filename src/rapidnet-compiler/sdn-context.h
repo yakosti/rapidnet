@@ -64,6 +64,10 @@ class RuleNode: public Node
 public:
 	RuleNode(string rName):Node(rName){}
 
+	void UpdateHead(TupleNode*);
+
+	void UpdateBody(TupleNode*);
+
 	vector<Constraint*>& GetConstraints(){return constraints;}
 
 	void UpdateUnif(Variable*, Variable*);
@@ -90,9 +94,9 @@ public:
 
 	void ProcessRule(OlContext::Rule*);
 
-	void ProcessFunctor(ParseFunctor*,
-						map<string, Variable*>&,
-						RuleNode*);
+	TupleNode* ProcessFunctor(ParseFunctor*,
+							  map<string, Variable*>&,
+							  RuleNode*);
 
 	void ProcessAssign(ParseAssign*,
 					   map<string, Variable*>&,
@@ -103,18 +107,21 @@ public:
 					   RuleNode*);
 
 	Term* ProcessExpr(ParseExpr*,
-							map<string, Variable*>&);
+					  map<string, Variable*>&);
 
 	Term* ProcessParseVal(ParseVal*);
 
 	Term* ProcessParseVar(ParseVar*,
-								map<string, Variable*>&);
+						  map<string, Variable*>&);
 
-	Constraint* ProcessParseBool(ParseBool*,
-								 map<string, Variable*>&);
+	Term* ProcessParseFunc(ParseFunction*,
+						   map<string, Variable*>&);
+
+	Constraint* ProcessConstraint(ParseBool*,
+								  map<string, Variable*>&);
 
 	Term* ProcessParseMath(ParseMath*,
-								 map<string, Variable*>&);
+						   map<string, Variable*>&);
 
 	TupleNode* FindTupleNode(ParseFunctor*);
 
