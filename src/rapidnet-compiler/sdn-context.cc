@@ -10,6 +10,8 @@
 #include "ol-context.h"
 #include "sdn-context.h"
 
+NS_LOG_COMPONENT_DEFINE ("SdnContext");
+
 void
 Node::PrintNode()
 {
@@ -146,6 +148,7 @@ TupleNode::~TupleNode()
 
 DPGraph::DPGraph(Ptr<OlContext> ctxt)
 {
+        NS_LOG_FUNCTION(this);
 	OlContext::RuleList* rules = ctxt->GetRules();
 
 	//Process rule by rule
@@ -154,6 +157,7 @@ DPGraph::DPGraph(Ptr<OlContext> ctxt)
 	{
 		ProcessRule(*it);
 	}
+	NS_LOG_DEBUG("DPGraph construction over!");
 }
 
 DPGraph::~DPGraph()
@@ -174,6 +178,7 @@ void
 DPGraph::ProcessRule(OlContext::Rule* r)
 //Change return value if needed
 {
+        NS_LOG_FUNCTION(r->ruleID);
 	map<string, Variable*> unifier;
 	RuleNode* rnode = new RuleNode(r->ruleID);
 
@@ -189,9 +194,11 @@ DPGraph::ProcessRule(OlContext::Rule* r)
 	ParseSelect *select = NULL;
 	for (it = r->terms.begin(); it != r->terms.end(); it++)
 	{
+	        NS_LOG_DEBUG("See how many times I run");
 		functor = dynamic_cast<ParseFunctor *>(*it);
 		if (functor != NULL)
 		{
+		        NS_LOG_DEBUG("Processing Functor:\t" << (functor->fName->ToString()));
 			TupleNode* bTuple = ProcessFunctor(functor, unifier, rnode);
 			rnode->UpdateBody(bTuple);
 			continue;
@@ -220,6 +227,7 @@ DPGraph::ProcessFunctor(ParseFunctor* fct,
 						map<string, Variable*>& unifier,
 						RuleNode* rnode)
 {
+        NS_LOG_FUNCTION(this);
 	//Find corresponding TupleNode. Create one if nothing is found
 	TupleNode* tnode = FindTupleNode(fct);
 	if (tnode == NULL)
@@ -228,11 +236,13 @@ DPGraph::ProcessFunctor(ParseFunctor* fct,
 		tnodeList.push_back(tnode);
 	}
 
+
 	//Process arguments of the tuple
 	ParseExprList* headArgs = fct->m_args;
 	deque<ParseExpr*>::iterator itd = headArgs->begin();
 	vector<Variable*>& tArgs = tnode->GetArgs();
 	vector<Variable*>::iterator itv = tArgs.begin();
+
 	for (;itd != headArgs->end();itd++,itv++)
 	{
 		ParseVar* vPtr = dynamic_cast<ParseVar*>(*itd);
@@ -245,6 +255,7 @@ DPGraph::ProcessFunctor(ParseFunctor* fct,
 			rnode->UpdateUnif(ret.first->second,(*itv));
 		}
 	}
+        NS_LOG_DEBUG("Reach here?");
 	return tnode;
 }
 

@@ -53,7 +53,7 @@ NS_LOG_COMPONENT_DEFINE ("RapidNetDPGraph");
  */
 string preprocessReadOverlogProgram (string overlogFilename)
 {
-  cout << "Pre-processing..." << endl;
+  NS_LOG_INFO("Pre-processing...");
   string processedFilename = overlogFilename + ".cpp";
   char* args[6];
   int count = 0;
@@ -97,7 +97,7 @@ string preprocessReadOverlogProgram (string overlogFilename)
     }
   else
     {
-      cout << "Generated pre-processed file " << processedFilename << endl;
+      NS_LOG_INFO("Generated pre-processed file " << processedFilename);
       ostringstream scriptStream;
       string line;
 
@@ -116,7 +116,7 @@ void printToFile (string filename, string contents)
     file.open (filename.c_str ());
     file << contents;
     file.close ();
-    cout << "Generated dependency graph " << filename << endl;
+    NS_LOG_INFO("Generated dependency graph " << filename);
 }
 
 /**
@@ -127,7 +127,7 @@ void parseOverlog (string overlogFile, Ptr<OlContext> ctxt,
   Ptr<TableStore> tableStore, bool provenanceEnabled)
 {
   string program = preprocessReadOverlogProgram (overlogFile);
-  cout << "Parsing NDlog..." << endl;
+  NS_LOG_INFO("Parsing NDlog...");
 
   istringstream istr (program);
   ctxt->ParseStream (&istr, provenanceEnabled);
@@ -157,24 +157,27 @@ void parseOverlog (string overlogFile, Ptr<OlContext> ctxt,
 }
 
 /**
- * \brief Compiles the application with given base application
+ * Compiles the application to generate depndency graph
  */
-void compile (string overlogFile, string baseOverlogFile,
-  bool provenanceEnabled, string baseDefinition)
+void compile (string overlogFile, bool provenanceEnabled)
 {
+  NS_LOG_INFO ("Compiling NDLog file:\t" << overlogFile);
   // Parse
   Ptr<OlContext> ctxt (new OlContext ());
   Ptr<TableStore> tableStore (new TableStore (ctxt));
   parseOverlog (overlogFile, ctxt, tableStore, provenanceEnabled);
 
-  Ptr<DPGraph> graphNdlog = Create<DPGraph>(ctxt);
+  //  Ptr<DPGraph> graphNdlog = Create<DPGraph>(ctxt);  
+  Ptr<DPGraph> graphNdlog (new DPGraph(ctxt));
   graphNdlog->PrintGraph();
 }
 
+//NDLog program should be free of recursion
+//NDLog program should have no value as argument of a tuple
 int main (int argc, char** argv)
 {
-  LogComponentEnable ("OlContext", LOG_LEVEL_ERROR);
-  LogComponentEnable ("ParserUtil", LOG_LEVEL_ERROR);
+  LogComponentEnable ("RapidNetDPGraph", LOG_LEVEL_INFO);
+  LogComponentEnable ("SdnContext", LOG_LEVEL_INFO);
 
   string overlogFile;
   string baseoverlogFile = DEFAULT_RN_APP_BASE;
@@ -187,16 +190,8 @@ int main (int argc, char** argv)
     baseoverlogFile);
   cmd.AddValue ("provenance", "Enable provenance for this application (optional)",
     provenance);
-  cmd.AddValue ("base-definition", "Builtin function definitions",
-    baseDefinition);
   cmd.Parse (argc, argv);
 
-  NS_LOG_INFO ("Application NDlog                             : "
-      << overlogFile);
-  NS_LOG_INFO ("Application base NDlog                        : "
-      << baseoverlogFile);
-  NS_LOG_INFO ("Provenance capability                         : "
-    << (provenance ? "Enabled": "Disabled"));
-  compile (overlogFile, baseoverlogFile, provenance, baseDefinition);
+  compile (overlogFile, provenance);
   return 0;
 }
