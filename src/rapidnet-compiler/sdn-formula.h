@@ -40,6 +40,8 @@ public:
 	virtual int GetValue() { //dummy return
 		return 0;
 	}
+	
+	virtual void PrintTerm(){}
 };
 
 
@@ -77,6 +79,8 @@ public:
 		return isbound;
 	}
 
+	void PrintTerm();
+
 private:
 	string name;
 	TypeCode varType;
@@ -106,6 +110,8 @@ public:
 		return range;
 	}
 
+	void PrintSchema();
+
 private:
 	string name;
 	vector<Variable::TypeCode> domain;
@@ -130,6 +136,8 @@ public:
 		return args;
 	}
 
+	void PrintTerm();
+
 private:
 	FunctionSchema* schema;
 	vector<Term*> args;
@@ -145,6 +153,8 @@ class Value: public Term
 {
 public:
 	virtual ~Value(){}
+
+        virtual void PrintTerm(){}
 };
 
 class IntVal: public Value
@@ -157,6 +167,8 @@ public:
 	int GetIntValue() {
 		return value;
 	}
+
+	void PrintTerm();
 
 private:
 	int value;
@@ -173,6 +185,8 @@ public:
 		return value;
 	}
 
+	void PrintTerm();	
+
 private:
 	double value;
 };
@@ -188,6 +202,8 @@ public:
 		return value;
 	}
 
+	void PrintTerm();	
+
 private:
 	string value;
 };
@@ -202,6 +218,8 @@ public:
 	bool GetBoolValue() {
 		return value;
 	}
+
+	void PrintTerm();
 
 private:
 	bool value;
@@ -232,6 +250,10 @@ public:
 	Term* GetRightE() {
 		return rightE;
 	}
+
+	void PrintTerm();
+
+	void PrintOp();
 
 private:
 	ArithOp op;
@@ -429,6 +451,10 @@ public:
 	Term* GetRightE() {
 		return rightE;
 	}
+
+	void PrintConstraint();
+
+	void PrintOp();
 
 private:
 	Operator op;
