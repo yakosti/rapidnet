@@ -1,5 +1,3 @@
-
-
 materialize(tLink, infinity, infinity, keys(1,2)).
 
 // Every 1 second, node "Src" will send out a ePing event to its neighbors, i.e. node "Next"

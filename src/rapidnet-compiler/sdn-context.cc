@@ -46,17 +46,28 @@ RuleNode::UpdateConstraint(Constraint* cPtr)
 void
 RuleNode::PrintNode()
 {
-	cout << "Rule ID: " << name << endl;
-	cout << "Head node:" << endl << head->GetName() << endl;
-	cout << "Body nodes:" << endl;
+	cout << "\t Rule ID: " << name << endl;
+	cout << "\t Head node:" << endl;
+	cout << "\t \t";
+	head->PrintNode();
+	cout << endl;
+	cout << "\t Body nodes:" << endl;
 	vector<TupleNode*>::iterator itb;
 	for (itb = bodies.begin(); itb != bodies.end(); itb++)
 	{
-		cout << (*itb)->GetName() << endl;
+	  cout << "\t \t";
+	  (*itb)->PrintNode();
+	  cout << endl;
 	}
 
-	//TODO: Print out constraints
-	cout << "Constraints:" << endl;
+	cout << "\t Constraints:" << endl;
+        vector<Constraint*>::iterator itc;
+	for (itc = constraints.begin(); itc != constraints.end(); itc++)
+	{
+	  cout << "\t \t";
+	  (*itc)->PrintConstraint();
+	  cout << endl;
+	}
 }
 
 RuleNode::~RuleNode()
@@ -115,8 +126,11 @@ TupleNode::PrintNode()
 	vector<Variable*>::iterator it;
 	for (it = args.begin(); it != args.end(); it++)
 	{
-	  //		(*it)->PrintVar();
-		cout << ",";
+	  if (it != args.begin())
+	  {
+	     cout << ",";	    
+	  }
+	  (*it)->PrintTerm();
 	}
 	cout << ")";
 }
