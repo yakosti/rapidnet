@@ -14,9 +14,14 @@
 NS_LOG_COMPONENT_DEFINE ("SdnContext");
 
 void
-Node::PrintName()
+Node::PrintName() const
 {
 	cout << name << endl;
+}
+
+RuleNode::RuleNode(string rName):Node(rName)
+{
+	constraints = ConstraintList();
 }
 
 void
@@ -33,11 +38,11 @@ RuleNode::UpdateConstraint(Constraint* cPtr)
 }
 
 void
-RuleNode::PrintNode()
+RuleNode::PrintNode() const
 {
 	cout << "Rule ID: " << name << endl;
 	cout << "Constraints:" << endl;
-	vector<Constraint*>::iterator itc;
+	ConstraintList::const_iterator itc;
 	for (itc = constraints.begin(); itc != constraints.end(); itc++)
 	{
 	  cout << "\t";
@@ -48,7 +53,7 @@ RuleNode::PrintNode()
 
 RuleNode::~RuleNode()
 {
-	vector<Constraint*>::iterator it;
+	ConstraintList::iterator it;
 	for (it = constraints.begin();it != constraints.end(); it++)
 	{
 		delete (*it);
@@ -96,10 +101,21 @@ TupleNode::TupleNode(ParseFunctor* tuple):
 }
 
 void
-TupleNode::PrintNode()
+TupleNode::Instantiate(VarMap& vmap) const
+{
+	vector<Variable*>::const_iterator itv;
+	for (itv = args.begin();itv != args.end();itv++)
+	{
+		Variable* var = new Variable((*itv)->GetVariableType(), false);
+		vmap.insert(VarMap::value_type((*itv), var));
+	}
+}
+
+void
+TupleNode::PrintNode() const
 {
 	cout << name << "(";
-	vector<Variable*>::iterator it;
+	vector<Variable*>::const_iterator it;
 	for (it = args.begin(); it != args.end(); it++)
 	{
 	  if (it != args.begin())
@@ -132,6 +148,18 @@ DPGraph::DPGraph(Ptr<OlContext> ctxt)
 		ProcessRule(*it);
 	}
 	NS_LOG_DEBUG("DPGraph construction over!");
+}
+
+const TupleListC&
+DPGraph::GetBodyTuples(const RuleNode* rn) const
+{
+	return inEdgesRL.at(rn);
+}
+
+const TupleNode*
+DPGraph::GetHeadTuple(const RuleNode* rn) const
+{
+	return outEdgeRL.at(rn);
 }
 
 void
@@ -202,8 +230,8 @@ DPGraph::ProcessFunctor(ParseFunctor* fct,
 	//Process arguments of the tuple
 	ParseExprList* headArgs = fct->m_args;
 	deque<ParseExpr*>::iterator itd = headArgs->begin();
-	vector<Variable*>& tArgs = tnode->GetArgs();
-	vector<Variable*>::iterator itv = tArgs.begin();
+	const vector<Variable*>& tArgs = tnode->GetArgs();
+	vector<Variable*>::const_iterator itv = tArgs.begin();
 
 	for (;itd != headArgs->end();itd++,itv++)
 	{
@@ -301,6 +329,12 @@ DPGraph::ProcessParseVal(ParseVal* value)
 	if (dbPtr != NULL)
 	{
 		return (new DoubleVal(dbPtr->GetDoubleValue()));
+	}
+
+	ValStr* strPtr = dynamic_cast<ValStr*>(PeekPointer(vPtr));
+	if (strPtr != NULL)
+	{
+		return (new StringVal(strPtr->ToString()));
 	}
 
 	return NULL;
@@ -405,10 +439,10 @@ DPGraph::FindTupleNode(ParseFunctor* tuple)
 }
 
 void
-DPGraph::PrintGraph()
+DPGraph::PrintGraph() const
 {
 	cout << "Rule outgoing edges:" << endl;
-	RHMap::iterator itr;
+	RHMap::const_iterator itr;
 	for (itr = outEdgeRL.begin();itr != outEdgeRL.end();itr++)
 	{
 		//Print the rule node
@@ -422,7 +456,7 @@ DPGraph::PrintGraph()
 	}
 
 	cout << "Rule incoming edges:" << endl;
-	RBMap::iterator itt;
+	RBMap::const_iterator itt;
 	for (itt = inEdgesRL.begin();itt != inEdgesRL.end();itt++)
 	{
 		//Print the name of the rule node
@@ -430,7 +464,7 @@ DPGraph::PrintGraph()
 		cout << endl;
 
 		//Print tuple nodes connected by the rule node
-		TupleList::iterator itrv;
+		TupleListC::const_iterator itrv;
 		for (itrv = itt->second.begin(); itrv != itt->second.end(); itrv++)
 		{
 			(*itrv)->PrintNode();
@@ -463,7 +497,7 @@ MiniGraph::MiniGraph(Ptr<DPGraph> dpgraph)
 	TupleList& tnodes = dpgraph->tupleNodes;
 	for (itt = tnodes.begin(); itt != tnodes.end(); itt++)
 	{
-		list<RuleNode*> rlist;
+		RuleListC rlist;
 		outEdgesTP.insert(TRMap::value_type((*itt),rlist));
 		inEdgesTP.insert(TRMap::value_type((*itt),rlist));
 	}
@@ -479,24 +513,25 @@ MiniGraph::MiniGraph(Ptr<DPGraph> dpgraph)
 	RBMap& inE = dpgraph->inEdgesRL;
 	for (itb = inE.begin(); itb != inE.end(); itb++)
 	{
-		TupleList& tvec = itb->second;
-		for (itt = tvec.begin(); itt != tvec.end(); itt++)
+		TupleListC& tvec = itb->second;
+		TupleListC::iterator itp;
+		for (itp = tvec.begin(); itp != tvec.end(); itp++)
 		{
-			outEdgesTP[(*itt)].push_back(itb->first);
+			outEdgesTP[(*itp)].push_back(itb->first);
 		}
 	}
 }
 
-pair<TupleList, RuleList>
+pair<TupleListC, RuleListC>
 MiniGraph::TopoSort()
 {
 	//TupleList: a list of base tuples
 	//RuleList: an ordered list of rules
-	pair<TupleList, RuleList> topoOrder;
+	pair<TupleListC, RuleListC> topoOrder;
 
 	//Topological sort
-	deque<Node*> processQueue;
-	TRMap::iterator itti;
+	deque<const Node*> processQueue;
+	TRMap::const_iterator itti;
 	for (itti = inEdgesTP.begin();itti != inEdgesTP.end();itti++)
 	{
 		if (itti->second.size() == 0)
@@ -509,19 +544,19 @@ MiniGraph::TopoSort()
 
 	while (processQueue.size() > 0)
 	{
-		Node* curNode = processQueue.front();
+		const Node* curNode = processQueue.front();
 		processQueue.pop_front();
 		//Process a tuple node
-		TupleNode* tnode = dynamic_cast<TupleNode*>(curNode);
+		const TupleNode* tnode = dynamic_cast<const TupleNode*>(curNode);
 		if (tnode != NULL)
 		{
 			//Delete the corresponding entry in inEdgesTP
 			inEdgesTP.erase(tnode);
-			RuleList& rlist = outEdgesTP[tnode];
-			RuleList::iterator itrl;
+			RuleListC& rlist = outEdgesTP[tnode];
+			RuleListC::iterator itrl;
 			for (itrl = rlist.begin();itrl != rlist.end();itrl++)
 			{
-				TupleList& tlist = inEdgesRL[(*itrl)];
+				TupleListC& tlist = inEdgesRL[(*itrl)];
 				tlist.remove(tnode);
 				if (tlist.size() == 0)
 				{
@@ -530,15 +565,15 @@ MiniGraph::TopoSort()
 			}
 		}
 
-		RuleNode* rnode = dynamic_cast<RuleNode*>(curNode);
+		const RuleNode* rnode = dynamic_cast<const RuleNode*>(curNode);
 		if (rnode != NULL)
 		{
 			//Store the topological order of the rule node
 			topoOrder.second.push_back(rnode);
 			//Delete the corresponding entry in inEdgesRL
 			inEdgesRL.erase(rnode);
-			TupleNode* tn = outEdgeRL[rnode];
-			RuleList& rl = inEdgesTP[tn];
+			const TupleNode* tn = outEdgeRL[rnode];
+			RuleListC& rl = inEdgesTP[tn];
 			rl.remove(rnode);
 			if (rl.size() == 0)
 			{
@@ -551,10 +586,10 @@ MiniGraph::TopoSort()
 }
 
 void
-MiniGraph::PrintGraph()
+MiniGraph::PrintGraph() const
 {
 	cout << "Rule node edges (outbound):" << endl;
-	RHMap::iterator itrh;
+	RHMap::const_iterator itrh;
 	for (itrh = outEdgeRL.begin();itrh != outEdgeRL.end();itrh++)
 	{
 		cout << "Rule name and constraints:" << endl;
@@ -567,15 +602,15 @@ MiniGraph::PrintGraph()
 	cout << endl;
 
 	cout << "Rule node edges (inbound):" << endl;
-	RBMap::iterator itrb;
-	TupleList::iterator ittv;
+	RBMap::const_iterator itrb;
+	TupleListC::const_iterator ittv;
 	for (itrb = inEdgesRL.begin();itrb != inEdgesRL.end();itrb++)
 	{
 		cout << "Rule name:" << endl;
 		itrb->first->PrintName();
 		cout << endl << endl;
 		cout << "Rule bodies:" << endl;
-		TupleList& tnodes = itrb->second;
+		const TupleListC& tnodes = itrb->second;
 		for (ittv = tnodes.begin();ittv != tnodes.end();ittv++)
 		{
 			cout << "\t";
@@ -587,13 +622,13 @@ MiniGraph::PrintGraph()
 	cout << endl;
 
 	cout << "Tuple node edges (outbound):" << endl;
-	TRMap::iterator itti;
-	RuleList::iterator itri;
+	TRMap::const_iterator itti;
+	RuleListC::const_iterator itri;
 	for (itti = outEdgesTP.begin();itti != outEdgesTP.end();itti++)
 	{
 		itti->first->PrintNode();
 		cout << endl;
-		RuleList& rnodes = itti->second;
+		const RuleListC& rnodes = itti->second;
 		for (itri = rnodes.begin();itri != rnodes.end();itri++)
 		{
 			cout << "\t";
@@ -608,7 +643,7 @@ MiniGraph::PrintGraph()
 	{
 		itti->first->PrintNode();
 		cout << endl;
-		RuleList& rnodes = itti->second;
+		const RuleListC& rnodes = itti->second;
 		for (itri = rnodes.begin();itri != rnodes.end();itri++)
 		{
 			cout << "\t";

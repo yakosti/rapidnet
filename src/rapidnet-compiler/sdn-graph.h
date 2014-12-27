@@ -25,6 +25,8 @@ using namespace std;
 using namespace ns3;
 using namespace rapidnet_compiler;
 
+typedef list<Constraint*> ConstraintList;
+
 /*
  * Components of Dependency graph
  */
@@ -33,11 +35,11 @@ class Node
 public:
 	Node(string nName):name(nName){}
 
-	void PrintName();
+	void PrintName() const;
 
 	virtual void PrintNode(){}
 
-	string GetName(){return name;}
+	string GetName() const {return name;}
 
 	virtual ~Node(){}
 
@@ -45,16 +47,37 @@ protected:
 	string name;
 };
 
+class RuleNode: public Node
+{
+public:
+	RuleNode(string rName);
+
+	const ConstraintList& GetConstraints() const {return constraints;}
+
+	void UpdateUnif(Variable*, Variable*);
+
+	void UpdateConstraint(Constraint*);
+
+	void PrintNode() const;
+
+	~RuleNode();
+
+private:
+	ConstraintList constraints;
+};
+
 class TupleNode: public Node
 {
 public:
 	TupleNode(ParseFunctor*);
 
-	int GetArgLength(){return args.size();}
+	int GetArgLength() const {return args.size();}
 
-	vector<Variable*>& GetArgs(){return args;}
+	const vector<Variable*>& GetArgs() const {return args;}
 
-	void PrintNode();
+	void Instantiate(VarMap&) const;
+
+	void PrintNode() const;
 
 	~TupleNode();
 
@@ -62,30 +85,13 @@ private:
 	vector<Variable*> args;
 };
 
-class RuleNode: public Node
-{
-public:
-	RuleNode(string rName):Node(rName){}
-
-	const vector<Constraint*>& GetConstraints(){return constraints;}
-
-	void UpdateUnif(Variable*, Variable*);
-
-	void UpdateConstraint(Constraint*);
-
-	void PrintNode();
-
-	~RuleNode();
-
-private:
-	vector<Constraint*> constraints;
-};
-
 typedef list<TupleNode*> TupleList;
 typedef list<RuleNode*> RuleList;
-typedef map<RuleNode*, TupleList> RBMap;//Mapping from the rule node to bodies
-typedef map<RuleNode*, TupleNode*> RHMap;//Mapping from the rule node to the head
-typedef map<TupleNode*, RuleList> TRMap;
+typedef list<const TupleNode*> TupleListC;
+typedef list<const RuleNode*> RuleListC;
+typedef map<const RuleNode*, TupleListC> RBMap;//Mapping from the rule node to bodies
+typedef map<const RuleNode*, const TupleNode*> RHMap;//Mapping from the rule node to the head
+typedef map<const TupleNode*, RuleListC> TRMap;
 
 class DPGraph: public RefCountBase
 {
@@ -94,6 +100,12 @@ class DPGraph: public RefCountBase
 public:
 	//Rule format: head :- body1, body2,...bodyn, cstraint1, cstraint2...
 	DPGraph(Ptr<OlContext>);
+
+	const TupleList& GetTupleList() const {return tupleNodes;}
+
+	const TupleListC& GetBodyTuples(const RuleNode*) const;
+
+	const TupleNode* GetHeadTuple(const RuleNode*) const;
 
 	void ProcessRule(OlContext::Rule*);
 
@@ -128,7 +140,7 @@ public:
 
 	TupleNode* FindTupleNode(ParseFunctor*);
 
-	void PrintGraph();
+	void PrintGraph() const;
 
 	~DPGraph();
 
@@ -145,9 +157,9 @@ public:
 	MiniGraph(Ptr<DPGraph>);
 
 	//Topological sort on the dependency graph
-	pair<TupleList, RuleList> TopoSort();
+	pair<TupleListC, RuleListC> TopoSort();
 
-	void PrintGraph();
+	void PrintGraph() const;
 
 private:
 	RHMap outEdgeRL;

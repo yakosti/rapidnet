@@ -10,14 +10,18 @@
 
 #include <vector>
 #include <string>
+#include <map>
 #include <iostream>
 #include <sstream>
 
+#include "ns3/log.h"
+
 using namespace std;
 
+class Variable;
 
-
-
+//TODO: change VarMap into a class
+typedef map<Variable*, Variable*> VarMap;
 
 
 /* 
@@ -40,7 +44,11 @@ public:
 
 	int GetValue();
 	
-	void PrintTerm();
+	virtual Term* Clone() {return NULL;}
+
+	virtual void ReplaceVar(const VarMap&){}
+
+	virtual void PrintTerm() =0;
 };
 
 
@@ -64,13 +72,15 @@ public:
 	 */
 	Variable(TypeCode t, bool b);
 
-	virtual ~Variable(){}
+	~Variable(){}
 
 	TypeCode GetVariableType();
 	
 	string GetVariableName();
 
 	bool GetFreeOrBound();
+
+	Variable* Clone() {return this;}
 
 	void PrintTerm();
 
@@ -88,7 +98,9 @@ class FunctionSchema
 public:
 	FunctionSchema(string n, vector<Variable::TypeCode>& d, Variable::TypeCode r);
 
-	virtual ~FunctionSchema();
+	FunctionSchema(const FunctionSchema&);
+
+	~FunctionSchema();
 
 	string GetName();
 
@@ -111,11 +123,17 @@ class UserFunction: public Term
 public:
 	UserFunction(FunctionSchema* s, vector<Term*>& a);
 
+	UserFunction(const UserFunction&);
+
 	~UserFunction();
 
 	FunctionSchema* GetSchema();
 
 	vector<Term*>& GetArgs();
+
+	UserFunction* Clone();
+
+	void ReplaceVar(const VarMap&);
 
 	void PrintTerm();
 
@@ -135,6 +153,8 @@ class Value: public Term
 public:
 	virtual ~Value(){}
 
+	virtual Value* Clone() {return NULL;}
+
     void PrintTerm(){}
 };
 
@@ -147,9 +167,11 @@ class IntVal: public Value
 public:
 	IntVal(int v);
 
-	~IntVal();
+	IntVal(const IntVal&);
 
 	int GetIntValue();
+
+	IntVal* Clone();
 
 	void PrintTerm();
 
@@ -167,9 +189,11 @@ class DoubleVal: public Value
 public:
 	DoubleVal(double v);
 
-	~DoubleVal();
+	DoubleVal(const DoubleVal&);
 
 	double GetDoubleValue();
+
+	DoubleVal* Clone();
 
 	void PrintTerm();	
 
@@ -185,9 +209,11 @@ class StringVal: public Value
 public:
 	StringVal(string v);
 
-	~StringVal();
+	StringVal(const StringVal&);
 
 	string GetStringValue();
+
+	StringVal* Clone();
 
 	void PrintTerm();	
 
@@ -203,9 +229,11 @@ class BoolVal: public Value
 public:
 	BoolVal(double v);
 
-	~BoolVal();
+	BoolVal(const BoolVal&);
 
 	bool GetBoolValue();
+
+	BoolVal* Clone();
 
 	void PrintTerm();
 
@@ -230,11 +258,19 @@ public:
 
 	Arithmetic(ArithOp opt, Term* exprL, Term* exprR);
 
+	Arithmetic(const Arithmetic&);
+
+	~Arithmetic();
+
 	ArithOp GetArithOp();
 
 	Term* GetLeftE();
 
 	Term* GetRightE();
+
+	Arithmetic* Clone();
+
+	void ReplaceVar(const VarMap&);
 
 	void PrintTerm();
 
@@ -395,6 +431,8 @@ public:
 
 	Constraint(Operator opt, Term* exprL, Term* exprR);
 
+	Constraint(const Constraint&);
+
 	~Constraint();
 
 	Operator GetOperator();
@@ -402,6 +440,8 @@ public:
 	Term* GetLeftE();
 
 	Term* GetRightE();
+
+	void ReplaceVar(const VarMap&);
 
 	void PrintConstraint();
 

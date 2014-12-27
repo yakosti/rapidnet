@@ -19,7 +19,7 @@ def build(bld):
         'eca-context.cc',
         'ol-parser.cc',
         'sdn-graph.cc',
-        'sdn-constraint.cc',
+        'sdn-derivation.cc',
         'sdn-formula.cc',
         ]
 
@@ -35,7 +35,7 @@ def build(bld):
         'ol-parser.hh',
         'localize-context.h',
         'all-values.h',
-        'sdn-constraint.h',
+        'sdn-derivation.h',
         'sdn-graph.h',
         'sdn-formula.h'
         ]
