@@ -1,6 +1,8 @@
 materialize(tLink, infinity, infinity, keys(1,2)).
 
 // Every 1 second, node "Src" will send out a ePing event to its neighbors, i.e. node "Next"
+// WARNING: If the user wants to generate a dependency graph based on pingpong.olg,
+//          the argument "1" in tuple periodic should be changed to a variable.
 r1  ePing(@Next, Src):- 
     periodic(@Src, E, 1), 
     tLink(@Src, Next). 
