@@ -10,6 +10,7 @@
 
 #include<vector>
 #include<map>
+#include<list>
 #include<sstream>
 #include<string>
 
@@ -32,7 +33,9 @@ class Node
 public:
 	Node(string nName):name(nName){}
 
-	virtual void PrintNode();
+	void PrintName();
+
+	virtual void PrintNode(){}
 
 	string GetName(){return name;}
 
@@ -64,11 +67,7 @@ class RuleNode: public Node
 public:
 	RuleNode(string rName):Node(rName){}
 
-	void UpdateHead(TupleNode*);
-
-	void UpdateBody(TupleNode*);
-
-	vector<Constraint*>& GetConstraints(){return constraints;}
+	const vector<Constraint*>& GetConstraints(){return constraints;}
 
 	void UpdateUnif(Variable*, Variable*);
 
@@ -79,18 +78,19 @@ public:
 	~RuleNode();
 
 private:
-	TupleNode* head;			//Outbound edge
-	vector<TupleNode*> bodies;	//Inbound edges
 	vector<Constraint*> constraints;
 };
+
+typedef vector<TupleNode*> TupleVec;
+typedef vector<RuleNode*> RuleVec;
+typedef map<TupleNode*, RuleVec> TRMap;
+typedef map<RuleNode*, TupleNode*> RHMap;
 
 class DPGraph: public RefCountBase
 {
 public:
 	//Rule format: head :- body1, body2,...bodyn, cstraint1, cstraint2...
 	DPGraph(Ptr<OlContext>);
-
-	~DPGraph();
 
 	void ProcessRule(OlContext::Rule*);
 
@@ -127,9 +127,13 @@ public:
 
 	void PrintGraph();
 
+	~DPGraph();
+
 private:
-	vector<RuleNode*> rnodeList;
-	vector<TupleNode*> tnodeList;
+	TupleVec tupleNodes;
+	RuleVec ruleNodes;
+	TRMap outEdgesTR;	//Edges from a tuple node to rule nodes
+	RHMap outEdgeRH;	//Edges from a rule node to its head tuple
 };
 
 #endif /* SDNCONTEXT_H_ */
