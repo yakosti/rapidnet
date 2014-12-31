@@ -75,7 +75,7 @@ OlContext::TableInfo::ToString ()
   t << "materialize(" << tableName << ", " << timeout << ", " << size
       << ", keys(";
 
-  for (uint k = 0; k + 1 < primaryKeys.size (); k++)
+  for (int k = 0; k + 1 < primaryKeys.size (); k++) //UINT TO INT, lkloh
     {
       t << primaryKeys.at (k) << ", ";
     }
@@ -789,7 +789,7 @@ OlContext::GenerateLocalEHTempEventRule (Rule* rule)
   //new rule body
   ParseTermList * rBody1 = new ParseTermList ();
   ParseExpr * X = NULL; //for original rule body location
-  uint n = 0; //PID counter
+  int n = 0; //PID counter CHANGED FROM UINT TO INT
 
   for (list<ParseTerm*>::iterator t = rule->terms.begin (); t
       != rule->terms.end (); t++)

@@ -1,0 +1,336 @@
+# project ns (3.5) configured on Tue Dec 30 21:49:32 2014 by
+# waf 1.5.8 (abi 7, python 20706f0 on darwin)
+# using ./waf configure
+#
+Checking for program g++
+
+find program='g++' paths=[] var='CXX' -> '/usr/local/bin/g++'
+
+Checking for program cpp
+
+find program='cpp' paths=[] var='CPP' -> '/usr/local/bin/cpp'
+
+Checking for program ar
+
+find program='ar' paths=[] var='AR' -> '/usr/bin/ar'
+
+Checking for program ranlib
+
+find program='ranlib' paths=[] var='RANLIB' -> '/usr/bin/ranlib'
+
+Checking for g++ 
+
+Checking for program pkg-config
+
+find program='pkg-config' paths=[] var='PKG_CONFIG' -> ''
+
+Checking for regression reference traces 
+
+==>
+#include <stdio.h>
+int main() { return 0; }
+
+<==
+[1/2] [32mcxx: build/.conf_check_0/test.cc -> build/.conf_check_0/testbuild/debug/test_1.o
+[0m['/usr/local/bin/g++', '-O0', '-ggdb', '-g3', '-Wno-error=deprecated-declarations', '-Idebug', '-I..', '-D_DEBUG', '-DRUN_SELF_TESTS', '../test.cc', '-c', '-o', 'debug/test_1.o']
+[2/2] [33mcxx_link: build/.conf_check_0/testbuild/debug/test_1.o -> build/.conf_check_0/testbuild/debug/testprog
+[0m['/usr/local/bin/g++', 'debug/test_1.o', '-o', 'debug/testprog']
+Checking for -Wno-error=deprecated-declarations support
+
+Checking for header stdlib.h
+
+==>
+#include <stdlib.h>
+
+int main() {
+	return 0;
+}
+
+<==
+[1/2] [32mcxx: build/.conf_check_0/test.cpp -> build/.conf_check_0/testbuild/debug/test_1.o
+[0m['/usr/local/bin/g++', '-O0', '-ggdb', '-g3', '-Wno-error=deprecated-declarations', '-Idebug', '-I..', '-D_DEBUG', '-DRUN_SELF_TESTS', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '../test.cpp', '-c', '-o', 'debug/test_1.o']
+[2/2] [33mcxx_link: build/.conf_check_0/testbuild/debug/test_1.o -> build/.conf_check_0/testbuild/debug/testprog
+[0m['/usr/local/bin/g++', 'debug/test_1.o', '-o', 'debug/testprog']
+Checking for header signal.h
+
+==>
+#include <signal.h>
+
+int main() {
+	return 0;
+}
+
+<==
+[1/2] [32mcxx: build/.conf_check_0/test.cpp -> build/.conf_check_0/testbuild/debug/test_1.o
+[0m['/usr/local/bin/g++', '-O0', '-ggdb', '-g3', '-Wno-error=deprecated-declarations', '-Idebug', '-I..', '-D_DEBUG', '-DRUN_SELF_TESTS', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '../test.cpp', '-c', '-o', 'debug/test_1.o']
+[2/2] [33mcxx_link: build/.conf_check_0/testbuild/debug/test_1.o -> build/.conf_check_0/testbuild/debug/testprog
+[0m['/usr/local/bin/g++', 'debug/test_1.o', '-o', 'debug/testprog']
+Checking for header pthread.h
+
+==>
+
+#include <pthread.h>
+int main ()
+{
+   pthread_mutex_t m;
+   pthread_mutex_init (&m, NULL);
+   return 0;
+}
+
+<==
+[1/2] [32mcxx: build/.conf_check_0/test.cpp -> build/.conf_check_0/testbuild/debug/test_1.o
+[0m['/usr/local/bin/g++', '-O0', '-ggdb', '-g3', '-Wno-error=deprecated-declarations', '-Idebug', '-I..', '-D_DEBUG', '-DRUN_SELF_TESTS', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '../test.cpp', '-c', '-o', 'debug/test_1.o']
+[2/2] [33mcxx_link: build/.conf_check_0/testbuild/debug/test_1.o -> build/.conf_check_0/testbuild/debug/testprog
+[0m['/usr/local/bin/g++', 'debug/test_1.o', '-o', 'debug/testprog']
+Checking for high precision time implementation
+
+Checking for header stdint.h
+
+==>
+#include <stdint.h>
+
+int main() {
+	return 0;
+}
+
+<==
+[1/2] [32mcxx: build/.conf_check_0/test.cpp -> build/.conf_check_0/testbuild/debug/test_1.o
+[0m['/usr/local/bin/g++', '-O0', '-ggdb', '-g3', '-Wno-error=deprecated-declarations', '-Idebug', '-I..', '-D_DEBUG', '-DRUN_SELF_TESTS', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '../test.cpp', '-c', '-o', 'debug/test_1.o']
+[2/2] [33mcxx_link: build/.conf_check_0/testbuild/debug/test_1.o -> build/.conf_check_0/testbuild/debug/testprog
+[0m['/usr/local/bin/g++', 'debug/test_1.o', '-o', 'debug/testprog']
+Checking for header inttypes.h
+
+==>
+#include <inttypes.h>
+
+int main() {
+	return 0;
+}
+
+<==
+[1/2] [32mcxx: build/.conf_check_0/test.cpp -> build/.conf_check_0/testbuild/debug/test_1.o
+[0m['/usr/local/bin/g++', '-O0', '-ggdb', '-g3', '-Wno-error=deprecated-declarations', '-Idebug', '-I..', '-D_DEBUG', '-DRUN_SELF_TESTS', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '../test.cpp', '-c', '-o', 'debug/test_1.o']
+[2/2] [33mcxx_link: build/.conf_check_0/testbuild/debug/test_1.o -> build/.conf_check_0/testbuild/debug/testprog
+[0m['/usr/local/bin/g++', 'debug/test_1.o', '-o', 'debug/testprog']
+Checking for header sys/inttypes.h
+
+==>
+#include <sys/inttypes.h>
+
+int main() {
+	return 0;
+}
+
+<==
+[1/2] [32mcxx: build/.conf_check_0/test.cpp -> build/.conf_check_0/testbuild/debug/test_1.o
+[0m../test.cpp:1:26: fatal error: sys/inttypes.h: No such file or directory
+ #include <sys/inttypes.h>
+                          ^
+compilation terminated.
+['/usr/local/bin/g++', '-O0', '-ggdb', '-g3', '-Wno-error=deprecated-declarations', '-Idebug', '-I..', '-D_DEBUG', '-DRUN_SELF_TESTS', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '../test.cpp', '-c', '-o', 'debug/test_1.o']
+command returned 'Traceback (most recent call last):\n  File "/Users/lkloh/rapidnet/.waf-1.5.8-12763e767c863088b8579dbeeb8265b6/wafadmin/Tools/config_c.py", line 345, in run_c_code\n    bld.compile()\n  File "/Users/lkloh/rapidnet/.waf-1.5.8-12763e767c863088b8579dbeeb8265b6/wafadmin/Build.py", line 154, in compile\n    raise BuildError(self,self.task_manager.tasks_done)\nBuildError: Build failed\n -> task failed (err #1): \n\t{task: cxx test.cpp -> test_1.o}\n'Checking for library rt
+
+==>
+
+int main() {
+	return 0;
+}
+
+<==
+[1/2] [32mcxx: build/.conf_check_0/test.cpp -> build/.conf_check_0/testbuild/debug/test_1.o
+[0m['/usr/local/bin/g++', '-O0', '-ggdb', '-g3', '-Wno-error=deprecated-declarations', '-Idebug', '-I..', '-D_DEBUG', '-DRUN_SELF_TESTS', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '../test.cpp', '-c', '-o', 'debug/test_1.o']
+[2/2] [33mcxx_link: build/.conf_check_0/testbuild/debug/test_1.o -> build/.conf_check_0/testbuild/debug/testprog
+[0mld: library not found for -lrt
+collect2: error: ld returned 1 exit status
+['/usr/local/bin/g++', 'debug/test_1.o', '-o', 'debug/testprog', '-lrt']
+command returned 'Traceback (most recent call last):\n  File "/Users/lkloh/rapidnet/.waf-1.5.8-12763e767c863088b8579dbeeb8265b6/wafadmin/Tools/config_c.py", line 345, in run_c_code\n    bld.compile()\n  File "/Users/lkloh/rapidnet/.waf-1.5.8-12763e767c863088b8579dbeeb8265b6/wafadmin/Build.py", line 154, in compile\n    raise BuildError(self,self.task_manager.tasks_done)\nBuildError: Build failed\n -> task failed (err #1): \n\t{task: cxx_link test_1.o -> testprog}\n'Checking for header netpacket/packet.h
+
+==>
+#include <netpacket/packet.h>
+
+int main() {
+	return 0;
+}
+
+<==
+[1/2] [32mcxx: build/.conf_check_0/test.cpp -> build/.conf_check_0/testbuild/debug/test_1.o
+[0m../test.cpp:1:30: fatal error: netpacket/packet.h: No such file or directory
+ #include <netpacket/packet.h>
+                              ^
+compilation terminated.
+['/usr/local/bin/g++', '-O0', '-ggdb', '-g3', '-Wno-error=deprecated-declarations', '-Idebug', '-I..', '-D_DEBUG', '-DRUN_SELF_TESTS', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '../test.cpp', '-c', '-o', 'debug/test_1.o']
+command returned 'Traceback (most recent call last):\n  File "/Users/lkloh/rapidnet/.waf-1.5.8-12763e767c863088b8579dbeeb8265b6/wafadmin/Tools/config_c.py", line 345, in run_c_code\n    bld.compile()\n  File "/Users/lkloh/rapidnet/.waf-1.5.8-12763e767c863088b8579dbeeb8265b6/wafadmin/Build.py", line 154, in compile\n    raise BuildError(self,self.task_manager.tasks_done)\nBuildError: Build failed\n -> task failed (err #1): \n\t{task: cxx test.cpp -> test_1.o}\n'Checking for header linux/if_tun.h
+
+==>
+#include <linux/if_tun.h>
+
+int main() {
+	return 0;
+}
+
+<==
+[1/2] [32mcxx: build/.conf_check_0/test.cpp -> build/.conf_check_0/testbuild/debug/test_1.o
+[0m../test.cpp:1:26: fatal error: linux/if_tun.h: No such file or directory
+ #include <linux/if_tun.h>
+                          ^
+compilation terminated.
+['/usr/local/bin/g++', '-O0', '-ggdb', '-g3', '-Wno-error=deprecated-declarations', '-Idebug', '-I..', '-D_DEBUG', '-DRUN_SELF_TESTS', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '../test.cpp', '-c', '-o', 'debug/test_1.o']
+command returned 'Traceback (most recent call last):\n  File "/Users/lkloh/rapidnet/.waf-1.5.8-12763e767c863088b8579dbeeb8265b6/wafadmin/Tools/config_c.py", line 345, in run_c_code\n    bld.compile()\n  File "/Users/lkloh/rapidnet/.waf-1.5.8-12763e767c863088b8579dbeeb8265b6/wafadmin/Build.py", line 154, in compile\n    raise BuildError(self,self.task_manager.tasks_done)\nBuildError: Build failed\n -> task failed (err #1): \n\t{task: cxx test.cpp -> test_1.o}\n'Checking for library sqlite3
+
+==>
+
+int main() {
+	return 0;
+}
+
+<==
+[1/2] [32mcxx: build/.conf_check_0/test.cpp -> build/.conf_check_0/testbuild/debug/test_1.o
+[0m['/usr/local/bin/g++', '-O0', '-ggdb', '-g3', '-Wno-error=deprecated-declarations', '-Idebug', '-I..', '-D_DEBUG', '-DRUN_SELF_TESTS', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '../test.cpp', '-c', '-o', 'debug/test_1.o']
+[2/2] [33mcxx_link: build/.conf_check_0/testbuild/debug/test_1.o -> build/.conf_check_0/testbuild/debug/testprog
+[0m['/usr/local/bin/g++', 'debug/test_1.o', '-o', 'debug/testprog', '-lsqlite3']
+Checking for NSC location 
+
+Checking for library crypto
+
+==>
+
+int main() {
+	return 0;
+}
+
+<==
+[1/2] [32mcxx: build/.conf_check_0/test.cpp -> build/.conf_check_0/testbuild/debug/test_1.o
+[0m['/usr/local/bin/g++', '-O0', '-ggdb', '-g3', '-Wno-error=deprecated-declarations', '-Idebug', '-I..', '-D_DEBUG', '-DRUN_SELF_TESTS', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '../test.cpp', '-c', '-o', 'debug/test_1.o']
+[2/2] [33mcxx_link: build/.conf_check_0/testbuild/debug/test_1.o -> build/.conf_check_0/testbuild/debug/testprog
+[0m['/usr/local/bin/g++', 'debug/test_1.o', '-o', 'debug/testprog', '-lcrypto']
+Checking for library gmpxx
+
+==>
+
+int main() {
+	return 0;
+}
+
+<==
+[1/2] [32mcxx: build/.conf_check_0/test.cpp -> build/.conf_check_0/testbuild/debug/test_1.o
+[0m['/usr/local/bin/g++', '-O0', '-ggdb', '-g3', '-Wno-error=deprecated-declarations', '-Idebug', '-I..', '-D_DEBUG', '-DRUN_SELF_TESTS', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '../test.cpp', '-c', '-o', 'debug/test_1.o']
+[2/2] [33mcxx_link: build/.conf_check_0/testbuild/debug/test_1.o -> build/.conf_check_0/testbuild/debug/testprog
+[0m['/usr/local/bin/g++', 'debug/test_1.o', '-o', 'debug/testprog', '-lgmpxx']
+Checking for program python
+
+find program='python' paths=[] var='PYTHON' -> '/usr/bin/python'
+
+Checking for Python version >= 2.3
+
+Configuration returned from '/usr/bin/python':
+python_prefix = '/System/Library/Frameworks/Python.framework/Versions/2.7'
+python_SO = '.so'
+python_SYSLIBS = ''
+python_LDFLAGS = '-arch x86_64 -arch i386            -Wl,-F.'
+python_SHLIBS = '-ldl  -framework CoreFoundation'
+python_LIBDIR = '/System/Library/Frameworks/Python.framework/Versions/2.7/lib'
+python_LIBPL = '/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config'
+INCLUDEPY = '/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7'
+Py_ENABLE_SHARED = 0
+MACOSX_DEPLOYMENT_TARGET = '10.10'
+
+
+# Trying LIBDIR: ['/System/Library/Frameworks/Python.framework/Versions/2.7/lib']
+Checking for library python2.7
+
+==>
+
+int main() {
+	return 0;
+}
+
+<==
+[1/2] [32mcxx: build/.conf_check_0/test.cpp -> build/.conf_check_0/testbuild/debug/test_1.o
+[0m['/usr/local/bin/g++', '-O0', '-ggdb', '-g3', '-Wno-error=deprecated-declarations', '-Idebug', '-I..', '-D_DEBUG', '-DRUN_SELF_TESTS', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '../test.cpp', '-c', '-o', 'debug/test_1.o']
+[2/2] [33mcxx_link: build/.conf_check_0/testbuild/debug/test_1.o -> build/.conf_check_0/testbuild/debug/testprog
+[0mld: library not found for -l-framework
+collect2: error: ld returned 1 exit status
+['/usr/local/bin/g++', 'debug/test_1.o', '-o', 'debug/testprog', '-L/System/Library/Frameworks/Python.framework/Versions/2.7/lib', '-lpython2.7', '-ldl', '-l-framework', '-lCoreFoundation']
+command returned 'Traceback (most recent call last):\n  File "/Users/lkloh/rapidnet/.waf-1.5.8-12763e767c863088b8579dbeeb8265b6/wafadmin/Tools/config_c.py", line 345, in run_c_code\n    bld.compile()\n  File "/Users/lkloh/rapidnet/.waf-1.5.8-12763e767c863088b8579dbeeb8265b6/wafadmin/Build.py", line 154, in compile\n    raise BuildError(self,self.task_manager.tasks_done)\nBuildError: Build failed\n -> task failed (err #1): \n\t{task: cxx_link test_1.o -> testprog}\n'
+
+# try again with -L$python_LIBPL (some systems don't install the python library in $prefix/lib)
+Checking for library python2.7
+
+==>
+
+int main() {
+	return 0;
+}
+
+<==
+[1/2] [32mcxx: build/.conf_check_0/test.cpp -> build/.conf_check_0/testbuild/debug/test_1.o
+[0m['/usr/local/bin/g++', '-O0', '-ggdb', '-g3', '-Wno-error=deprecated-declarations', '-Idebug', '-I..', '-D_DEBUG', '-DRUN_SELF_TESTS', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '../test.cpp', '-c', '-o', 'debug/test_1.o']
+[2/2] [33mcxx_link: build/.conf_check_0/testbuild/debug/test_1.o -> build/.conf_check_0/testbuild/debug/testprog
+[0mld: library not found for -l-framework
+collect2: error: ld returned 1 exit status
+['/usr/local/bin/g++', 'debug/test_1.o', '-o', 'debug/testprog', '-L/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config', '-lpython2.7', '-ldl', '-l-framework', '-lCoreFoundation']
+command returned 'Traceback (most recent call last):\n  File "/Users/lkloh/rapidnet/.waf-1.5.8-12763e767c863088b8579dbeeb8265b6/wafadmin/Tools/config_c.py", line 345, in run_c_code\n    bld.compile()\n  File "/Users/lkloh/rapidnet/.waf-1.5.8-12763e767c863088b8579dbeeb8265b6/wafadmin/Build.py", line 154, in compile\n    raise BuildError(self,self.task_manager.tasks_done)\nBuildError: Build failed\n -> task failed (err #1): \n\t{task: cxx_link test_1.o -> testprog}\n'
+
+# try again with -L$prefix/libs, and pythonXY name rather than pythonX.Y (win32)
+Checking for library python27
+
+==>
+
+int main() {
+	return 0;
+}
+
+<==
+[1/2] [32mcxx: build/.conf_check_0/test.cpp -> build/.conf_check_0/testbuild/debug/test_1.o
+[0m['/usr/local/bin/g++', '-O0', '-ggdb', '-g3', '-Wno-error=deprecated-declarations', '-Idebug', '-I..', '-D_DEBUG', '-DRUN_SELF_TESTS', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '../test.cpp', '-c', '-o', 'debug/test_1.o']
+[2/2] [33mcxx_link: build/.conf_check_0/testbuild/debug/test_1.o -> build/.conf_check_0/testbuild/debug/testprog
+[0mld: warning: directory not found for option '-L/System/Library/Frameworks/Python.framework/Versions/2.7/libs'
+ld: library not found for -lpython27
+collect2: error: ld returned 1 exit status
+['/usr/local/bin/g++', 'debug/test_1.o', '-o', 'debug/testprog', '-L/System/Library/Frameworks/Python.framework/Versions/2.7/libs', '-lpython27', '-ldl', '-l-framework', '-lCoreFoundation']
+command returned 'Traceback (most recent call last):\n  File "/Users/lkloh/rapidnet/.waf-1.5.8-12763e767c863088b8579dbeeb8265b6/wafadmin/Tools/config_c.py", line 345, in run_c_code\n    bld.compile()\n  File "/Users/lkloh/rapidnet/.waf-1.5.8-12763e767c863088b8579dbeeb8265b6/wafadmin/Build.py", line 154, in compile\n    raise BuildError(self,self.task_manager.tasks_done)\nBuildError: Build failed\n -> task failed (err #1): \n\t{task: cxx_link test_1.o -> testprog}\n'
+
+### LIB NOT FOUND
+Checking for program python2.7-config
+
+find program='python2.7-config' paths=[] var='PYTHON_CONFIG' -> '/usr/bin/python2.7-config'
+
+Include path for Python extensions (found via python-config --includes): ['/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7']
+Checking for header Python.h
+
+==>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+	void Py_Initialize(void);
+	void Py_Finalize(void);
+#ifdef __cplusplus
+}
+#endif
+int main()
+{
+   Py_Initialize();
+   Py_Finalize();
+   return 0;
+}
+
+<==
+[1/2] [32mcxx: build/.conf_check_0/test.cpp -> build/.conf_check_0/testbuild/debug/test_1.o
+[0m['/usr/local/bin/g++', '-O0', '-ggdb', '-g3', '-Wno-error=deprecated-declarations', '-fno-strict-aliasing', '-Idebug', '-I..', '-I/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7', '-D_DEBUG', '-DRUN_SELF_TESTS', '-DNS3_ASSERT_ENABLE', '-DNS3_LOG_ENABLE', '../test.cpp', '-c', '-o', 'debug/test_1.o']
+[2/2] [33mcxx_link: build/.conf_check_0/testbuild/debug/test_1.o -> build/.conf_check_0/testbuild/debug/testprog
+[0mld: library not found for -l-framework
+collect2: error: ld returned 1 exit status
+['/usr/local/bin/g++', 'debug/test_1.o', '-o', 'debug/testprog', '-ldl', '-l-framework', '-lCoreFoundation']
+command returned 'Traceback (most recent call last):\n  File "/Users/lkloh/rapidnet/.waf-1.5.8-12763e767c863088b8579dbeeb8265b6/wafadmin/Tools/config_c.py", line 345, in run_c_code\n    bld.compile()\n  File "/Users/lkloh/rapidnet/.waf-1.5.8-12763e767c863088b8579dbeeb8265b6/wafadmin/Build.py", line 154, in compile\n    raise BuildError(self,self.task_manager.tasks_done)\nBuildError: Build failed\n -> task failed (err #1): \n\t{task: cxx_link test_1.o -> testprog}\n'Checking for program sudo
+
+find program='sudo' paths=[] var='SUDO' -> '/usr/bin/sudo'
+
+Checking for program hg
+
+find program='hg' paths=[] var='MERCURIAL' -> ''
+
+Checking for program valgrind
+
+find program='valgrind' paths=[] var='VALGRIND' -> ''
+

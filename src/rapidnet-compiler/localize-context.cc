@@ -54,7 +54,7 @@ void FieldNamesTracker::Initialize (ParseTerm* term)
 
 int FieldNamesTracker::FieldPosition (string var)
 {
-  for (uint k = 0; k < fieldNames.size (); k++)
+  for (int k = 0; k < fieldNames.size (); k++) //UINT to INT
     {
       if (fieldNameEq (fieldNames.at (k), var))
         {
@@ -66,7 +66,7 @@ int FieldNamesTracker::FieldPosition (string var)
 
 void FieldNamesTracker::MergeWith (vector<string> names)
 {
-  for (uint k = 0; k < names.size (); k++)
+  for (int k = 0; k < names.size (); k++) //UINT to INT
     {
       string nextStr = names.at (k);
       if (FieldPosition (nextStr) == -1)
@@ -79,7 +79,7 @@ void FieldNamesTracker::MergeWith (vector<string> names)
 void FieldNamesTracker::MergeWith (vector<string> names, int numJoinKeys)
 {
   int count = 0;
-  for (uint k = 0; k < names.size (); k++)
+  for (int k = 0; k < names.size (); k++) //UINT to INT
     {
       string nextStr = names.at (k);
       if (count == numJoinKeys || FieldPosition (nextStr) == -1)
@@ -96,7 +96,7 @@ string FieldNamesTracker::ToString ()
 
   toRet << "FieldNamesTracker<";
 
-  for (uint k = 0; k < fieldNames.size (); k++)
+  for (int k = 0; k < fieldNames.size (); k++) //UINT to INT
     {
       toRet << fieldNames.at (k) << " ";
     }
@@ -163,7 +163,7 @@ LocalizeContext::AddSendRule (OlContext::Rule* nextRule, list<
   vector<string> fieldNames, Ptr<TableStore> tableStore)
 {
   ParseExprList* pe = new ParseExprList ();
-  for (uint k = 0; k < fieldNames.size (); k++)
+  for (int k = 0; k < fieldNames.size (); k++) //UINT to INT
     {
 
       string varName = fieldNames.at (k);
@@ -273,11 +273,11 @@ void LocalizeContext::RewriteRule (OlContext::Rule* nextRule,
   long minLifetime = -1L;
   long zeroLifetime = 0L;
 
-  uint boundary = 0;
+  int boundary = 0; //UINT to INT
 
   list<ParseTerm*> beforeBoundaryTerms;
   FieldNamesTracker* namesTracker = NULL;
-  for (uint k = 0; k < probeTerms.size () - 1; k++)
+  for (int k = 0; k < probeTerms.size () - 1; k++) //UINT to INT
     {
       if (k == 0)
         {
