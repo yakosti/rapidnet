@@ -168,8 +168,9 @@ def build(bld):
     obj = bld.create_ns3_program('rapidnet-app-simulator')
     obj.source = 'rapidnet-app-simulator.cc'
     
-    obj = bld.create_ns3_program('rapidnet-app-emulator')
-    obj.source = 'rapidnet-app-emulator.cc'   
+    #  EXCLUDED FOR COMPILATION
+    #obj = bld.create_ns3_program('rapidnet-app-emulator')
+    #obj.source = 'rapidnet-app-emulator.cc'   
 
     obj = bld.create_ns3_program('pingpong-test')
     obj.source = 'pingpong-test.cc'
@@ -177,14 +178,16 @@ def build(bld):
     obj = bld.create_ns3_program('reachable-test')
     obj.source = 'reachable-test.cc'
 
-    obj = bld.create_ns3_program('pathvector-test')
-    obj.source = 'pathvector-test.cc'
+    # EXCLUDED FOR COMPILATION
+    #obj = bld.create_ns3_program('pathvector-test')
+    #obj.source = 'pathvector-test.cc'
 
     obj = bld.create_ns3_program('epidemic-test')
     obj.source = 'epidemic-test.cc'
 
-    obj = bld.create_ns3_program('emu-ping-pong-test')
-    obj.source = 'emu-ping-pong-test.cc'
+    # EXCLUDED FOR COMPILATION
+    #obj = bld.create_ns3_program('emu-ping-pong-test')
+    #obj.source = 'emu-ping-pong-test.cc'
     
     obj = bld.create_ns3_program('pathvector-prov-test')
     obj.source = 'pathvector-prov-test.cc'
