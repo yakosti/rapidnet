@@ -81,13 +81,16 @@ private:
 	vector<Constraint*> constraints;
 };
 
-typedef vector<TupleNode*> TupleVec;
-typedef vector<RuleNode*> RuleVec;
-typedef map<RuleNode*, TupleVec> RBMap;//Mapping from the rule node to bodies
+typedef list<TupleNode*> TupleList;
+typedef list<RuleNode*> RuleList;
+typedef map<RuleNode*, TupleList> RBMap;//Mapping from the rule node to bodies
 typedef map<RuleNode*, TupleNode*> RHMap;//Mapping from the rule node to the head
+typedef map<TupleNode*, RuleList> TRMap;
 
 class DPGraph: public RefCountBase
 {
+	friend class MiniGraph;
+
 public:
 	//Rule format: head :- body1, body2,...bodyn, cstraint1, cstraint2...
 	DPGraph(Ptr<OlContext>);
@@ -130,10 +133,24 @@ public:
 	~DPGraph();
 
 private:
-	TupleVec tupleNodes;
-	RuleVec ruleNodes;
+	TupleList tupleNodes;
+	RuleList ruleNodes;
 	RHMap outEdgeRL;	//Edges from a rule node to its head tuple
 	RBMap inEdgesRL;	//Edges from a rule node to its body tuples
+};
+
+class MiniGraph: public RefCountBase
+{
+public:
+	MiniGraph(Ptr<DPGraph>);
+
+	void PrintGraph();
+
+private:
+	RHMap outEdgeRL;
+	RBMap inEdgesRL;
+	TRMap outEdgesTP;
+	TRMap inEdgesTP;
 };
 
 #endif /* SDNCONTEXT_H_ */
