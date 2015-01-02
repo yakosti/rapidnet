@@ -18,7 +18,7 @@ def build(bld):
         'localize-context.cc',
         'eca-context.cc',
         'ol-parser.cc',
-        'sdn-context.cc',
+        'sdn-graph.cc',
         'sdn-constraint.cc',
         'sdn-formula.cc',
         ]
@@ -36,7 +36,7 @@ def build(bld):
         'localize-context.h',
         'all-values.h',
         'sdn-constraint.h',
-        'sdn-context.h',
+        'sdn-graph.h',
         'sdn-formula.h'
         ]
 

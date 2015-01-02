@@ -39,7 +39,7 @@
 #include "ns3/command-line.h"
 #include "ns3/log.h"
 
-#include "sdn-context.h"
+#include "sdn-graph.h"
 
 using namespace std;
 using namespace ns3;
@@ -177,7 +177,7 @@ void compile (string overlogFile, bool provenanceEnabled)
 int main (int argc, char** argv)
 {
   LogComponentEnable ("RapidNetDPGraph", LOG_LEVEL_INFO);
-  LogComponentEnable ("SdnContext", LOG_LEVEL_INFO);
+  LogComponentEnable ("SdnContext", LOG_INFO);
 
   string overlogFile;
   string baseoverlogFile = DEFAULT_RN_APP_BASE;

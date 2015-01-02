@@ -8,31 +8,17 @@
 #include <iostream>
 #include <deque>
 #include "ol-context.h"
-#include "sdn-context.h"
+#include "sdn-graph.h"
 
 NS_LOG_COMPONENT_DEFINE ("SdnContext");
 
 void
-Node::PrintNode()
+Node::PrintName()
 {
 	cout << name << endl;
 }
 
 void
-
-RuleNode::UpdateHead(TupleNode* hTuple)
-{
-	head = hTuple;
-}
-
-void
-RuleNode::UpdateBody(TupleNode* bTuple)
-{
-	bodies.push_back(bTuple);
-}
-
-void
-
 RuleNode::UpdateUnif(Variable* v1, Variable* v2)
 {
 	Constraint* unification = new Constraint(Constraint::EQ, v1, v2);
@@ -48,25 +34,12 @@ RuleNode::UpdateConstraint(Constraint* cPtr)
 void
 RuleNode::PrintNode()
 {
-	cout << "\t Rule ID: " << name << endl;
-	cout << "\t Head node:" << endl;
-	cout << "\t \t";
-	head->PrintNode();
-	cout << endl;
-	cout << "\t Body nodes:" << endl;
-	vector<TupleNode*>::iterator itb;
-	for (itb = bodies.begin(); itb != bodies.end(); itb++)
-	{
-	  cout << "\t \t";
-	  (*itb)->PrintNode();
-	  cout << endl;
-	}
-
-	cout << "\t Constraints:" << endl;
-        vector<Constraint*>::iterator itc;
+	cout << "Rule ID: " << name << endl;
+	cout << "Constraints:" << endl;
+	vector<Constraint*>::iterator itc;
 	for (itc = constraints.begin(); itc != constraints.end(); itc++)
 	{
-	  cout << "\t \t";
+	  cout << "\t";
 	  (*itc)->PrintConstraint();
 	  cout << endl;
 	}
@@ -95,22 +68,22 @@ TupleNode::TupleNode(ParseFunctor* tuple):
 			ParsedValue::TypeCode tp = vPtr->GetTypeCode();
 			if (tp == ParsedValue::STR || tp == ParsedValue::IP_ADDR)
 			{
-  			        args.push_back(new Variable(Variable::STRING, true));
+  			    args.push_back(new Variable(Variable::STRING, true));
 				continue;
 			}
 			if (tp == ParsedValue::DOUBLE)
 			{
-			  args.push_back(new Variable(Variable::DOUBLE, true));
+			    args.push_back(new Variable(Variable::DOUBLE, true));
 				continue;
 			}
 			if (tp == ParsedValue::INT32)
 			{
-			  args.push_back(new Variable(Variable::INT, true));
+			    args.push_back(new Variable(Variable::INT, true));
 				continue;
 			}
 			if (tp == ParsedValue::LIST)
 			{
-			  args.push_back(new Variable(Variable::LIST, true));
+			    args.push_back(new Variable(Variable::LIST, true));
 				continue;
 			}
 		}
@@ -148,7 +121,7 @@ TupleNode::~TupleNode()
 
 DPGraph::DPGraph(Ptr<OlContext> ctxt)
 {
-        NS_LOG_FUNCTION(this);
+    NS_LOG_FUNCTION(this);
 	OlContext::RuleList* rules = ctxt->GetRules();
 
 	//Process rule by rule
@@ -160,32 +133,19 @@ DPGraph::DPGraph(Ptr<OlContext> ctxt)
 	NS_LOG_DEBUG("DPGraph construction over!");
 }
 
-DPGraph::~DPGraph()
-{
-	vector<TupleNode*>::iterator itt;
-	for (itt = tnodeList.begin();itt != tnodeList.end();itt++)
-	{
-		delete (*itt);
-	}
-	vector<RuleNode*>::iterator itr;
-	for (itr = rnodeList.begin();itr != rnodeList.end();itr++)
-	{
-		delete (*itr);
-	}
-}
-
 void
 DPGraph::ProcessRule(OlContext::Rule* r)
 //Change return value if needed
 {
-        NS_LOG_FUNCTION(r->ruleID);
+    NS_LOG_FUNCTION(r->ruleID);
 	map<string, Variable*> unifier;
 	RuleNode* rnode = new RuleNode(r->ruleID);
+	ruleNodes.push_back(rnode);
 
-	//Process head tuple
+	//Process the head tuple
 	//Assumption: head tuple does not have duplicate arguments
 	TupleNode* hTuple = ProcessFunctor(r->head, unifier, rnode);
-	rnode->UpdateHead(hTuple);
+	outEdgeRL.insert(RHMap::value_type(rnode, hTuple));
 
 	//Process body terms
 	list<ParseTerm*>::iterator it;
@@ -194,16 +154,17 @@ DPGraph::ProcessRule(OlContext::Rule* r)
 	ParseSelect *select = NULL;
 	for (it = r->terms.begin(); it != r->terms.end(); it++)
 	{
-	        NS_LOG_DEBUG("See how many times I run");
+	    NS_LOG_DEBUG("See how many times I run");
 		functor = dynamic_cast<ParseFunctor *>(*it);
 		if (functor != NULL)
 		{
-		        NS_LOG_DEBUG("Processing Functor:\t" << (functor->fName->ToString()));
+		    NS_LOG_DEBUG("Processing Functor:\t" << (functor->fName->ToString()));
 			TupleNode* bTuple = ProcessFunctor(functor, unifier, rnode);
-			rnode->UpdateBody(bTuple);
+			inEdgesRL[rnode].push_back(bTuple);
 			continue;
 		}
 
+		//Process assignment
 		assign = dynamic_cast<ParseAssign *>(*it);
 		if (assign != NULL)
 		{
@@ -211,6 +172,7 @@ DPGraph::ProcessRule(OlContext::Rule* r)
 			continue;
 		}
 
+		//Process select
 		select = dynamic_cast<ParseSelect *>(*it);
 		if (select != NULL)
 		{
@@ -218,8 +180,6 @@ DPGraph::ProcessRule(OlContext::Rule* r)
 			continue;
 		}
 	}
-
-	rnodeList.push_back(rnode);
 }
 
 TupleNode*
@@ -227,15 +187,16 @@ DPGraph::ProcessFunctor(ParseFunctor* fct,
 						map<string, Variable*>& unifier,
 						RuleNode* rnode)
 {
-        NS_LOG_FUNCTION(this);
+    NS_LOG_FUNCTION(this);
 	//Find corresponding TupleNode. Create one if nothing is found
 	TupleNode* tnode = FindTupleNode(fct);
 	if (tnode == NULL)
 	{
 		tnode = new TupleNode(fct);
-		tnodeList.push_back(tnode);
+		tupleNodes.push_back(tnode);
+		NS_LOG_DEBUG("\n Create a new tuple node:");
+		//tnode->PrintNode();
 	}
-
 
 	//Process arguments of the tuple
 	ParseExprList* headArgs = fct->m_args;
@@ -247,15 +208,14 @@ DPGraph::ProcessFunctor(ParseFunctor* fct,
 	{
 		ParseVar* vPtr = dynamic_cast<ParseVar*>(*itd);
 		pair<map<string,Variable*>::iterator, bool> ret;
-		ret = unifier.insert(pair<string, Variable*>(vPtr->ToString(),
-													(*itv)));
+		ret = unifier.insert(pair<string,Variable*>(vPtr->ToString(), (*itv)));
 		if (ret.second == false)
 		{
 			//Update unification in rnode
 			rnode->UpdateUnif(ret.first->second,(*itv));
 		}
 	}
-        NS_LOG_DEBUG("Reach here?");
+    NS_LOG_DEBUG("Reach here?");
 	return tnode;
 }
 
@@ -426,15 +386,17 @@ TupleNode*
 DPGraph::FindTupleNode(ParseFunctor* tuple)
 {
 	string headName = tuple->fName->name;
+	NS_LOG_DEBUG("Tuple name:" << headName << endl);
 	//TODO:Hash function could be quick in detecting
 	//if a relation exists or not
-	vector<TupleNode*>::iterator it;
-	for (it = tnodeList.begin();it != tnodeList.end();it++)
+	TupleVec::iterator it;
+	NS_LOG_DEBUG("Existing tuple names:");
+	for (it = tupleNodes.begin();it != tupleNodes.end();it++)
 	{
 		string tname = (*it)->GetName();
+		NS_LOG_DEBUG(tname << endl);
 		if (tname == headName)
 		{
-			//cout << "Find duplicate predicate!" << endl;
 			return (*it);
 		}
 	}
@@ -444,19 +406,49 @@ DPGraph::FindTupleNode(ParseFunctor* tuple)
 void
 DPGraph::PrintGraph()
 {
-	cout << "Tuple nodes:" << endl;
-	vector<TupleNode*>::iterator itt;
-	for (itt = tnodeList.begin();itt != tnodeList.end();itt++)
+	cout << "Rule outgoing edges:" << endl;
+	RHMap::iterator itr;
+	for (itr = outEdgeRL.begin();itr != outEdgeRL.end();itr++)
 	{
-		(*itt)->PrintNode();
+		//Print the rule node
+		itr->first->PrintNode();
+		cout << endl;
+
+		//Print the head tuple
+		cout << "Head tuple:";
+		itr->second->PrintNode();
 		cout << endl;
 	}
 
-	cout << "Rule nodes:" << endl;
-	vector<RuleNode*>::iterator itr;
-	for (itr = rnodeList.begin();itr != rnodeList.end();itr++)
+	cout << "Rule incoming edges:" << endl;
+	RBMap::iterator itt;
+	for (itt = inEdgesRL.begin();itt != inEdgesRL.end();itt++)
 	{
-		(*itr)->PrintNode();
+		//Print the name of the rule node
+		itt->first->PrintName();
 		cout << endl;
+
+		//Print tuple nodes connected by the rule node
+		TupleVec::iterator itrv;
+		for (itrv = itt->second.begin(); itrv != itt->second.end(); itrv++)
+		{
+			(*itrv)->PrintNode();
+			cout << endl;
+		}
+	}
+}
+
+DPGraph::~DPGraph()
+{
+	TupleVec::iterator itr;
+	for (itr = tupleNodes.begin();itr != tupleNodes.end();itr++)
+	{
+		delete (*itr);
+	}
+
+	RuleVec::iterator itt;
+	for (itt = ruleNodes.begin();itt != ruleNodes.end();itt++)
+	{
+		delete (*itt);
 	}
 }
