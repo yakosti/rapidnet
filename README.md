@@ -134,3 +134,4 @@ At the top level of the repository, type
 As suggested [here](http://stackoverflow.com/questions/107701/how-can-i-remove-ds-store-files-from-a-git-repository).
 
 8) [Installing on MacOS](https://github.com/lkloh/rapidnet/wiki/Installing-On-MacOS)
+------------------------------------------------------------------------------------
