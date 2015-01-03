@@ -487,6 +487,69 @@ MiniGraph::MiniGraph(Ptr<DPGraph> dpgraph)
 	}
 }
 
+pair<TupleList, RuleList>
+MiniGraph::TopoSort()
+{
+	//TupleList: a list of base tuples
+	//RuleList: an ordered list of rules
+	pair<TupleList, RuleList> topoOrder;
+
+	//Topological sort
+	deque<Node*> processQueue;
+	TRMap::iterator itti;
+	for (itti = inEdgesTP.begin();itti != inEdgesTP.end();itti++)
+	{
+		if (itti->second.size() == 0)
+		{
+			//Record all base tuples
+			topoOrder.first.push_back(itti->first);
+			processQueue.push_back(itti->first);
+		}
+	}
+
+	while (processQueue.size() > 0)
+	{
+		Node* curNode = processQueue.front();
+		processQueue.pop_front();
+		//Process a tuple node
+		TupleNode* tnode = dynamic_cast<TupleNode*>(curNode);
+		if (tnode != NULL)
+		{
+			//Delete the corresponding entry in inEdgesTP
+			inEdgesTP.erase(tnode);
+			RuleList& rlist = outEdgesTP[tnode];
+			RuleList::iterator itrl;
+			for (itrl = rlist.begin();itrl != rlist.end();itrl++)
+			{
+				TupleList& tlist = inEdgesRL[(*itrl)];
+				tlist.remove(tnode);
+				if (tlist.size() == 0)
+				{
+					processQueue.push_back((*itrl));
+				}
+			}
+		}
+
+		RuleNode* rnode = dynamic_cast<RuleNode*>(curNode);
+		if (rnode != NULL)
+		{
+			//Store the topological order of the rule node
+			topoOrder.second.push_back(rnode);
+			//Delete the corresponding entry in inEdgesRL
+			inEdgesRL.erase(rnode);
+			TupleNode* tn = outEdgeRL[rnode];
+			RuleList& rl = inEdgesTP[tn];
+			rl.remove(rnode);
+			if (rl.size() == 0)
+			{
+				processQueue.push_back(tn);
+			}
+		}
+	}
+
+	return topoOrder;
+}
+
 void
 MiniGraph::PrintGraph()
 {

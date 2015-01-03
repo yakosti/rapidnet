@@ -144,6 +144,9 @@ class MiniGraph: public RefCountBase
 public:
 	MiniGraph(Ptr<DPGraph>);
 
+	//Topological sort on the dependency graph
+	pair<TupleList, RuleList> TopoSort();
+
 	void PrintGraph();
 
 private:
