@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <deque>
+#include <list>
 #include "ol-context.h"
 #include "sdn-graph.h"
 
@@ -389,7 +390,7 @@ DPGraph::FindTupleNode(ParseFunctor* tuple)
 	NS_LOG_DEBUG("Tuple name:" << headName << endl);
 	//TODO:Hash function could be quick in detecting
 	//if a relation exists or not
-	TupleVec::iterator it;
+	TupleList::iterator it;
 	NS_LOG_DEBUG("Existing tuple names:");
 	for (it = tupleNodes.begin();it != tupleNodes.end();it++)
 	{
@@ -429,7 +430,7 @@ DPGraph::PrintGraph()
 		cout << endl;
 
 		//Print tuple nodes connected by the rule node
-		TupleVec::iterator itrv;
+		TupleList::iterator itrv;
 		for (itrv = itt->second.begin(); itrv != itt->second.end(); itrv++)
 		{
 			(*itrv)->PrintNode();
@@ -440,15 +441,117 @@ DPGraph::PrintGraph()
 
 DPGraph::~DPGraph()
 {
-	TupleVec::iterator itr;
+	TupleList::iterator itr;
 	for (itr = tupleNodes.begin();itr != tupleNodes.end();itr++)
 	{
 		delete (*itr);
 	}
 
-	RuleVec::iterator itt;
+	RuleList::iterator itt;
 	for (itt = ruleNodes.begin();itt != ruleNodes.end();itt++)
 	{
 		delete (*itt);
 	}
+}
+
+MiniGraph::MiniGraph(Ptr<DPGraph> dpgraph)
+{
+	outEdgeRL = dpgraph->outEdgeRL;
+	inEdgesRL = dpgraph->inEdgesRL;
+
+	TupleList::iterator itt;
+	TupleList& tnodes = dpgraph->tupleNodes;
+	for (itt = tnodes.begin(); itt != tnodes.end(); itt++)
+	{
+		list<RuleNode*> rlist;
+		outEdgesTP.insert(TRMap::value_type((*itt),rlist));
+		inEdgesTP.insert(TRMap::value_type((*itt),rlist));
+	}
+
+	RHMap::iterator itr;
+	RHMap& outE = dpgraph->outEdgeRL;
+	for (itr = outE.begin(); itr != outE.end(); itr++)
+	{
+		inEdgesTP[itr->second].push_back(itr->first);
+	}
+
+	RBMap::iterator itb;
+	RBMap& inE = dpgraph->inEdgesRL;
+	for (itb = inE.begin(); itb != inE.end(); itb++)
+	{
+		TupleList& tvec = itb->second;
+		for (itt = tvec.begin(); itt != tvec.end(); itt++)
+		{
+			outEdgesTP[(*itt)].push_back(itb->first);
+		}
+	}
+}
+
+void
+MiniGraph::PrintGraph()
+{
+	cout << "Rule node edges (outbound):" << endl;
+	RHMap::iterator itrh;
+	for (itrh = outEdgeRL.begin();itrh != outEdgeRL.end();itrh++)
+	{
+		cout << "Rule name and constraints:" << endl;
+		itrh->first->PrintNode();
+		cout << endl;
+		cout << "Rule head:";
+		itrh->second->PrintName();
+		cout << endl;
+	}
+	cout << endl;
+
+	cout << "Rule node edges (inbound):" << endl;
+	RBMap::iterator itrb;
+	TupleList::iterator ittv;
+	for (itrb = inEdgesRL.begin();itrb != inEdgesRL.end();itrb++)
+	{
+		cout << "Rule name:" << endl;
+		itrb->first->PrintName();
+		cout << endl << endl;
+		cout << "Rule bodies:" << endl;
+		TupleList& tnodes = itrb->second;
+		for (ittv = tnodes.begin();ittv != tnodes.end();ittv++)
+		{
+			cout << "\t";
+			(*ittv)->PrintNode();
+			cout << endl;
+		}
+		cout << endl;
+	}
+	cout << endl;
+
+	cout << "Tuple node edges (outbound):" << endl;
+	TRMap::iterator itti;
+	RuleList::iterator itri;
+	for (itti = outEdgesTP.begin();itti != outEdgesTP.end();itti++)
+	{
+		itti->first->PrintNode();
+		cout << endl;
+		RuleList& rnodes = itti->second;
+		for (itri = rnodes.begin();itri != rnodes.end();itri++)
+		{
+			cout << "\t";
+			(*itri)->PrintName();
+			cout << endl;
+		}
+	}
+	cout << endl;
+
+	cout << "Tuple node edges (inbound):" << endl;
+	for (itti = inEdgesTP.begin();itti != inEdgesTP.end();itti++)
+	{
+		itti->first->PrintNode();
+		cout << endl;
+		RuleList& rnodes = itti->second;
+		for (itri = rnodes.begin();itri != rnodes.end();itri++)
+		{
+			cout << "\t";
+			(*itri)->PrintName();
+			cout << endl;
+		}
+	}
+	cout << endl;
 }
