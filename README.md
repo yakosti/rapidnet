@@ -132,3 +132,5 @@ At the top level of the repository, type
     find . -name .DS_Store -print0 | xargs -0 git rm -f --ignore-unmatch
     
 As suggested [here](http://stackoverflow.com/questions/107701/how-can-i-remove-ds-store-files-from-a-git-repository).
+
+8) [Installing on MacOS](https://github.com/lkloh/rapidnet/wiki/Installing-On-MacOS)
