@@ -45,8 +45,6 @@ public:
 };
 
 
-
-
 class Variable: public Term
 {
 public:
@@ -63,7 +61,12 @@ public:
 	 * t: BOOL/INT/DOUBLE/STRING type
 	 * b: free or bound variable?
 	 */
-	Variable(TypeCode t, bool b);
+	Variable(TypeCode t, bool b):varType(t),isbound(b),varCount(0) {
+        Variable::varCount = Variable::varCount + 1;
+		ostringstream countStream;
+		countStream << Variable::varCount;  
+		name =  "variable"+ countStream.str();
+	}
 
 	virtual ~Variable(){}
 
@@ -79,13 +82,15 @@ public:
 		return isbound;
 	}
 
-	void PrintTerm();
+	void PrintTerm() {
+		cout << name;
+	}
 
 private:
 	string name;
 	TypeCode varType;
 	bool isbound;
-	static int varCount;
+	int varCount;
 };
 
 
@@ -110,7 +115,9 @@ public:
 		return range;
 	}
 
-	void PrintSchema();
+	void PrintSchema() {
+		cout << name;	
+	}
 
 private:
 	string name;
@@ -136,7 +143,18 @@ public:
 		return args;
 	}
 
-	void PrintTerm();
+	void PrintTerm() {
+		schema->PrintSchema();
+		cout << "(";
+		vector<Term*>::iterator it;
+		for (it = args.begin(); it != args.end(); it++) {
+		    if (it != args.begin()) {
+		      	cout << ",";
+		    }
+		    (*it)->PrintTerm();
+		}
+		cout << ")";
+	}
 
 private:
 	FunctionSchema* schema;
@@ -154,7 +172,7 @@ class Value: public Term
 public:
 	virtual ~Value(){}
 
-        virtual void PrintTerm(){}
+    virtual void PrintTerm(){}
 };
 
 class IntVal: public Value
@@ -168,7 +186,9 @@ public:
 		return value;
 	}
 
-	void PrintTerm();
+	void PrintTerm() {
+		cout << value;
+	}
 
 private:
 	int value;
@@ -185,7 +205,9 @@ public:
 		return value;
 	}
 
-	void PrintTerm();	
+	void PrintTerm() {
+		cout << value;
+	}	
 
 private:
 	double value;
@@ -202,7 +224,9 @@ public:
 		return value;
 	}
 
-	void PrintTerm();	
+	void PrintTerm() {
+		cout << value;
+	}	
 
 private:
 	string value;
@@ -219,7 +243,9 @@ public:
 		return value;
 	}
 
-	void PrintTerm();
+	void PrintTerm() {
+		cout << value;
+	}
 
 private:
 	bool value;
@@ -251,9 +277,28 @@ public:
 		return rightE;
 	}
 
-	void PrintTerm();
+	void PrintTerm() {
+		leftE->PrintTerm();
+  		PrintOp();
+  		rightE->PrintTerm();
+	}
 
-	void PrintOp();
+	void PrintOp() {
+		switch(op) {
+			case Arithmetic::PLUS:
+			    cout << "+";
+			    break;
+			case Arithmetic::MINUS:
+			    cout << "-";
+			    break;
+			case Arithmetic::TIMES:
+			    cout << "*";
+			    break;
+			case Arithmetic::DIVIDE:
+			    cout << "/";
+			    break;
+		}  
+	}
 
 private:
 	ArithOp op;
@@ -438,7 +483,7 @@ public:
 	Constraint(Operator opt, Term* exprL, Term* exprR):
 		op(opt),leftE(exprL),rightE(exprR){}
 
-	~Constraint();
+	~Constraint() {}
 
 	Operator GetOperator() {
 		return op;
@@ -452,9 +497,28 @@ public:
 		return rightE;
 	}
 
-	void PrintConstraint();
+	void PrintConstraint() {
+		leftE->PrintTerm();
+		PrintOp();
+		rightE->PrintTerm();
+	}
 
-	void PrintOp();
+	void PrintOp() {
+		switch(op){
+		case Constraint::EQ:
+		    cout << "=";
+		    break;
+		case Constraint::NEQ:
+		    cout << "!=";
+		    break;
+		case Constraint::GT:
+		    cout << ">";
+		    break;
+		case Constraint::LT:
+		    cout << "<";
+		    break;
+		}
+	}
 
 private:
 	Operator op;
