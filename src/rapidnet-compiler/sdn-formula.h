@@ -29,6 +29,7 @@ using namespace std;
  */
 
 
+
 /*
  * Term
  */
@@ -37,11 +38,9 @@ class Term
 public:
 	virtual ~Term(){}
 
-	virtual int GetValue() { //dummy return
-		return 0;
-	}
+	virtual int GetValue();
 	
-	virtual void PrintTerm(){}
+	virtual void PrintTerm();
 };
 
 
@@ -67,17 +66,11 @@ public:
 
 	virtual ~Variable(){}
 
-	TypeCode GetVariableType() {
-		return varType;
-	}
+	TypeCode GetVariableType();
+	
+	string GetVariableName();
 
-	string GetVariableName() {
-		return name;
-	}
-
-	bool GetFreeOrBound() {
-		return isbound;
-	}
+	bool GetFreeOrBound();
 
 	void PrintTerm();
 
@@ -93,22 +86,15 @@ private:
 class FunctionSchema
 {
 public:
-	FunctionSchema(string n, vector<Variable::TypeCode> d, Variable::TypeCode r):
-		name(n),domain(d),range(r){}
+	FunctionSchema(string n, vector<Variable::TypeCode>& d, Variable::TypeCode r);
 
-	virtual ~FunctionSchema(){}
+	virtual ~FunctionSchema();
 
-	string GetName() {
-		return name;
-	}
+	string GetName();
 
-	vector<Variable::TypeCode>& GetDomainTypes () {
-		return domain;
-	}
+	vector<Variable::TypeCode>& GetDomainTypes();
 
-	Variable::TypeCode GetRangeType() {
-		return range;
-	}
+	Variable::TypeCode GetRangeType();
 
 	void PrintSchema();
 
@@ -123,18 +109,13 @@ private:
 class UserFunction: public Term
 {
 public:
-	UserFunction(FunctionSchema* s, vector<Term*> a):
-		schema(s),args(a){}
+	UserFunction(FunctionSchema* s, vector<Term*>& a);
 
-	virtual ~UserFunction(){}
+	virtual ~UserFunction();
 
-	FunctionSchema* GetSchema() {
-		return schema;
-	}
+	FunctionSchema* GetSchema();
 
-	vector<Term*>& GetArgs() {
-		return args;
-	}
+	vector<Term*>& GetArgs();
 
 	void PrintTerm();
 
@@ -154,19 +135,21 @@ class Value: public Term
 public:
 	virtual ~Value(){}
 
-        virtual void PrintTerm(){}
+    virtual void PrintTerm(){}
 };
+
+
+
+
 
 class IntVal: public Value
 {
 public:
-	IntVal(int v):value(v){}
+	IntVal(int v);
 
-	virtual ~IntVal(){}
+	virtual ~IntVal();
 
-	int GetIntValue() {
-		return value;
-	}
+	int GetIntValue();
 
 	void PrintTerm();
 
@@ -174,16 +157,19 @@ private:
 	int value;
 };
 
+
+
+
+
+
 class DoubleVal: public Value
 {
 public:
-	DoubleVal(double v):value(v){}
+	DoubleVal(double v);
 
-	~DoubleVal(){}
+	virtual ~DoubleVal();
 
-	double GetDoubleValue() {
-		return value;
-	}
+	double GetDoubleValue();
 
 	void PrintTerm();	
 
@@ -191,16 +177,17 @@ private:
 	double value;
 };
 
+
+
+
 class StringVal: public Value
 {
 public:
-	StringVal(string v):value(v){}
+	StringVal(string v);
 
-	~StringVal(){}
+	virtual ~StringVal();
 
-	string GetStringValue() {
-		return value;
-	}
+	string GetStringValue();
 
 	void PrintTerm();	
 
@@ -208,22 +195,27 @@ private:
 	string value;
 };
 
+
+
+
 class BoolVal: public Value
 {
 public:
-	BoolVal(double v):value(v){}
+	BoolVal(double v);
 
-	~BoolVal(){}
+	~BoolVal();
 
-	bool GetBoolValue() {
-		return value;
-	}
+	bool GetBoolValue();
 
 	void PrintTerm();
 
 private:
 	bool value;
 };
+
+
+
+
 
 class Arithmetic: public Term
 {
@@ -236,20 +228,13 @@ public:
 		DIVIDE
 	};
 
-	Arithmetic(ArithOp opt, Term* exprL, Term* exprR):
-		op(opt), leftE(exprL), rightE(exprR){}
+	Arithmetic(ArithOp opt, Term* exprL, Term* exprR);
 
-	ArithOp GetArithOp() {
-		return op;
-	}
+	ArithOp GetArithOp();
 
-	Term* GetLeftE() {
-		return leftE;
-	}
+	Term* GetLeftE();
 
-	Term* GetRightE() {
-		return rightE;
-	}
+	Term* GetRightE();
 
 	void PrintTerm();
 
@@ -291,7 +276,6 @@ public:
 	Formula(){}
 
 	virtual ~Formula(){}
-
 };
 
 
@@ -307,22 +291,15 @@ public:
 		AND
 	};
 
-	Connective(ConnType ct, Formula* formL, Formula* formR):
-		conntype(ct), leftF(formL), rightF(formR){}
+	Connective(ConnType ct, Formula* formL, Formula* formR);
 
-	virtual ~Connective(){}
+	virtual ~Connective();
 
-	virtual ConnType GetConnType() {
-		return conntype;
-	}
+	virtual ConnType GetConnType();
 
-	virtual Formula* GetLeftF() {
-		return leftF;
-	}
+	virtual Formula* GetLeftF();
 
-	virtual Formula* GetRightF() {
-		return rightF;
-	}
+	virtual Formula* GetRightF();
 
 private:
 	ConnType conntype;
@@ -344,24 +321,15 @@ public:
 		EXISTS
 	};
 
-	Quantifier(QuanType q, vector<Variable*> b, Formula* f):
-		quantype(q),boundVarList(b),fml(f){}
+	Quantifier(QuanType q, vector<Variable*>& b, Formula* f);
 
-	virtual ~Quantifier(){}
+	virtual ~Quantifier();
 
+	virtual vector<Variable*>& GetBoundVariables();
 
-	virtual vector<Variable*>& GetBoundVariables() {
-		return boundVarList;
-	}
+	virtual QuanType GetQuantifierType();
 
-	virtual QuanType GetQuantifierType() {
-		return quantype;
-	}
-
-
-	virtual Formula* GetQuantifierFormula() {
-		return fml;
-	}
+	virtual Formula* GetQuantifierFormula();
 
 private:
 	QuanType quantype;
@@ -375,18 +343,13 @@ private:
 class PredicateSchema
 {
 public:
-	PredicateSchema(string n, vector<Variable::TypeCode> t):
-		name(n),types(t){}
+	PredicateSchema(string n, vector<Variable::TypeCode>& t);
 
-	virtual ~PredicateSchema(){}
+	virtual ~PredicateSchema();
 
-	string GetName() {
-		return name;
-	}
+	string GetName();
 
-	vector<Variable::TypeCode>& GetTypes () {
-		return types;
-	}
+	vector<Variable::TypeCode>& GetTypes();
 
 private:
 	string name;
@@ -399,18 +362,13 @@ private:
 class PredicateInstance: public Formula
 {
 public:
-	PredicateInstance(PredicateSchema* s, vector<Term*> a):
-		schema(s),args(a){}
+	PredicateInstance(PredicateSchema* s, vector<Term*>& a);
 
-	virtual ~PredicateInstance(){}
+	virtual ~PredicateInstance();
 
-	PredicateSchema* GetSchema() {
-		return schema;
-	}
+	PredicateSchema* GetSchema();
 
-	vector<Term*>& GetArgs() {
-		return args;
-	}
+	vector<Term*>& GetArgs();
 
 private:
 	PredicateSchema* schema;
@@ -435,22 +393,15 @@ public:
 		LT,		//Smaller than
 	};
 
-	Constraint(Operator opt, Term* exprL, Term* exprR):
-		op(opt),leftE(exprL),rightE(exprR){}
+	Constraint(Operator opt, Term* exprL, Term* exprR);
 
 	~Constraint();
 
-	Operator GetOperator() {
-		return op;
-	}
+	Operator GetOperator();
 
-	Term* GetLeftE() {
-		return leftE;
-	}
+	Term* GetLeftE();
 
-	Term* GetRightE() {
-		return rightE;
-	}
+	Term* GetRightE();
 
 	void PrintConstraint();
 
