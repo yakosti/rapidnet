@@ -168,9 +168,7 @@ def build(bld):
     obj = bld.create_ns3_program('rapidnet-app-simulator')
     obj.source = 'rapidnet-app-simulator.cc'
     
-    #  EXCLUDED FOR COMPILATION
-    #obj = bld.create_ns3_program('rapidnet-app-emulator')
-    #obj.source = 'rapidnet-app-emulator.cc'   
+
 
     obj = bld.create_ns3_program('pingpong-test')
     obj.source = 'pingpong-test.cc'
@@ -178,16 +176,22 @@ def build(bld):
     obj = bld.create_ns3_program('reachable-test')
     obj.source = 'reachable-test.cc'
 
-    # EXCLUDED FOR COMPILATION
-    #obj = bld.create_ns3_program('pathvector-test')
-    #obj.source = 'pathvector-test.cc'
+
 
     obj = bld.create_ns3_program('epidemic-test')
     obj.source = 'epidemic-test.cc'
 
-    # EXCLUDED FOR COMPILATION
-    #obj = bld.create_ns3_program('emu-ping-pong-test')
-    #obj.source = 'emu-ping-pong-test.cc'
+    # KL LOH - Set ENABLE_EMU 
+    env = bld.env_of_name('default')
+    if env['ENABLE_EMU']:
+        obj = bld.create_ns3_program('rapidnet-app-emulator', ['emu', 'internet-stack'])
+        obj.source = 'rapidnet-app-emulator.cc'   
+
+        obj = bld.create_ns3_program('pathvector-test', ['emu', 'internet-stack'])
+        obj.source = 'pathvector-test.cc'
+
+        obj = bld.create_ns3_program('emu-ping-pong-test', ['emu', 'internet-stack'])
+        obj.source = 'emu-ping-pong-test.cc'
     
     obj = bld.create_ns3_program('pathvector-prov-test')
     obj.source = 'pathvector-prov-test.cc'
