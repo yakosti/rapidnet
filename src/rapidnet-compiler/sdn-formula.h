@@ -38,9 +38,9 @@ class Term
 public:
 	virtual ~Term(){}
 
-	virtual int GetValue();
+	int GetValue();
 	
-	virtual void PrintTerm();
+	void PrintTerm();
 };
 
 
@@ -111,7 +111,7 @@ class UserFunction: public Term
 public:
 	UserFunction(FunctionSchema* s, vector<Term*>& a);
 
-	virtual ~UserFunction();
+	~UserFunction();
 
 	FunctionSchema* GetSchema();
 
@@ -135,7 +135,7 @@ class Value: public Term
 public:
 	virtual ~Value(){}
 
-    virtual void PrintTerm(){}
+    void PrintTerm(){}
 };
 
 
@@ -147,7 +147,7 @@ class IntVal: public Value
 public:
 	IntVal(int v);
 
-	virtual ~IntVal();
+	~IntVal();
 
 	int GetIntValue();
 
@@ -167,7 +167,7 @@ class DoubleVal: public Value
 public:
 	DoubleVal(double v);
 
-	virtual ~DoubleVal();
+	~DoubleVal();
 
 	double GetDoubleValue();
 
@@ -185,7 +185,7 @@ class StringVal: public Value
 public:
 	StringVal(string v);
 
-	virtual ~StringVal();
+	~StringVal();
 
 	string GetStringValue();
 
@@ -293,13 +293,13 @@ public:
 
 	Connective(ConnType ct, Formula* formL, Formula* formR);
 
-	virtual ~Connective();
+	~Connective();
 
-	virtual ConnType GetConnType();
+	ConnType GetConnType();
 
-	virtual Formula* GetLeftF();
+	Formula* GetLeftF();
 
-	virtual Formula* GetRightF();
+	Formula* GetRightF();
 
 private:
 	ConnType conntype;
@@ -323,13 +323,13 @@ public:
 
 	Quantifier(QuanType q, vector<Variable*>& b, Formula* f);
 
-	virtual ~Quantifier();
+	~Quantifier();
 
-	virtual vector<Variable*>& GetBoundVariables();
+	vector<Variable*>& GetBoundVariables();
 
-	virtual QuanType GetQuantifierType();
+	QuanType GetQuantifierType();
 
-	virtual Formula* GetQuantifierFormula();
+	Formula* GetQuantifierFormula();
 
 private:
 	QuanType quantype;
@@ -345,7 +345,7 @@ class PredicateSchema
 public:
 	PredicateSchema(string n, vector<Variable::TypeCode>& t);
 
-	virtual ~PredicateSchema();
+	~PredicateSchema();
 
 	string GetName();
 
@@ -364,7 +364,7 @@ class PredicateInstance: public Formula
 public:
 	PredicateInstance(PredicateSchema* s, vector<Term*>& a);
 
-	virtual ~PredicateInstance();
+	~PredicateInstance();
 
 	PredicateSchema* GetSchema();
 
