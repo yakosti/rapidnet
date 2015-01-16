@@ -308,7 +308,7 @@ Dpool::CreateDerivNode(const TupleNode* head,
 		DerivBody* bodyTuple = new DerivBody((**it), unif, instantiation);
 		elist.push_back(bodyTuple);
 
-		NS_LOG_DEBUG("Collect constraints...");
+		//NS_LOG_DEBUG("Collect constraints...");
 		//Collect constraints
 		//Copy the constraints from child DerivNode
 		clist.Append((**it)->GetConstraints());
@@ -354,7 +354,7 @@ Dpool::GetDerivation(const DerivNode* dnode)
 		GetDerivInst(deriv, (*it)->GetChild(), (*it)->GetMap());
 	}
 	//Get the last derivation of the head tuple
-	DerivInst* dinst = new DerivInst(dnode);
+	DerivInst* dinst = new DerivInst(dnode, VarMap());
 	deriv->AddDerivInst(dinst);
 
 	return deriv;
@@ -433,21 +433,24 @@ Dpool::~Dpool()
 	}
 }
 
-DerivTuple::DerivTuple(const TupleNode* tp)
-{
-	name = tp->GetName();
-	args = tp->GetArgs();
-}
-
 DerivTuple::DerivTuple(const TupleNode* tp, const VarMap& vmap)
 {
 	name = tp->GetName();
 
 	vector<Variable*>::const_iterator itv;
 	const vector<Variable*>& tpArgs = tp->GetArgs();
+	VarMap::const_iterator itm;
 	for (itv = tpArgs.begin(); itv != tpArgs.end(); itv++)
 	{
-		args.push_back(vmap.at((*itv)));
+		itm = vmap.find((*itv));
+		if (itm != vmap.end())
+		{
+			args.push_back(itm->second);
+		}
+		else
+		{
+			args.push_back(*itv);
+		}
 	}
 }
 
@@ -467,54 +470,6 @@ DerivTuple::PrintTuple() const
 	cout << ")";
 }
 
-DerivInst::DerivInst(const DerivNode* dnode)
-{
-	bodies = list<DerivTuple*>();
-	constraints = new CpoolEntryInst();
-	ConstraintList::const_iterator itc;
-	//The head tuple
-	head = new DerivTuple(dnode->GetHeadNode());
-
-	const RuleNode* rl = dnode->GetRuleNode();
-	if (rl != NULL)
-	{
-		ruleName = rl->GetName();
-
-		//Body tuples and unifications
-		const DerivBodyList& dlist = dnode->GetDerivBodies();
-		DerivBodyList::const_iterator itd;
-		for (itd = dlist.begin(); itd != dlist.end(); itd++)
-		{
-			//Body tuples
-			const DerivNode* child = (*itd)->GetChild();
-			const TupleNode* tn = child->GetHeadNode();
-			DerivTuple* dtuple = new DerivTuple(tn, (*itd)->GetMap());
-			bodies.push_back(dtuple);
-
-			//Unifications
-			const ConstraintList& uniList = (*itd)->GetUnif();
-			for (itc = uniList.begin(); itc != uniList.end(); itc++)
-			{
-				Constraint* cst = new Constraint((**itc));
-				constraints->AddConstraint(cst);
-			}
-		}
-
-		const ConstraintList& clist = rl->GetConstraints();
-
-		for (itc = clist.begin(); itc != clist.end(); itc++)
-		{
-			Constraint* cst = new Constraint((**itc));
-			constraints->AddConstraint(cst);
-		}
-	}
-	else
-	{
-		ruleName = "";
-	}
-}
-
-//TODO: Merge two constructors of DerivInst
 DerivInst::DerivInst(const DerivNode* dnode, const VarMap& vmap)
 {
 	bodies = list<DerivTuple*>();

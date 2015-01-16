@@ -168,8 +168,6 @@ private:
 class DerivTuple
 {
 public:
-	DerivTuple(const TupleNode*);
-
 	DerivTuple(const TupleNode*, const VarMap&);
 
 	void PrintTuple() const;
@@ -183,8 +181,6 @@ private:
 class DerivInst
 {
 public:
-	DerivInst(const DerivNode*);
-
 	DerivInst(const DerivNode*, const VarMap&);
 
 	void PrintInst() const;
