@@ -16,7 +16,8 @@
 
 #include <iostream>
 #include <cvc4/cvc4.h> 
-#include "sdn-constraint.h"    
+
+#include "sdn-derivation.h"
 
 using namespace CVC4;
 int main() {

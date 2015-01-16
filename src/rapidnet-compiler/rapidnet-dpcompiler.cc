@@ -40,6 +40,7 @@
 #include "ns3/log.h"
 
 #include "sdn-graph.h"
+#include "sdn-derivation.h"
 
 using namespace std;
 using namespace ns3;
@@ -170,8 +171,11 @@ void compile (string overlogFile, bool provenanceEnabled)
   //  Ptr<DPGraph> graphNdlog = Create<DPGraph>(ctxt);  
   Ptr<DPGraph> graphNdlog (new DPGraph(ctxt));
   //graphNdlog->PrintGraph();
-  Ptr<MiniGraph> miniGraph (new MiniGraph(graphNdlog));
-  miniGraph->PrintGraph();
+  //Ptr<MiniGraph> miniGraph (new MiniGraph(graphNdlog));
+  //miniGraph->PrintGraph();
+  Ptr<Dpool> dpool (new Dpool(graphNdlog));
+  //dpool->PrintDpool();
+  dpool->PrintDerivs();
 }
 
 //NDLog program should be free of recursion
@@ -180,6 +184,9 @@ int main (int argc, char** argv)
 {
   LogComponentEnable ("RapidNetDPGraph", LOG_LEVEL_INFO);
   LogComponentEnable ("SdnContext", LOG_INFO);
+  LogComponentEnable ("Dpool", LOG_LEVEL_INFO);
+  //LogComponentEnable ("Dpool", LOG_INFO);
+  LogComponentEnable ("Formula", LOG_LEVEL_INFO);
 
   string overlogFile;
   string baseoverlogFile = DEFAULT_RN_APP_BASE;
