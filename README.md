@@ -118,7 +118,9 @@ a copy of the development version with the following command:
 
 `-L`: where the implementation of the header files can be found
 
-    Run g++ -I<path-to-rapidnet>/src/rapidnet-compiler -<path-to-rapidnet>/lkloh/rapidnet/src/rapidnet-compiler <file-using-data-structures>.cc -o <file-using-data-structures> -lcvc4
+Run
+
+    g++ -I<path-to-rapidnet>/src/rapidnet-compiler -<path-to-rapidnet>/lkloh/rapidnet/src/rapidnet-compiler <file-using-data-structures>.cc -o <file-using-data-structures> -lcvc4
 
 Example: I clone this folder to my home directory, with path `/home/lkloh`. To run the file `hellpeworld.cpp` which sources the data structure files from rapidnet, I cd into the location where `helloworld.cpp` may be found, and type:
 
@@ -143,7 +145,7 @@ As suggested [here](http://stackoverflow.com/questions/107701/how-can-i-remove-d
 
 2. Get the entire path the the NDLog file you want to run <path-to-file>/<My-NDLog-Program>.olg
 
-3. Run 
+3. Run
 
     ./rapidnet/dpcompiler/dpcompile <path-to-file>/<My-NDLog-Program>.olg
 
