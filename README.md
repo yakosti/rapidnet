@@ -135,3 +135,15 @@ As suggested [here](http://stackoverflow.com/questions/107701/how-can-i-remove-d
 
 8) [Installing on MacOS](https://github.com/lkloh/rapidnet/wiki/Installing-On-MacOS)
 ------------------------------------------------------------------------------------
+
+9) How to run a NDLog program from outside the folder
+-----------------------------------------------------
+
+1. In the command line, cd into the rapidnet folder.
+
+2. Get the entire path the the NDLog file you want to run <path-to-file>/<My-NDLog-Program>.olg
+
+3. Run 
+
+    ./rapidnet/dpcompiler/dpcompile <path-to-file>/<My-NDLog-Program>.olg
+
