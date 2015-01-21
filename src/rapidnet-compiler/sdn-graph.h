@@ -28,23 +28,56 @@ using namespace rapidnet_compiler;
 typedef list<Constraint*> ConstraintList;
 
 /*
+ * Class relation represents the schema of tuples in NDLog program
+ */
+class Relation
+{
+public:
+	Relation(ParseFunctor*);
+
+	int GetArgLength() const {return args.size();}
+
+	//TODO: Can GetArgs function be removed?
+	const vector<Variable*>& GetArgs() const {return args;}
+
+	string GetName() const {return relName;}
+
+	void PrintRelation() const;
+
+	~Relation();
+
+private:
+	string relName;
+	vector<Variable*> args;
+};
+
+/*
+ * Class ConstraintsTemplate represents the schema of constraints in NDLog program
+ */
+class ConstraintsTemplate
+{
+public:
+	void AddConstraint(Constraint*);
+
+	const ConstraintList& GetConstraints() const {return constraints;}
+
+	void PrintTemplate() const;
+
+	~ConstraintsTemplate();
+
+private:
+	ConstraintList constraints;
+};
+
+/*
  * Components of Dependency graph
  */
 class Node
 {
 public:
-	Node(string nName):name(nName){}
-
-	void PrintName() const;
-
-	virtual void PrintNode(){}
-
-	string GetName() const {return name;}
+	virtual void PrintNode() const =0;
 
 	virtual ~Node(){}
-
-protected:
-	string name;
 };
 
 class RuleNode: public Node
@@ -52,18 +85,23 @@ class RuleNode: public Node
 public:
 	RuleNode(string rName);
 
-	const ConstraintList& GetConstraints() const {return constraints;}
+	const ConstraintList& GetConstraints() const {return cTemp->GetConstraints();}
 
 	void UpdateUnif(Variable*, Variable*);
 
 	void UpdateConstraint(Constraint*);
+
+	string GetName() const {return ruleName;}
+
+	void PrintName() const;
 
 	void PrintNode() const;
 
 	~RuleNode();
 
 private:
-	ConstraintList constraints;
+	string ruleName;
+	ConstraintsTemplate* cTemp;
 };
 
 class TupleNode: public Node
@@ -71,18 +109,22 @@ class TupleNode: public Node
 public:
 	TupleNode(ParseFunctor*);
 
-	int GetArgLength() const {return args.size();}
+	int GetArgLength() const {return rel->GetArgLength();}
 
-	const vector<Variable*>& GetArgs() const {return args;}
+	const vector<Variable*>& GetArgs() const {return rel->GetArgs();}
 
 	void Instantiate(VarMap&) const;
+
+	string GetName() const {return rel->GetName();}
+
+	void PrintName() const;
 
 	void PrintNode() const;
 
 	~TupleNode();
 
 private:
-	vector<Variable*> args;
+	Relation* rel;
 };
 
 typedef list<TupleNode*> TupleList;

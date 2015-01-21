@@ -360,6 +360,12 @@ Dpool::GetDerivation(const DerivNode* dnode)
 	return deriv;
 }
 
+const DerivNodeList&
+Dpool::GetDerivNodes(const TupleNode* tnode)
+{
+	return derivations.at(tnode);
+}
+
 void
 Dpool::GetDerivInst(Derivation* deriv, const DerivNode* dnode, const VarMap& vmap)
 {

@@ -13,55 +13,8 @@
 
 NS_LOG_COMPONENT_DEFINE ("SdnContext");
 
-void
-Node::PrintName() const
-{
-	cout << name << endl;
-}
-
-RuleNode::RuleNode(string rName):Node(rName)
-{
-	constraints = ConstraintList();
-}
-
-void
-RuleNode::UpdateUnif(Variable* v1, Variable* v2)
-{
-	Constraint* unification = new Constraint(Constraint::EQ, v1, v2);
-	constraints.push_back(unification);
-}
-
-void
-RuleNode::UpdateConstraint(Constraint* cPtr)
-{
-	constraints.push_back(cPtr);
-}
-
-void
-RuleNode::PrintNode() const
-{
-	cout << "Rule ID: " << name << endl;
-	cout << "Constraints:" << endl;
-	ConstraintList::const_iterator itc;
-	for (itc = constraints.begin(); itc != constraints.end(); itc++)
-	{
-	  cout << "\t";
-	  (*itc)->PrintConstraint();
-	  cout << endl;
-	}
-}
-
-RuleNode::~RuleNode()
-{
-	ConstraintList::iterator it;
-	for (it = constraints.begin();it != constraints.end(); it++)
-	{
-		delete (*it);
-	}
-}
-
-TupleNode::TupleNode(ParseFunctor* tuple):
-		Node(tuple->fName->ToString())
+Relation::Relation(ParseFunctor* tuple):
+		relName(tuple->fName->ToString())
 {
 	deque<ParseExpr*>::iterator it;
 	ParseExprList *pargs = tuple->m_args;
@@ -95,14 +48,112 @@ TupleNode::TupleNode(ParseFunctor* tuple):
 		}
 		else
 		{
+			NS_LOG_ERROR("Non-variable argument");
 			//ERROR: Non-variable argument
 		}
 	}
 }
 
 void
+Relation::PrintRelation() const
+{
+	cout << relName << "(";
+	vector<Variable*>::const_iterator it;
+	for (it = args.begin(); it != args.end(); it++)
+	{
+		  if (it != args.begin())
+		  {
+			 cout << ",";
+		  }
+		  (*it)->PrintTerm();
+	}
+	cout << ")";
+}
+
+Relation::~Relation()
+{
+	vector<Variable*>::iterator it;
+	for (it = args.begin(); it != args.end(); it++)
+	{
+		delete (*it);
+	}
+}
+
+//Implementation of ConstraintsTemplate
+void
+ConstraintsTemplate::AddConstraint(Constraint* cst)
+{
+	constraints.push_back(cst);
+}
+
+ConstraintsTemplate::~ConstraintsTemplate()
+{
+	ConstraintList::iterator it;
+	for (it = constraints.begin(); it != constraints.end(); it++)
+	{
+		delete (*it);
+	}
+}
+
+void
+ConstraintsTemplate::PrintTemplate() const
+{
+	ConstraintList::const_iterator itc;
+	for (itc = constraints.begin(); itc != constraints.end(); itc++)
+	{
+	  cout << "\t";
+	  (*itc)->PrintConstraint();
+	  cout << endl;
+	}
+}
+
+//Implementation of RuleNode
+RuleNode::RuleNode(string rName)
+{
+	ruleName = rName;
+	cTemp = new ConstraintsTemplate();
+}
+
+void
+RuleNode::UpdateUnif(Variable* v1, Variable* v2)
+{
+	Constraint* unification = new Constraint(Constraint::EQ, v1, v2);
+	cTemp->AddConstraint(unification);
+}
+
+void
+RuleNode::UpdateConstraint(Constraint* cPtr)
+{
+	cTemp->AddConstraint(cPtr);
+}
+
+void
+RuleNode::PrintName() const
+{
+	cout << ruleName << endl;
+}
+
+void
+RuleNode::PrintNode() const
+{
+	cout << "Rule ID: " << ruleName << endl;
+	cout << "Constraints:" << endl;
+}
+
+RuleNode::~RuleNode()
+{
+	delete cTemp;
+}
+
+TupleNode::TupleNode(ParseFunctor* tp)
+{
+	rel = new Relation(tp);
+}
+
+void
 TupleNode::Instantiate(VarMap& vmap) const
 {
+	const vector<Variable*>& args = rel->GetArgs();
 	vector<Variable*>::const_iterator itv;
 	for (itv = args.begin();itv != args.end();itv++)
 	{
@@ -112,28 +163,20 @@ TupleNode::Instantiate(VarMap& vmap) const
 }
 
 void
+TupleNode::PrintName() const
+{
+	cout << rel->GetName() << endl;
+}
+
+void
 TupleNode::PrintNode() const
 {
-	cout << name << "(";
-	vector<Variable*>::const_iterator it;
-	for (it = args.begin(); it != args.end(); it++)
-	{
-	  if (it != args.begin())
-	  {
-	     cout << ",";	    
-	  }
-	  (*it)->PrintTerm();
-	}
-	cout << ")";
+	rel->PrintRelation();
 }
 
 TupleNode::~TupleNode()
 {
-	vector<Variable*>::iterator it;
-	for (it = args.begin(); it != args.end(); it++)
-	{
-		delete (*it);
-	}
+	delete rel;
 }
 
 DPGraph::DPGraph(Ptr<OlContext> ctxt)

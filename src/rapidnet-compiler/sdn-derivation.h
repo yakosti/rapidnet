@@ -149,6 +149,8 @@ public:
 
 	Derivation* GetDerivation(const DerivNode*);
 
+	const DerivNodeList& GetDerivNodes(const TupleNode*);
+
 	void GetDerivInst(Derivation*, const DerivNode*, const VarMap&);
 
 	void PrintDpool() const;
