@@ -52,12 +52,30 @@ private:
 };
 
 /*
+ * Class ConstraintsTemplate represents the schema of constraints in NDLog program
+ */
+class ConstraintsTemplate
+{
+public:
+	void AddConstraint(Constraint*);
+
+	const ConstraintList& GetConstraints() const {return constraints;}
+
+	void PrintTemplate() const;
+
+	~ConstraintsTemplate();
+
+private:
+	ConstraintList constraints;
+};
+
+/*
  * Components of Dependency graph
  */
 class Node
 {
 public:
-	virtual void PrintNode(){}
+	virtual void PrintNode() const =0;
 
 	virtual ~Node(){}
 };
@@ -67,7 +85,7 @@ class RuleNode: public Node
 public:
 	RuleNode(string rName);
 
-	const ConstraintList& GetConstraints() const {return constraints;}
+	const ConstraintList& GetConstraints() const {return cTemp->GetConstraints();}
 
 	void UpdateUnif(Variable*, Variable*);
 
@@ -83,7 +101,7 @@ public:
 
 private:
 	string ruleName;
-	ConstraintList constraints;
+	ConstraintsTemplate* cTemp;
 };
 
 class TupleNode: public Node

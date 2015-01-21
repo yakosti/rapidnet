@@ -79,24 +79,52 @@ Relation::~Relation()
 	}
 }
 
+//Implementation of ConstraintsTemplate
+void
+ConstraintsTemplate::AddConstraint(Constraint* cst)
+{
+	constraints.push_back(cst);
+}
 
+ConstraintsTemplate::~ConstraintsTemplate()
+{
+	ConstraintList::iterator it;
+	for (it = constraints.begin(); it != constraints.end(); it++)
+	{
+		delete (*it);
+	}
+}
+
+void
+ConstraintsTemplate::PrintTemplate() const
+{
+	ConstraintList::const_iterator itc;
+	for (itc = constraints.begin(); itc != constraints.end(); itc++)
+	{
+	  cout << "\t";
+	  (*itc)->PrintConstraint();
+	  cout << endl;
+	}
+}
+
+//Implementation of RuleNode
 RuleNode::RuleNode(string rName)
 {
 	ruleName = rName;
-	constraints = ConstraintList();
+	cTemp = new ConstraintsTemplate();
 }
 
 void
 RuleNode::UpdateUnif(Variable* v1, Variable* v2)
 {
 	Constraint* unification = new Constraint(Constraint::EQ, v1, v2);
-	constraints.push_back(unification);
+	cTemp->AddConstraint(unification);
 }
 
 void
 RuleNode::UpdateConstraint(Constraint* cPtr)
 {
-	constraints.push_back(cPtr);
+	cTemp->AddConstraint(cPtr);
 }
 
 void
@@ -110,22 +138,11 @@ RuleNode::PrintNode() const
 {
 	cout << "Rule ID: " << ruleName << endl;
 	cout << "Constraints:" << endl;
-	ConstraintList::const_iterator itc;
-	for (itc = constraints.begin(); itc != constraints.end(); itc++)
-	{
-	  cout << "\t";
-	  (*itc)->PrintConstraint();
-	  cout << endl;
-	}
 }
 
 RuleNode::~RuleNode()
 {
-	ConstraintList::iterator it;
-	for (it = constraints.begin();it != constraints.end(); it++)
-	{
-		delete (*it);
-	}
+	delete cTemp;
 }
 
 TupleNode::TupleNode(ParseFunctor* tp)
