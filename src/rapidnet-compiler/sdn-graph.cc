@@ -13,8 +13,8 @@
 
 NS_LOG_COMPONENT_DEFINE ("SdnContext");
 
-Relation::Relation(ParseFunctor* tuple):
-		relName(tuple->fName->ToString())
+Tuple::Tuple(ParseFunctor* tuple):
+		tpName(tuple->fName->ToString())
 {
 	deque<ParseExpr*>::iterator it;
 	ParseExprList *pargs = tuple->m_args;
@@ -55,9 +55,9 @@ Relation::Relation(ParseFunctor* tuple):
 }
 
 void
-Relation::PrintRelation() const
+Tuple::PrintTuple() const
 {
-	cout << relName << "(";
+	cout << tpName << "(";
 	vector<Variable*>::const_iterator it;
 	for (it = args.begin(); it != args.end(); it++)
 	{
@@ -70,7 +70,7 @@ Relation::PrintRelation() const
 	cout << ")";
 }
 
-Relation::~Relation()
+Tuple::~Tuple()
 {
 	vector<Variable*>::iterator it;
 	for (it = args.begin(); it != args.end(); it++)
@@ -138,6 +138,7 @@ RuleNode::PrintNode() const
 {
 	cout << "Rule ID: " << ruleName << endl;
 	cout << "Constraints:" << endl;
+	cTemp->PrintTemplate();
 }
 
 RuleNode::~RuleNode()
@@ -147,13 +148,13 @@ RuleNode::~RuleNode()
 
 TupleNode::TupleNode(ParseFunctor* tp)
 {
-	rel = new Relation(tp);
+	tuple = new Tuple(tp);
 }
 
 void
 TupleNode::Instantiate(VarMap& vmap) const
 {
-	const vector<Variable*>& args = rel->GetArgs();
+	const vector<Variable*>& args = tuple->GetArgs();
 	vector<Variable*>::const_iterator itv;
 	for (itv = args.begin();itv != args.end();itv++)
 	{
@@ -165,18 +166,31 @@ TupleNode::Instantiate(VarMap& vmap) const
 void
 TupleNode::PrintName() const
 {
-	cout << rel->GetName() << endl;
+	cout << tuple->GetName() << endl;
 }
 
 void
 TupleNode::PrintNode() const
 {
-	rel->PrintRelation();
+	tuple->PrintTuple();
 }
 
 TupleNode::~TupleNode()
 {
-	delete rel;
+	delete tuple;
+}
+
+MetaNode::MetaNode(string pName):
+		predName(pName)
+{
+	headTuples = list<TupleNode*>();
+	bodyTuples = list<TupleNode*>();
+}
+
+void
+MetaNode::AddHeadTuple(TupleNode* tnode)
+{
+	headTuples.push_back(tnode);
 }
 
 DPGraph::DPGraph(Ptr<OlContext> ctxt)
@@ -217,6 +231,23 @@ DPGraph::ProcessRule(OlContext::Rule* r)
 	//Process the head tuple
 	//Assumption: head tuple does not have duplicate arguments
 	TupleNode* hTuple = ProcessFunctor(r->head, unifier, rnode);
+	string tName = hTuple->GetName();
+	MetaList::const_iterator itm;
+	for (itm = metaNodes.begin(); itm != metaNodes.end(); itm++)
+	{
+		if ((*itm)->GetName() == tName)
+		{
+			//Update the corresponding MetaNode
+			(*itm)->AddHeadTuple(hTuple);
+			break;
+		}
+	}
+	if (itm == metaNodes.end())
+	{
+		//Create a new MetaNode
+		metaNodes.push_back(new MetaNode(tName));
+	}
+
 	outEdgeRL.insert(RHMap::value_type(rnode, hTuple));
 
 	//Process body terms
@@ -232,6 +263,23 @@ DPGraph::ProcessRule(OlContext::Rule* r)
 		{
 		    NS_LOG_DEBUG("Processing Functor:\t" << (functor->fName->ToString()));
 			TupleNode* bTuple = ProcessFunctor(functor, unifier, rnode);
+			string bName = bTuple->GetName();
+			MetaList::const_iterator itm;
+			for (itm = metaNodes.begin(); itm != metaNodes.end(); itm++)
+			{
+				if ((*itm)->GetName() == bName)
+				{
+					//Update the corresponding MetaNode
+					(*itm)->AddHeadTuple(bTuple);
+					break;
+				}
+			}
+			if (itm == metaNodes.end())
+			{
+				//Create a new MetaNode
+				metaNodes.push_back(new MetaNode(bName));
+			}
+
 			inEdgesRL[rnode].push_back(bTuple);
 			continue;
 		}
@@ -260,17 +308,13 @@ DPGraph::ProcessFunctor(ParseFunctor* fct,
 						RuleNode* rnode)
 {
     NS_LOG_FUNCTION(this);
-	//Find corresponding TupleNode. Create one if nothing is found
-	TupleNode* tnode = FindTupleNode(fct);
-	if (tnode == NULL)
-	{
-		tnode = new TupleNode(fct);
-		tupleNodes.push_back(tnode);
-		NS_LOG_DEBUG("\n Create a new tuple node:");
-		//tnode->PrintNode();
-	}
 
-	//Process arguments of the tuple
+	TupleNode* tnode = new TupleNode(fct);
+	tupleNodes.push_back(tnode);
+	NS_LOG_DEBUG("\n Create a new tuple node:");
+	//tnode->PrintNode();
+
+	//Create variable mapping between ParseVar and Variable
 	ParseExprList* headArgs = fct->m_args;
 	deque<ParseExpr*>::iterator itd = headArgs->begin();
 	const vector<Variable*>& tArgs = tnode->GetArgs();
@@ -283,7 +327,8 @@ DPGraph::ProcessFunctor(ParseFunctor* fct,
 		ret = unifier.insert(pair<string,Variable*>(vPtr->ToString(), (*itv)));
 		if (ret.second == false)
 		{
-			//Update unification in rnode
+			//The ParseVar exists.
+			//Add a constraint of equality between Variables
 			rnode->UpdateUnif(ret.first->second,(*itv));
 		}
 	}
@@ -466,7 +511,7 @@ DPGraph::FindTupleNode(ParseFunctor* tuple)
 	string headName = tuple->fName->name;
 	NS_LOG_DEBUG("Tuple name:" << headName << endl);
 	//TODO:Hash function could be quick in detecting
-	//if a relation exists or not
+	//if a tuple exists or not
 	TupleList::iterator it;
 	NS_LOG_DEBUG("Existing tuple names:");
 	for (it = tupleNodes.begin();it != tupleNodes.end();it++)
@@ -522,6 +567,12 @@ DPGraph::~DPGraph()
 	for (itr = tupleNodes.begin();itr != tupleNodes.end();itr++)
 	{
 		delete (*itr);
+	}
+
+	MetaList::iterator itm;
+	for (itm = metaNodes.begin();itm != metaNodes.end();itm++)
+	{
+		delete (*itm);
 	}
 
 	RuleList::iterator itt;

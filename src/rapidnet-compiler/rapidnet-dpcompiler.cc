@@ -170,12 +170,12 @@ void compile (string overlogFile, bool provenanceEnabled)
 
   //  Ptr<DPGraph> graphNdlog = Create<DPGraph>(ctxt);  
   Ptr<DPGraph> graphNdlog (new DPGraph(ctxt));
-  //graphNdlog->PrintGraph();
+  graphNdlog->PrintGraph();
   //Ptr<MiniGraph> miniGraph (new MiniGraph(graphNdlog));
   //miniGraph->PrintGraph();
-  Ptr<Dpool> dpool (new Dpool(graphNdlog));
+  //Ptr<Dpool> dpool (new Dpool(graphNdlog));
   //dpool->PrintDpool();
-  dpool->PrintDerivs();
+  //dpool->PrintDerivs();
 }
 
 //NDLog program should be free of recursion
