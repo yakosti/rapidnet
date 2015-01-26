@@ -132,7 +132,7 @@ class Derivation;
 class Dpool: public RefCountBase
 {
 public:
-	Dpool(Ptr<DPGraph>);
+	//Dpool(Ptr<DPGraph>, const Annotation&);
 
 	void ProcessRuleNode(const TupleNode*,
 		   	   	   	   	 const RuleNode*,
