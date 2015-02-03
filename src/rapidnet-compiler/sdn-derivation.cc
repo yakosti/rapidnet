@@ -190,12 +190,12 @@ DerivBody::~DerivBody()
 	}
 }
 
-Dpool::Dpool(Ptr<DPGraph> dpgraph)
+/*Dpool::Dpool(Ptr<DPGraph> dpgraph, const Annotation& invariants)
 {
 	//Perform topological sorting on the dependency graph
 	NS_LOG_INFO("Topological sorting");
 	Ptr<MiniGraph> mGraph (new MiniGraph(dpgraph));
-	pair<TupleListC, RuleListC> topoOrder = mGraph->TopoSort();
+	pair<MetaListC, RuleListC> topoOrder = mGraph->TopoSort(invariants);
 
 	//Create a key in derivations for each tuple node in dpgraph
 	const TupleList& tnlist = dpgraph->GetTupleList();
@@ -231,7 +231,7 @@ Dpool::Dpool(Ptr<DPGraph> dpgraph)
 		//Recursively create DerivNode
 		ProcessRuleNode(head, (*itr), tblist, itc, itv);
 	}
-}
+}*/
 
 void
 Dpool::ProcessRuleNode(const TupleNode* head,

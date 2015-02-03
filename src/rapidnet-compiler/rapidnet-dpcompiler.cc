@@ -171,11 +171,16 @@ void compile (string overlogFile, bool provenanceEnabled)
   //  Ptr<DPGraph> graphNdlog = Create<DPGraph>(ctxt);  
   Ptr<DPGraph> graphNdlog (new DPGraph(ctxt));
   //graphNdlog->PrintGraph();
-  //Ptr<MiniGraph> miniGraph (new MiniGraph(graphNdlog));
+  Ptr<MiniGraph> miniGraph (new MiniGraph(graphNdlog));
   //miniGraph->PrintGraph();
-  Ptr<Dpool> dpool (new Dpool(graphNdlog));
+//  map<string, Formula*> testMap;
+//  Formula fl = Formula();
+//  string testStr = "path";
+//  testMap[testStr] = &fl;
+//  miniGraph->TopoSort(testMap);
+  //Ptr<Dpool> dpool (new Dpool(graphNdlog));
   //dpool->PrintDpool();
-  dpool->PrintDerivs();
+  //dpool->PrintDerivs();
 }
 
 //NDLog program should be free of recursion
@@ -183,10 +188,12 @@ void compile (string overlogFile, bool provenanceEnabled)
 int main (int argc, char** argv)
 {
   LogComponentEnable ("RapidNetDPGraph", LOG_LEVEL_INFO);
-  LogComponentEnable ("SdnContext", LOG_INFO);
-  LogComponentEnable ("Dpool", LOG_LEVEL_INFO);
-  //LogComponentEnable ("Dpool", LOG_INFO);
-  LogComponentEnable ("Formula", LOG_LEVEL_INFO);
+//  LogComponentEnable ("DPGraph", LOG_LEVEL_INFO);
+//  LogComponentEnable ("Formula", LOG_LEVEL_INFO);
+//  LogComponentEnable ("Dpool", LOG_LEVEL_INFO);
+  LogComponentEnable ("Dpool", LOG_INFO);
+  LogComponentEnable ("DPGraph", LOG_INFO);
+  LogComponentEnable ("Formula", LOG_INFO);
 
   string overlogFile;
   string baseoverlogFile = DEFAULT_RN_APP_BASE;

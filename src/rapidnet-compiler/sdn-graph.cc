@@ -11,10 +11,10 @@
 #include "ol-context.h"
 #include "sdn-graph.h"
 
-NS_LOG_COMPONENT_DEFINE ("SdnContext");
+NS_LOG_COMPONENT_DEFINE ("DPGraph");
 
-Relation::Relation(ParseFunctor* tuple):
-		relName(tuple->fName->ToString())
+Tuple::Tuple(ParseFunctor* tuple):
+		tpName(tuple->fName->ToString())
 {
 	deque<ParseExpr*>::iterator it;
 	ParseExprList *pargs = tuple->m_args;
@@ -55,9 +55,9 @@ Relation::Relation(ParseFunctor* tuple):
 }
 
 void
-Relation::PrintRelation() const
+Tuple::PrintTuple() const
 {
-	cout << relName << "(";
+	cout << tpName << "(";
 	vector<Variable*>::const_iterator it;
 	for (it = args.begin(); it != args.end(); it++)
 	{
@@ -70,7 +70,7 @@ Relation::PrintRelation() const
 	cout << ")";
 }
 
-Relation::~Relation()
+Tuple::~Tuple()
 {
 	vector<Variable*>::iterator it;
 	for (it = args.begin(); it != args.end(); it++)
@@ -138,6 +138,9 @@ RuleNode::PrintNode() const
 {
 	cout << "Rule ID: " << ruleName << endl;
 	cout << "Constraints:" << endl;
+	NS_LOG_DEBUG("To print template");
+	cTemp->PrintTemplate();
+	NS_LOG_DEBUG("Template printed");
 }
 
 RuleNode::~RuleNode()
@@ -147,13 +150,13 @@ RuleNode::~RuleNode()
 
 TupleNode::TupleNode(ParseFunctor* tp)
 {
-	rel = new Relation(tp);
+	tuple = new Tuple(tp);
 }
 
 void
 TupleNode::Instantiate(VarMap& vmap) const
 {
-	const vector<Variable*>& args = rel->GetArgs();
+	const vector<Variable*>& args = tuple->GetArgs();
 	vector<Variable*>::const_iterator itv;
 	for (itv = args.begin();itv != args.end();itv++)
 	{
@@ -165,18 +168,37 @@ TupleNode::Instantiate(VarMap& vmap) const
 void
 TupleNode::PrintName() const
 {
-	cout << rel->GetName() << endl;
+	cout << tuple->GetName() << endl;
 }
 
 void
 TupleNode::PrintNode() const
 {
-	rel->PrintRelation();
+	tuple->PrintTuple();
 }
 
 TupleNode::~TupleNode()
 {
-	delete rel;
+	delete tuple;
+}
+
+MetaNode::MetaNode(string pName):
+		predName(pName)
+{
+	headTuples = list<TupleNode*>();
+	bodyTuples = list<TupleNode*>();
+}
+
+void
+MetaNode::AddHeadTuple(TupleNode* tnode)
+{
+	headTuples.push_back(tnode);
+}
+
+void
+MetaNode::PrintNode() const
+{
+	cout << predName << endl;
 }
 
 DPGraph::DPGraph(Ptr<OlContext> ctxt)
@@ -211,13 +233,34 @@ DPGraph::ProcessRule(OlContext::Rule* r)
 {
     NS_LOG_FUNCTION(r->ruleID);
 	map<string, Variable*> unifier;
-	RuleNode* rnode = new RuleNode(r->ruleID);
-	ruleNodes.push_back(rnode);
+	MetaNode* mNode = NULL;
+	RuleNode* rNode = new RuleNode(r->ruleID);
+	ruleNodes.push_back(rNode);
 
 	//Process the head tuple
 	//Assumption: head tuple does not have duplicate arguments
-	TupleNode* hTuple = ProcessFunctor(r->head, unifier, rnode);
-	outEdgeRL.insert(RHMap::value_type(rnode, hTuple));
+	TupleNode* hTuple = ProcessFunctor(r->head, unifier, rNode);
+	string tName = hTuple->GetName();
+	MetaList::const_iterator itm;
+	for (itm = metaNodes.begin(); itm != metaNodes.end(); itm++)
+	{
+		if ((*itm)->GetName() == tName)
+		{
+			//Update the corresponding MetaNode
+			(*itm)->AddHeadTuple(hTuple);
+			mNode = (*itm);
+			break;
+		}
+	}
+	if (itm == metaNodes.end())
+	{
+		//Create a new MetaNode
+		mNode = new MetaNode(tName);
+		metaNodes.push_back(mNode);
+	}
+
+	outEdgeRL.insert(RHMap::value_type(rNode, hTuple));
+	outEdgeRM.insert(RMHMap::value_type(rNode, mNode));
 
 	//Process body terms
 	list<ParseTerm*>::iterator it;
@@ -226,13 +269,33 @@ DPGraph::ProcessRule(OlContext::Rule* r)
 	ParseSelect *select = NULL;
 	for (it = r->terms.begin(); it != r->terms.end(); it++)
 	{
-	    NS_LOG_DEBUG("See how many times I run");
+	    //Process body tuples
 		functor = dynamic_cast<ParseFunctor *>(*it);
 		if (functor != NULL)
 		{
 		    NS_LOG_DEBUG("Processing Functor:\t" << (functor->fName->ToString()));
-			TupleNode* bTuple = ProcessFunctor(functor, unifier, rnode);
-			inEdgesRL[rnode].push_back(bTuple);
+			TupleNode* bTuple = ProcessFunctor(functor, unifier, rNode);
+			string bName = bTuple->GetName();
+			MetaList::const_iterator itm;
+			for (itm = metaNodes.begin(); itm != metaNodes.end(); itm++)
+			{
+				if ((*itm)->GetName() == bName)
+				{
+					//Update the corresponding MetaNode
+					(*itm)->AddHeadTuple(bTuple);
+					mNode = (*itm);
+					break;
+				}
+			}
+			if (itm == metaNodes.end())
+			{
+				//Create a new MetaNode
+				mNode = new MetaNode(bName);
+				metaNodes.push_back(mNode);
+			}
+
+			inEdgesRL[rNode].push_back(bTuple);
+			inEdgesRM[rNode].push_back(mNode);
 			continue;
 		}
 
@@ -240,7 +303,9 @@ DPGraph::ProcessRule(OlContext::Rule* r)
 		assign = dynamic_cast<ParseAssign *>(*it);
 		if (assign != NULL)
 		{
-			ProcessAssign(assign, unifier, rnode);
+			NS_LOG_DEBUG("Process Assignment");
+			NS_LOG_DEBUG(assign->ToString());
+			ProcessAssign(assign, unifier, rNode);
 			continue;
 		}
 
@@ -248,7 +313,7 @@ DPGraph::ProcessRule(OlContext::Rule* r)
 		select = dynamic_cast<ParseSelect *>(*it);
 		if (select != NULL)
 		{
-			ProcessSelect(select, unifier, rnode);
+			ProcessSelect(select, unifier, rNode);
 			continue;
 		}
 	}
@@ -260,17 +325,12 @@ DPGraph::ProcessFunctor(ParseFunctor* fct,
 						RuleNode* rnode)
 {
     NS_LOG_FUNCTION(this);
-	//Find corresponding TupleNode. Create one if nothing is found
-	TupleNode* tnode = FindTupleNode(fct);
-	if (tnode == NULL)
-	{
-		tnode = new TupleNode(fct);
-		tupleNodes.push_back(tnode);
-		NS_LOG_DEBUG("\n Create a new tuple node:");
-		//tnode->PrintNode();
-	}
 
-	//Process arguments of the tuple
+	TupleNode* tnode = new TupleNode(fct);
+	tupleNodes.push_back(tnode);
+	//tnode->PrintNode();
+
+	//Create variable mapping between ParseVar and Variable
 	ParseExprList* headArgs = fct->m_args;
 	deque<ParseExpr*>::iterator itd = headArgs->begin();
 	const vector<Variable*>& tArgs = tnode->GetArgs();
@@ -283,11 +343,11 @@ DPGraph::ProcessFunctor(ParseFunctor* fct,
 		ret = unifier.insert(pair<string,Variable*>(vPtr->ToString(), (*itv)));
 		if (ret.second == false)
 		{
-			//Update unification in rnode
+			//The ParseVar exists.
+			//Add a constraint of equality between Variables
 			rnode->UpdateUnif(ret.first->second,(*itv));
 		}
 	}
-    NS_LOG_DEBUG("Reach here?");
 	return tnode;
 }
 
@@ -466,7 +526,7 @@ DPGraph::FindTupleNode(ParseFunctor* tuple)
 	string headName = tuple->fName->name;
 	NS_LOG_DEBUG("Tuple name:" << headName << endl);
 	//TODO:Hash function could be quick in detecting
-	//if a relation exists or not
+	//if a tuple exists or not
 	TupleList::iterator it;
 	NS_LOG_DEBUG("Existing tuple names:");
 	for (it = tupleNodes.begin();it != tupleNodes.end();it++)
@@ -524,6 +584,12 @@ DPGraph::~DPGraph()
 		delete (*itr);
 	}
 
+	MetaList::iterator itm;
+	for (itm = metaNodes.begin();itm != metaNodes.end();itm++)
+	{
+		delete (*itm);
+	}
+
 	RuleList::iterator itt;
 	for (itt = ruleNodes.begin();itt != ruleNodes.end();itt++)
 	{
@@ -533,49 +599,51 @@ DPGraph::~DPGraph()
 
 MiniGraph::MiniGraph(Ptr<DPGraph> dpgraph)
 {
-	outEdgeRL = dpgraph->outEdgeRL;
-	inEdgesRL = dpgraph->inEdgesRL;
+	outEdgeRM = dpgraph->outEdgeRM;
+	inEdgesRM = dpgraph->inEdgesRM;
 
-	TupleList::iterator itt;
-	TupleList& tnodes = dpgraph->tupleNodes;
-	for (itt = tnodes.begin(); itt != tnodes.end(); itt++)
+	MetaList::iterator itt;
+	MetaList& mNodes = dpgraph->metaNodes;
+	for (itt = mNodes.begin(); itt != mNodes.end(); itt++)
 	{
 		RuleListC rlist;
-		outEdgesTP.insert(TRMap::value_type((*itt),rlist));
-		inEdgesTP.insert(TRMap::value_type((*itt),rlist));
+		outEdgesMT.insert(MTRMap::value_type((*itt),rlist));
+		inEdgesMT.insert(MTRMap::value_type((*itt),rlist));
 	}
 
-	RHMap::iterator itr;
-	RHMap& outE = dpgraph->outEdgeRL;
+	RMHMap::iterator itr;
+	RMHMap& outE = dpgraph->outEdgeRM;
 	for (itr = outE.begin(); itr != outE.end(); itr++)
 	{
-		inEdgesTP[itr->second].push_back(itr->first);
+		inEdgesMT[itr->second].push_back(itr->first);
 	}
 
-	RBMap::iterator itb;
-	RBMap& inE = dpgraph->inEdgesRL;
+	RMBMap::iterator itb;
+	RMBMap& inE = dpgraph->inEdgesRM;
 	for (itb = inE.begin(); itb != inE.end(); itb++)
 	{
-		TupleListC& tvec = itb->second;
-		TupleListC::iterator itp;
+		MetaListC& tvec = itb->second;
+		MetaListC::iterator itp;
 		for (itp = tvec.begin(); itp != tvec.end(); itp++)
 		{
-			outEdgesTP[(*itp)].push_back(itb->first);
+			outEdgesMT[(*itp)].push_back(itb->first);
 		}
 	}
 }
 
-pair<TupleListC, RuleListC>
-MiniGraph::TopoSort()
+pair<MetaListC, RuleListC>
+MiniGraph::TopoSort(const Annotation& invariants)
 {
 	//TupleList: a list of base tuples
 	//RuleList: an ordered list of rules
-	pair<TupleListC, RuleListC> topoOrder;
+	pair<MetaListC, RuleListC> topoOrder;
+	int rNodeNum = outEdgesMT.size();
+	int rNodeCount = 0;	//Record how many rule nodes have been processed
 
-	//Topological sort
+	//ProcessQueue initialization
 	deque<const Node*> processQueue;
-	TRMap::const_iterator itti;
-	for (itti = inEdgesTP.begin();itti != inEdgesTP.end();itti++)
+	MTRMap::const_iterator itti;
+	for (itti = inEdgesMT.begin();itti != inEdgesMT.end();itti++)
 	{
 		if (itti->second.size() == 0)
 		{
@@ -585,43 +653,102 @@ MiniGraph::TopoSort()
 		}
 	}
 
-	while (processQueue.size() > 0)
+	NS_LOG_DEBUG("Elements in Process Queue:" << processQueue.size());
+	//Topological sorting
+	while (rNodeCount < rNodeNum)
 	{
-		const Node* curNode = processQueue.front();
-		processQueue.pop_front();
-		//Process a tuple node
-		const TupleNode* tnode = dynamic_cast<const TupleNode*>(curNode);
-		if (tnode != NULL)
+		NS_LOG_DEBUG("Enter loop");
+		//Non-recursive case
+		if (processQueue.size() > 0)
 		{
-			//Delete the corresponding entry in inEdgesTP
-			inEdgesTP.erase(tnode);
-			RuleListC& rlist = outEdgesTP[tnode];
-			RuleListC::iterator itrl;
-			for (itrl = rlist.begin();itrl != rlist.end();itrl++)
+			const Node* curNode = processQueue.front();
+			cout << endl;
+			NS_LOG_INFO("Processing: ");
+			curNode->PrintNode();
+			cout << endl;
+			processQueue.pop_front();
+			//Process a meta node
+			const MetaNode* mnode = dynamic_cast<const MetaNode*>(curNode);
+			if (mnode != NULL)
 			{
-				TupleListC& tlist = inEdgesRL[(*itrl)];
-				tlist.remove(tnode);
-				if (tlist.size() == 0)
+				//Delete the corresponding entry in inEdgesMT
+				inEdgesMT.erase(mnode);
+				RuleListC& rlist = outEdgesMT[mnode];
+				RuleListC::iterator itrl;
+				for (itrl = rlist.begin();itrl != rlist.end();itrl++)
 				{
-					processQueue.push_back((*itrl));
+					MetaListC& mlist = inEdgesRM[(*itrl)];
+					mlist.remove(mnode);
+					if (mlist.size() == 0)
+					{
+						processQueue.push_back((*itrl));
+					}
 				}
+				outEdgesMT.erase(mnode);
+			}
+
+			//Process a rule node
+			const RuleNode* rnode = dynamic_cast<const RuleNode*>(curNode);
+			if (rnode != NULL)
+			{
+				//Store the topological order of the rule node
+				topoOrder.second.push_back(rnode);
+				//Delete the corresponding entry in inEdgesRM
+				inEdgesRM.erase(rnode);
+				const MetaNode* mtNode = outEdgeRM[rnode];
+				RuleListC& rl = inEdgesMT[mtNode];
+				rl.remove(rnode);
+				if (rl.size() == 0)
+				{
+					processQueue.push_back(mtNode);
+				}
+				outEdgeRM.erase(rnode);
+				rNodeCount++;
 			}
 		}
-
-		const RuleNode* rnode = dynamic_cast<const RuleNode*>(curNode);
-		if (rnode != NULL)
+		//Recursive case
+		else
 		{
-			//Store the topological order of the rule node
-			topoOrder.second.push_back(rnode);
-			//Delete the corresponding entry in inEdgesRL
-			inEdgesRL.erase(rnode);
-			const TupleNode* tn = outEdgeRL[rnode];
-			RuleListC& rl = inEdgesTP[tn];
-			rl.remove(rnode);
-			if (rl.size() == 0)
+			//TODO: Differentiate recursive rules with non-recursive ones
+			MTRMap::iterator itm;
+			for (itm = inEdgesMT.begin(); itm != inEdgesMT.end();itm++)
 			{
-				processQueue.push_back(tn);
+				string tName = itm->first->GetName();
+				Annotation::const_iterator ita = invariants.find(tName);
+				if (ita != invariants.end())
+				{
+					NS_LOG_INFO("Processing: ");
+					itm->first->PrintNode();
+					//A tuple in a recursive loop
+					processQueue.push_back(itm->first);
+
+					RuleListC& rlist = itm->second;
+					RuleListC::const_iterator itrc;
+					for (itrc = rlist.begin(); itrc != rlist.end(); itrc++)
+					{
+						NS_LOG_INFO("Processing: ");
+						(*itrc)->PrintNode();
+						//Add all incoming rule nodes to topoOrder
+						topoOrder.second.push_back((*itrc));
+						//Delete corresponding outbound edges from body tuples
+						MetaListC& ml = inEdgesRM[(*itrc)];
+						MetaListC::const_iterator itml;
+						for (itml = ml.begin();itml != ml.end(); itml++)
+						{
+							MTRMap::iterator itmi = outEdgesMT.find((*itml));
+							if (itmi != outEdgesMT.end())
+							{
+								itmi->second.remove((*itrc));
+							}
+						}
+						inEdgesRM.erase((*itrc));
+						outEdgeRM.erase((*itrc));
+						rNodeCount++;
+					}
+					break;
+				}
 			}
+			inEdgesMT.erase(itm);
 		}
 	}
 
@@ -632,29 +759,29 @@ void
 MiniGraph::PrintGraph() const
 {
 	cout << "Rule node edges (outbound):" << endl;
-	RHMap::const_iterator itrh;
-	for (itrh = outEdgeRL.begin();itrh != outEdgeRL.end();itrh++)
+	RMHMap::const_iterator itrh;
+	for (itrh = outEdgeRM.begin();itrh != outEdgeRM.end();itrh++)
 	{
+		cout << "Rule head:";
+		itrh->second->PrintNode();
+		cout << endl;
 		cout << "Rule name and constraints:" << endl;
 		itrh->first->PrintNode();
-		cout << endl;
-		cout << "Rule head:";
-		itrh->second->PrintName();
 		cout << endl;
 	}
 	cout << endl;
 
 	cout << "Rule node edges (inbound):" << endl;
-	RBMap::const_iterator itrb;
-	TupleListC::const_iterator ittv;
-	for (itrb = inEdgesRL.begin();itrb != inEdgesRL.end();itrb++)
+	RMBMap::const_iterator itrb;
+	MetaListC::const_iterator ittv;
+	for (itrb = inEdgesRM.begin();itrb != inEdgesRM.end();itrb++)
 	{
 		cout << "Rule name:" << endl;
 		itrb->first->PrintName();
 		cout << endl << endl;
 		cout << "Rule bodies:" << endl;
-		const TupleListC& tnodes = itrb->second;
-		for (ittv = tnodes.begin();ittv != tnodes.end();ittv++)
+		const MetaListC& mnodes = itrb->second;
+		for (ittv = mnodes.begin();ittv != mnodes.end();ittv++)
 		{
 			cout << "\t";
 			(*ittv)->PrintNode();
@@ -665,9 +792,9 @@ MiniGraph::PrintGraph() const
 	cout << endl;
 
 	cout << "Tuple node edges (outbound):" << endl;
-	TRMap::const_iterator itti;
+	MTRMap::const_iterator itti;
 	RuleListC::const_iterator itri;
-	for (itti = outEdgesTP.begin();itti != outEdgesTP.end();itti++)
+	for (itti = outEdgesMT.begin();itti != outEdgesMT.end();itti++)
 	{
 		itti->first->PrintNode();
 		cout << endl;
@@ -682,7 +809,7 @@ MiniGraph::PrintGraph() const
 	cout << endl;
 
 	cout << "Tuple node edges (inbound):" << endl;
-	for (itti = inEdgesTP.begin();itti != inEdgesTP.end();itti++)
+	for (itti = inEdgesMT.begin();itti != inEdgesMT.end();itti++)
 	{
 		itti->first->PrintNode();
 		cout << endl;

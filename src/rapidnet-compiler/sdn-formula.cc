@@ -168,8 +168,10 @@ Term* Constraint::GetRightE() {
 
 void Constraint::PrintConstraint()
 {
+  NS_LOG_DEBUG("Printing a constraint");
   leftE->PrintTerm();
   PrintOp();
+  NS_LOG_DEBUG("Printing the right term");
   rightE->PrintTerm();
 }
 
