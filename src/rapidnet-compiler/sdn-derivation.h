@@ -20,110 +20,79 @@ using namespace std;
 
 class DerivNode;
 class DerivBody;
+class RecurNode;
 
-typedef list<DerivNode*> DerivNodeList;
-typedef map<const TupleNode*, DerivNodeList> DerivMap;
-typedef list<DerivBody*> DerivBodyList;
+typedef list<const ConstraintsTemplate*> ConsList;
+typedef list<const Formula*> FormList;
+typedef list<const DerivNode*> DerivNodeList;
+typedef map<string, DerivNodeList> DerivMap;
+typedef list<const RecurNode*> DerivAnnoList;
 
-/*
- * Components of derivation pool
- */
-class CpoolEntryInst
-{
-public:
-	void AddConstraint(Constraint*);
-
-	void PrintInst() const;
-
-	~CpoolEntryInst();
-private:
-	ConstraintList instList;
-};
-
-class CpoolEntry
-{
-public:
-	CpoolEntry(const CpoolEntry&);		//Shallow copy
-
-	CpoolEntry(const ConstraintList& cl, const VarMap& vm):
-		clist(cl),vmap(vm){}
-
-	CpoolEntryInst* GetConstraints() const;
-
-	void PrintEntry();
-
-private:
-	ConstraintList clist;
-	VarMap vmap;
-};
-
-class Cpool
-{
-public:
-	Cpool();
-
-	Cpool(const Cpool&);	//Shallow copy
-
-	void AddConstraint(const CpoolEntry&);
-
-	void Append(const Cpool&);
-
-	void PrintCpool();
-
-private:
-	list<CpoolEntry> constraints;
-};
-
-/*A node in the derivation tree*/
+//TODO: Create a class called BaseNode for base tuples.
+//DerivNode points to a derivation of a body tuple
 class DerivNode
 {
 public:
-	DerivNode(const TupleNode*);
+	DerivNode(const Tuple*);
 
-	DerivNode(const TupleNode* tn, const RuleNode* rn,
-			  const DerivBodyList& dl, const Cpool& cp):
-		head(tn),rl(rn),bodyDerivs(dl),bodyCons(cp){}
+	DerivNode(string tpName, list<Variable::TypeCode>&);
 
-	const TupleNode* GetHeadNode() const{return head;}
+	DerivNode(Tuple* tn, string rn,
+			  ConstraintsTemplate* consTemp,
+			  DerivNodeList dlist, DerivAnnoList dblist,
+			  ConsList clist, FormList flist):
+		head(tn),ruleName(rn),ruleConstraints(consTemp),
+		bodyDerivs(dlist),bodyAnnotations(dblist),
+		allConstraints(clist), allInvs(flist){}
 
-	const RuleNode* GetRuleNode() const{return rl;}
+	void AddRuleName(string);
 
-	const DerivBodyList& GetDerivBodies() const{return bodyDerivs;}
+	void AddChildDerivNode(DerivNode*);
 
-	const Cpool& GetConstraints() const{return bodyCons;}
+	void UpdateConstraint(ConstraintsTemplate*);
 
-	void PrintHeadName();
+	const Tuple* GetHeadTuple() const{return head;}
 
-	void PrintDerivNode();
+	const ConsList& GetCumuConsts() const{return allConstraints;}
 
-	~DerivNode();
-private:
-	const TupleNode* head;
-	const RuleNode* rl;
-	DerivBodyList bodyDerivs;
-	Cpool bodyCons;
+	const ConstraintsTemplate* GetConstraints() const{return ruleConstraints;}
+
+	void PrintHead() const;
+
+	//Just print the current DerivNode
+	virtual void PrintDerivNode() const;
+
+	//Print the whole derivation represented by the DerivNode
+	void PrintDerivation() const;
+
+	virtual ~DerivNode();
+
+protected:
+	Tuple* head;
+	string ruleName;
+	ConstraintsTemplate* ruleConstraints;
+	DerivNodeList bodyDerivs; //Points body tuples that have derivations
+	DerivAnnoList bodyAnnotations; //Points body tuples that have annotations
+
+	ConsList allConstraints; //Cumulative constraints of a derivation
+	FormList allInvs; //Cumulative invariants of a derivation
 };
 
-/*An edge and unification in the derivation tree*/
-class DerivBody
+class RecurNode: public DerivNode
 {
 public:
-	DerivBody(DerivNode* nt, ConstraintList& unif, VarMap& uf):
-		next(nt),unifications(unif),unifLabel(uf){}
+	RecurNode(const Tuple*);
 
-	const ConstraintList& GetUnif() const{return unifications;}
+	void AddInvariant(Formula*);
 
-	const DerivNode* GetChild() const {return next;}
+	const Formula* GetInv() const {return invariant;}
 
-	const VarMap& GetMap() const {return unifLabel;}
+	void PrintDerivNode() const;
 
-	void PrintDerivBody();
-
-	~DerivBody();
+	~RecurNode();
 private:
-	DerivNode* next;
-	ConstraintList unifications;
-	VarMap unifLabel;	//Unification to create constraint instances
+	//TODO: See if invariant can be merged into Constraints
+	Formula* invariant;
 };
 
 class DerivInst;
@@ -132,83 +101,32 @@ class Derivation;
 class Dpool: public RefCountBase
 {
 public:
-	//Dpool(Ptr<DPGraph>, const Annotation&);
+	Dpool(const Ptr<DPGraph>, const AnnotMap&);
 
-	void ProcessRuleNode(const TupleNode*,
+	void ProcessRuleNode(Tuple*,
 		   	   	   	   	 const RuleNode*,
 						 const TupleListC&,
 						 TupleListC::const_iterator,
-						 vector<DerivNodeList::const_iterator>);
+						 vector<DerivNodeList::const_iterator>,
+						 VarMap vmap);
 
-	void CreateDerivNode(const TupleNode*,
+	void CreateDerivNode(Tuple*,
 	 	 	   	   	   	 const RuleNode*,
 						 const TupleListC&,
-						 vector<DerivNodeList::const_iterator>&);
+						 vector<DerivNodeList::const_iterator>&,
+						 VarMap& vmap);
 
-	void UpdateDerivNode(const TupleNode*, DerivNode*);
-
-	Derivation* GetDerivation(const DerivNode*);
-
-	const DerivNodeList& GetDerivNodes(const TupleNode*);
-
-	void GetDerivInst(Derivation*, const DerivNode*, const VarMap&);
+	void UpdateDerivNode(string tpName, DerivNode* dnode);
 
 	void PrintDpool() const;
 
-	void PrintDerivs();
+	void PrintDeriv(string) const;
+
+	void PrintAllDeriv() const;
 
 	~Dpool();
 private:
 	DerivMap derivations;
-};
-
-/*
- * Real instances of a derivation
- */
-
-/*A real instance of a tuple*/
-class DerivTuple
-{
-public:
-	DerivTuple(const TupleNode*, const VarMap&);
-
-	void PrintTuple() const;
-
-private:
-	string name;
-	vector<Variable*> args;
-};
-
-/*An instance of DerivInst represents a real rule application*/
-class DerivInst
-{
-public:
-	DerivInst(const DerivNode*, const VarMap&);
-
-	void PrintInst() const;
-
-	~DerivInst();
-
-private:
-	string ruleName;
-	DerivTuple* head;
-	list<DerivTuple*> bodies;
-	CpoolEntryInst* constraints;
-};
-
-/*A real derivation of a tuple*/
-class Derivation
-{
-public:
-	Derivation();
-
-	void AddDerivInst(DerivInst*);
-
-	void PrintDeriv() const;
-
-	~Derivation();
-private:
-	list<DerivInst*> deriv;
 };
 
 #endif /* SDN_DERIVATION_H_ */
