@@ -35,10 +35,16 @@ class Tuple
 public:
 	Tuple(ParseFunctor*);
 
+	Tuple(string, list<Variable::TypeCode>);
+
+	VarMap CreateVarMap(const Tuple*) const;
+
 	int GetArgLength() const {return args.size();}
 
 	//TODO: Can GetArgs function be removed?
 	const vector<Variable*>& GetArgs() const {return args;}
+
+	list<Variable::TypeCode> GetSchema() const;
 
 	string GetName() const {return tpName;}
 
@@ -57,7 +63,13 @@ private:
 class ConstraintsTemplate
 {
 public:
+	ConstraintsTemplate();
+
+	ConstraintsTemplate(const ConstraintsTemplate&);
+
 	void AddConstraint(Constraint*);
+
+	void ReplaceVar(VarMap&);
 
 	const ConstraintList& GetConstraints() const {return constraints;}
 
@@ -87,6 +99,8 @@ public:
 
 	const ConstraintList& GetConstraints() const {return cTemp->GetConstraints();}
 
+	const ConstraintsTemplate* GetConsTemp() const {return cTemp;}
+
 	void UpdateUnif(Variable*, Variable*);
 
 	void UpdateConstraint(Constraint*);
@@ -111,9 +125,13 @@ public:
 
 	int GetArgLength() const {return tuple->GetArgLength();}
 
+	const Tuple* GetTuple() const {return tuple;}
+
 	const vector<Variable*>& GetArgs() const {return tuple->GetArgs();}
 
 	void Instantiate(VarMap&) const;
+
+	list<Variable::TypeCode> GetSchema() const;
 
 	string GetName() const {return tuple->GetName();}
 
@@ -135,9 +153,13 @@ class MetaNode: public Node
 public:
 	MetaNode(string);
 
+	list<Variable::TypeCode> GetSchema() const;
+
 	string GetName() const {return predName;}
 
 	void AddHeadTuple(TupleNode*);
+
+	void AddBodyTuple(TupleNode*);
 
 	void PrintNode() const;
 
@@ -221,7 +243,8 @@ private:
 	RMBMap inEdgesRM;	//Edges from a rule node to its body metanodes
 };
 
-typedef map<string, Formula*> Annotation;
+typedef pair<Tuple*, Formula*> Annotation;
+typedef map<string, Annotation*> AnnotMap;
 
 class MiniGraph: public RefCountBase
 {
@@ -230,7 +253,9 @@ public:
 
 	//Topological sorting on the dependency graph
 	//in order to obtain an ordered list of rule nodes for processing.
-	pair<MetaListC, RuleListC> TopoSort(const Annotation&);
+	pair<RuleListC, RuleListC> TopoSort(const AnnotMap&) const;
+
+	MetaListC GetBaseTuples() const;
 
 	void PrintGraph() const;
 
