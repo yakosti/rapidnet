@@ -15,8 +15,11 @@
 #include <sstream>
 
 #include "ns3/log.h"
+#include "parser-util.h"
 
 using namespace std;
+using namespace ns3;
+using namespace rapidnet_compiler;
 
 class Variable;
 
@@ -66,13 +69,11 @@ public:
 		LIST
 	};
 
-	/*
-	 * t: BOOL/INT/DOUBLE/STRING type
-	 * b: free or bound variable?
-	 */
-	Variable(TypeCode t, bool b);
+	Variable(TypeCode, bool);
 
-	~Variable(){}
+	Variable(ParseVar*, bool);
+
+	void CreateNewVar();
 
 	TypeCode GetVariableType();
 	
@@ -108,7 +109,7 @@ public:
 
 	Variable::TypeCode GetRangeType();
 
-	void PrintSchema();
+	void PrintName() const;
 
 private:
 	string name;

@@ -16,6 +16,7 @@ NS_LOG_COMPONENT_DEFINE ("DPGraph");
 Tuple::Tuple(ParseFunctor* tuple):
 		tpName(tuple->fName->ToString())
 {
+	Variable* newVar = NULL;
 	deque<ParseExpr*>::iterator it;
 	ParseExprList *pargs = tuple->m_args;
 	for (it = pargs->begin();it != pargs->end(); it++)
@@ -23,29 +24,8 @@ Tuple::Tuple(ParseFunctor* tuple):
 		ParseVar* varPtr = dynamic_cast<ParseVar*>(*it);
 		if (varPtr != NULL)
 		{
-			ValuePtr vPtr = varPtr->value;
-			ParsedValue::TypeCode tp = vPtr->GetTypeCode();
-			//NS_LOG_DEBUG("Tuple typecode:" << tp);
-			if (tp == ParsedValue::STR || tp == ParsedValue::IP_ADDR)
-			{
-  			    args.push_back(new Variable(Variable::STRING, true));
-				continue;
-			}
-			if (tp == ParsedValue::DOUBLE)
-			{
-			    args.push_back(new Variable(Variable::DOUBLE, true));
-				continue;
-			}
-			if (tp == ParsedValue::INT32)
-			{
-			    args.push_back(new Variable(Variable::INT, true));
-				continue;
-			}
-			if (tp == ParsedValue::LIST)
-			{
-			    args.push_back(new Variable(Variable::LIST, true));
-				continue;
-			}
+			newVar = new Variable(varPtr, true);
+			args.push_back(newVar);
 		}
 		else
 		{
@@ -224,16 +204,9 @@ TupleNode::TupleNode(ParseFunctor* tp)
 	tuple = new Tuple(tp);
 }
 
-void
-TupleNode::Instantiate(VarMap& vmap) const
+TupleNode::TupleNode(string tpName, vector<Variable*> args)
 {
-	const vector<Variable*>& args = tuple->GetArgs();
-	vector<Variable*>::const_iterator itv;
-	for (itv = args.begin();itv != args.end();itv++)
-	{
-		Variable* var = new Variable((*itv)->GetVariableType(), false);
-		vmap.insert(VarMap::value_type((*itv), var));
-	}
+	tuple = new Tuple(tpName, args);
 }
 
 list<Variable::TypeCode>
@@ -415,7 +388,8 @@ DPGraph::ProcessRule(OlContext::Rule* r)
 		{
 			NS_LOG_DEBUG("Process Assignment");
 			NS_LOG_DEBUG(assign->ToString());
-			ProcessAssign(assign, unifier, rNode);
+			Constraint* consAssign = ProcessAssign(assign, unifier, rNode);
+			rNode->UpdateConstraint(consAssign);
 			continue;
 		}
 
@@ -423,7 +397,8 @@ DPGraph::ProcessRule(OlContext::Rule* r)
 		select = dynamic_cast<ParseSelect *>(*it);
 		if (select != NULL)
 		{
-			ProcessSelect(select, unifier, rNode);
+			Constraint* consSelect = ProcessSelect(select, unifier, rNode);
+			rNode->UpdateConstraint(consSelect);
 			continue;
 		}
 	}
@@ -435,77 +410,59 @@ DPGraph::ProcessFunctor(ParseFunctor* fct,
 						RuleNode* rnode)
 {
     NS_LOG_FUNCTION(this);
+    Variable* newVar = NULL;
+    vector<Variable*> varVec;
 
-	TupleNode* tnode = new TupleNode(fct);
-	NS_LOG_DEBUG("Process tuple:" << tnode->GetName());
-	tupleNodes.push_back(tnode);
-	//tnode->PrintNode();
+    string tpName = fct->fName->name;
+	NS_LOG_DEBUG("Process tuple:" << tpName);
 
 	//Create variable mapping between ParseVar and Variable
 	ParseExprList* headArgs = fct->m_args;
 	deque<ParseExpr*>::iterator itd = headArgs->begin();
-	const vector<Variable*>& tArgs = tnode->GetArgs();
-	vector<Variable*>::const_iterator itv = tArgs.begin();
 
-	for (;itd != headArgs->end();itd++,itv++)
+	for (;itd != headArgs->end();itd++)
 	{
 		ParseVar* vPtr = dynamic_cast<ParseVar*>(*itd);
-		pair<map<string,Variable*>::iterator, bool> ret;
-		ret = unifier.insert(pair<string,Variable*>(vPtr->ToString(), (*itv)));
-		if (ret.second == false)
-		{
-			//The ParseVar exists.
-			//Add a constraint of equality between Variables
-			rnode->UpdateUnif(ret.first->second,(*itv));
-		}
+		newVar = ProcessParseVar(vPtr, unifier, rnode);
+		varVec.push_back(newVar);
 	}
+
+	TupleNode* tnode = new TupleNode(tpName, varVec);
+	tupleNodes.push_back(tnode);
 	return tnode;
 }
 
 //Process ParseAssign
-void
+Constraint*
 DPGraph::ProcessAssign(ParseAssign* assign,
 					   map<string, Variable*>& unifier,
 					   RuleNode* rnode)
 {
-	map<string, Variable*>::iterator it;
-	it = unifier.find(assign->var->ToString());
-	if (it == unifier.end())
-	{
-		//ERROR: Variable in assignment does not appear in any functor
-		return;
-	}
-
-	//Assumption: Right operator of assignment is value
-	ParseVal* pValue = dynamic_cast<ParseVal*>(assign->assign);
-	if (pValue == NULL)
-	{
-		//ERROR: Not a ParseVal
-		return;
-	}
-	Term* vPtr = ProcessParseVal(pValue);
-	Constraint* cPtr = new Constraint(Constraint::EQ, it->second, vPtr);
-	rnode->UpdateConstraint(cPtr);
+	Term* leftE = ProcessExpr(assign->var, unifier, rnode);
+	Term* rightE = ProcessExpr(assign->assign, unifier, rnode);
+	return (new Constraint(Constraint::EQ, leftE, rightE));
 }
 
-void
+Constraint*
 DPGraph::ProcessSelect(ParseSelect* select,
 					   map<string, Variable*>& unifier,
 					   RuleNode* rnode)
 {
 	ParseBool* pBool = select->select;
-	Constraint* cPtr = ProcessConstraint(pBool, unifier);
-	rnode->UpdateConstraint(cPtr);
+	Constraint* cPtr = ProcessConstraint(pBool, unifier, rnode);
+	return cPtr;
 }
 
 Term*
 DPGraph::ProcessExpr(ParseExpr* pExpr,
-					 map<string, Variable*>& unifier)
+					 map<string, Variable*>& unifier,
+					 RuleNode* rnode)
 {
 	//Currently we do not process ParseBool in ParseExpr
 	ParseVal* pVal = NULL;
 	ParseVar* pVar = NULL;
 	ParseMath* pMath = NULL;
+	ParseFunction* pFunc = NULL;
 
 	pVal = dynamic_cast<ParseVal*>(pExpr);
 	if (pVal != NULL)
@@ -517,19 +474,25 @@ DPGraph::ProcessExpr(ParseExpr* pExpr,
 	if (pVar != NULL)
 	{
 		//pExpr points to ParseVar type
-		return ProcessParseVar(pVar, unifier);
+		return ProcessParseVar(pVar, unifier, rnode);
 	}
 	pMath = dynamic_cast<ParseMath*>(pExpr);
 	if (pMath != NULL)
 	{
 		//pExpr points to ParseBool type
-		return ProcessParseMath(pMath, unifier);
+		return ProcessParseMath(pMath, unifier, rnode);
+	}
+	pFunc = dynamic_cast<ParseFunction*>(pExpr);
+	if (pFunc != NULL)
+	{
+		//pExpr points to ParseFunction type
+		return ProcessParseFunc(pFunc, unifier, rnode);
 	}
 
 	return NULL;
 }
 
-Term*
+Value*
 DPGraph::ProcessParseVal(ParseVal* value)
 {
 	ValuePtr vPtr = value->Value();
@@ -554,32 +517,63 @@ DPGraph::ProcessParseVal(ParseVal* value)
 	return NULL;
 }
 
-Term*
+Variable*
 DPGraph::ProcessParseVar(ParseVar* pVar,
-						 map<string, Variable*>& unifier)
+						 map<string, Variable*>& unifier,
+						 RuleNode* rnode)
 {
-	map<string, Variable*>::iterator it;
-	it = unifier.find(pVar->ToString());
-	if (it == unifier.end())
+	Variable* newVar = new Variable(pVar, true);
+	pair<map<string,Variable*>::iterator, bool> ret;
+	ret = unifier.insert(pair<string,Variable*>(pVar->ToString(), newVar));
+	if (ret.second == false)
 	{
-		return NULL;
+		//The ParseVar exists.
+		//Add a constraint of equality between Variables
+		rnode->UpdateUnif(ret.first->second,newVar);
 	}
-	else
-	{
-		return it->second;
-	}
+
+	return newVar;
 }
 
-Term*
+UserFunction*
 DPGraph::ProcessParseFunc(ParseFunction* pFunc,
-						  map<string, Variable*>& unifier)
+						  map<string, Variable*>& unifier,
+						  RuleNode* rnode)
 {
+	//Assumption: All terms in pFunc should be variables
+	//TODO: return value undefined for UserFunction
+	NS_LOG_WARN("Return value undetermined!");
 
+	vector<Variable::TypeCode> tlist;
+	vector<Term*> vlist;
+	ParseVar* pVar = NULL;
+	Variable* var = NULL;
+	map<string, Variable*>::iterator itm;
+	ParseExprList* funcArgs = pFunc->m_args;
+	ParseExprList::iterator itp;
+	for (itp = funcArgs->begin();itp != funcArgs->end();itp++)
+	{
+		pVar = dynamic_cast<ParseVar*>(*itp);
+		if (pVar == NULL)
+		{
+			NS_LOG_ERROR("Non-variable found in function args!");
+		}
+
+		var = ProcessParseVar(pVar, unifier, rnode);
+		tlist.push_back(var->GetVariableType());
+		vlist.push_back(var);
+	}
+
+	string funcName = pFunc->Name();
+	FunctionSchema* scm = new FunctionSchema(funcName, tlist, Variable::STRING);
+	UserFunction* func = new UserFunction(scm, vlist);
+	return func;
 }
 
 Constraint*
 DPGraph::ProcessConstraint(ParseBool* pBool,
-						   map<string, Variable*>& unifier)
+						   map<string, Variable*>& unifier,
+						   RuleNode* rnode)
 {
 	Constraint::Operator op;
 	if (pBool->oper == ParseBool::EQ)
@@ -599,14 +593,15 @@ DPGraph::ProcessConstraint(ParseBool* pBool,
 		op = Constraint::LT;
 	}
 
-	Term* leftE = ProcessExpr(pBool->lhs, unifier);
-	Term* rightE = ProcessExpr(pBool->rhs, unifier);
+	Term* leftE = ProcessExpr(pBool->lhs, unifier, rnode);
+	Term* rightE = ProcessExpr(pBool->rhs, unifier, rnode);
 	return (new Constraint(op, leftE, rightE));
 }
 
-Term*
+Arithmetic*
 DPGraph::ProcessParseMath(ParseMath* pMath,
-						  map<string, Variable*>& unifier)
+						  map<string, Variable*>& unifier,
+						  RuleNode* rnode)
 {
 	Arithmetic::ArithOp op;
 	if (pMath->oper == ParseMath::PLUS)
@@ -626,8 +621,8 @@ DPGraph::ProcessParseMath(ParseMath* pMath,
 		op = Arithmetic::DIVIDE;
 	}
 
-	Term* leftE = ProcessExpr(pMath->lhs, unifier);
-	Term* rightE = ProcessExpr(pMath->rhs, unifier);
+	Term* leftE = ProcessExpr(pMath->lhs, unifier, rnode);
+	Term* rightE = ProcessExpr(pMath->rhs, unifier, rnode);
 	return (new Arithmetic(op, leftE, rightE));
 }
 
@@ -834,7 +829,7 @@ MiniGraph::TopoSort(const AnnotMap& invariants) const
 				AnnotMap::const_iterator ita = invariants.find(tName);
 				if (ita != invariants.end())
 				{
-					NS_LOG_INFO("Processing: ");
+					NS_LOG_INFO("Processing Recursive Node: ");
 					itm->first->PrintNode();
 					//A tuple in a recursive loop
 					processQueue.push_back(itm->first);
@@ -843,13 +838,16 @@ MiniGraph::TopoSort(const AnnotMap& invariants) const
 					RuleListC::const_iterator itrc;
 					for (itrc = rlist.begin(); itrc != rlist.end(); itrc++)
 					{
-						NS_LOG_INFO("Processing: ");
+						NS_LOG_INFO("Processing the incoming rule: ");
 						(*itrc)->PrintNode();
 						//Add all incoming rule nodes to topoOrder
+						NS_LOG_DEBUG("Reach here??");
 						topoOrder.second.push_back((*itrc));
 						//Delete corresponding outbound edges from body tuples
+
 						MetaListC& ml = inEdgesRMCopy[(*itrc)];
 						MetaListC::const_iterator itml;
+						NS_LOG_DEBUG("Reach here???");
 						for (itml = ml.begin();itml != ml.end(); itml++)
 						{
 							MTRMap::iterator itmi = outEdgesMTCopy.find((*itml));
@@ -862,6 +860,7 @@ MiniGraph::TopoSort(const AnnotMap& invariants) const
 						outEdgeRMCopy.erase((*itrc));
 						rNodeCount++;
 					}
+					NS_LOG_DEBUG("Reach here?");
 					break;
 				}
 			}
