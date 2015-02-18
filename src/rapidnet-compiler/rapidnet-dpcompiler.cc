@@ -41,7 +41,9 @@
 
 #include "sdn-graph.h"
 #include "sdn-derivation.h"
+#include <cvc4/cvc4.h>
 
+using namespace CVC4;
 using namespace std;
 using namespace ns3;
 using namespace ns3::rapidnet_compiler;
@@ -183,6 +185,11 @@ void compile (string overlogFile, bool provenanceEnabled)
   //dpool->PrintDerivs();
 }
 
+void test_cvc4() {
+  ExprManager em;
+  //Expr helloworld = em.mkVar("Hello World!", em.booleanType());
+}
+
 //NDLog program should be free of recursion
 //NDLog program should have no value as argument of a tuple
 int main (int argc, char** argv)
@@ -194,6 +201,7 @@ int main (int argc, char** argv)
   LogComponentEnable ("Dpool", LOG_INFO);
   LogComponentEnable ("DPGraph", LOG_INFO);
   LogComponentEnable ("Formula", LOG_INFO);
+  test_cvc4();
 
   string overlogFile;
   string baseoverlogFile = DEFAULT_RN_APP_BASE;
