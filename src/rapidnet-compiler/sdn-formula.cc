@@ -31,7 +31,25 @@ void Term::PrintTerm(){}
 Connective::Connective(ConnType ct, Formula* formL, Formula* formR):
     conntype(ct), leftF(formL), rightF(formR){}
 
-Connective::~Connective(){}
+Connective::Connective(const Connective& ct)
+{
+	conntype = ct.conntype;
+	leftF = ct.leftF->Clone();
+	rightF = ct.rightF->Clone();
+}
+
+void
+Connective::VarReplace(const VarMap& vmap)
+{
+	leftF->VarReplace(vmap);
+	rightF->VarReplace(vmap);
+}
+
+Connective*
+Connective::Clone()
+{
+	return (new Connective(*this));
+}
 
 Connective::ConnType Connective::GetConnType() {
   return conntype;
@@ -45,6 +63,25 @@ Formula* Connective::GetRightF() {
   return rightF;
 }
 
+void
+Connective::Print() const
+{
+	leftF->Print();
+	switch (conntype)
+	{
+	case Connective::IMPLY: cout << " -> ";break;
+	case Connective::OR: cout << " \\/ ";break;
+	case Connective::AND: cout << " /\\ ";break;
+	}
+	rightF->Print();
+}
+
+Connective::~Connective()
+{
+	delete leftF;
+	delete rightF;
+}
+
 /* ***************************** FORMULA *********************************** */
 
 
@@ -53,11 +90,38 @@ Formula* Connective::GetRightF() {
 /* ***************************** Quantifier *********************************** */
 
 
-Quantifier::Quantifier(QuanType q, vector<Variable*>& b, Formula* f):
+Quantifier::Quantifier(QuanType q, const vector<Variable*>& b, Formula* f):
   quantype(q),boundVarList(b),fml(f){}
 
-Quantifier::~Quantifier(){}
+Quantifier::Quantifier(const Quantifier& qtf)
+{
+	quantype = qtf.quantype;
+	boundVarList = qtf.boundVarList;
+	fml = qtf.fml->Clone();
+}
 
+void
+Quantifier::VarReplace(const VarMap& vmap)
+{
+	Variable* varSubst = NULL;
+	vector<Variable*>::iterator it;
+	for (it = boundVarList.begin();it != boundVarList.end();it++)
+	{
+		VarMap::const_iterator varIt= vmap.find((*it));
+		if (varIt != vmap.end())
+		{
+			(*it) = varIt->second;
+		}
+	}
+
+	fml->VarReplace(vmap);
+}
+
+Quantifier*
+Quantifier::Clone()
+{
+	return (new Quantifier(*this));
+}
 
 vector<Variable*>& Quantifier::GetBoundVariables() {
   return boundVarList;
@@ -69,6 +133,31 @@ Quantifier::QuanType Quantifier::GetQuantifierType() {
 
 Formula* Quantifier::GetQuantifierFormula() {
   return fml;
+}
+
+void
+Quantifier::Print() const
+{
+	switch(quantype)
+	{
+	case Quantifier::FORALL: cout << "forall "; break;
+	case Quantifier::EXISTS: cout << "exists "; break;
+	}
+
+	vector<Variable*>::const_iterator it;
+	for (it = boundVarList.begin();it != boundVarList.end();it++)
+	{
+		(*it)->PrintTerm();
+		cout << ",";
+	}
+
+	cout << endl;
+	fml->Print();
+}
+
+Quantifier::~Quantifier()
+{
+	delete fml;
 }
 
 /* ***************************** Quantifier *********************************** */
@@ -83,7 +172,11 @@ Formula* Quantifier::GetQuantifierFormula() {
 PredicateSchema::PredicateSchema(string n, vector<Variable::TypeCode>& t):
   name(n),types(t){}
 
-PredicateSchema::~PredicateSchema(){}
+PredicateSchema::PredicateSchema(const PredicateSchema& predSch)
+{
+	name = predSch.name;
+	types = predSch.types;
+}
 
 string PredicateSchema::GetName() {
   return name;
@@ -91,6 +184,12 @@ string PredicateSchema::GetName() {
 
 vector<Variable::TypeCode>& PredicateSchema::GetTypes () {
   return types;
+}
+
+void
+PredicateSchema::Print() const
+{
+	cout << name;
 }
 
 /* ************************* PredicateSchema ******************************** */
@@ -107,7 +206,34 @@ vector<Variable::TypeCode>& PredicateSchema::GetTypes () {
 PredicateInstance::PredicateInstance(PredicateSchema* s, vector<Term*>& a):
   schema(s),args(a){}
 
-PredicateInstance::~PredicateInstance(){}
+PredicateInstance::PredicateInstance(const PredicateInstance& pred)
+{
+	schema = new PredicateSchema(*(pred.schema));
+
+	Term* newTerm = NULL;
+	vector<Term*>::const_iterator it;
+	for (it = args.begin();it != args.end();it++)
+	{
+		newTerm = (*it)->Clone();
+		args.push_back(newTerm);
+	}
+}
+
+PredicateInstance*
+PredicateInstance::Clone()
+{
+	return (new PredicateInstance(*this));
+}
+
+void
+PredicateInstance::VarReplace(const VarMap& vmap)
+{
+	vector<Term*>::iterator it;
+	for (it = args.begin();it != args.end();it++)
+	{
+		(*it)->ReplaceVar(vmap);
+	}
+}
 
 PredicateSchema* PredicateInstance::GetSchema() {
   return schema;
@@ -115,6 +241,29 @@ PredicateSchema* PredicateInstance::GetSchema() {
 
 vector<Term*>& PredicateInstance::GetArgs() {
   return args;
+}
+
+void
+PredicateInstance::Print() const
+{
+	schema->Print();
+	cout << "(";
+	vector<Term*>::const_iterator it;
+	for (it = args.begin();it != args.end();it++)
+	{
+		if (it != args.begin())
+		{
+			cout << ",";
+		}
+
+		(*it)->PrintTerm();
+	}
+	cout << ")";
+}
+
+PredicateInstance::~PredicateInstance()
+{
+	delete schema;
 }
 
 /* ************************* PredicateInstance ******************************** */
@@ -154,6 +303,12 @@ Constraint::~Constraint()
 	}
 }
 
+Constraint*
+Constraint::Clone()
+{
+	return (new Constraint(*this));
+}
+
 Constraint::Operator Constraint::GetOperator() {
   return op;
 }
@@ -166,7 +321,8 @@ Term* Constraint::GetRightE() {
   return rightE;
 }
 
-void Constraint::PrintConstraint()
+void
+Constraint::Print() const
 {
   NS_LOG_DEBUG("Printing a constraint");
   leftE->PrintTerm();
@@ -176,7 +332,7 @@ void Constraint::PrintConstraint()
 }
 
 void
-Constraint::ReplaceVar(const VarMap& vmap)
+Constraint::VarReplace(const VarMap& vmap)
 {
 	VarMap::const_iterator itm;
 	Variable* var = dynamic_cast<Variable*>(leftE);
@@ -208,7 +364,9 @@ Constraint::ReplaceVar(const VarMap& vmap)
 	}
 }
 
-void Constraint::PrintOp() {
+void
+Constraint::PrintOp() const
+{
   switch(op){
   case Constraint::EQ:
     cout << "=";
@@ -235,10 +393,48 @@ void Constraint::PrintOp() {
 
 int Variable::varCount = 0;
 
-Variable::Variable(TypeCode t, bool b):varType(t),isbound(b) {
-  Variable::varCount = Variable::varCount + 1;
+/*
+* t: BOOL/INT/DOUBLE/STRING type
+* b: free or bound variable?
+*/
+Variable::Variable(TypeCode t, bool b):
+		varType(t),isbound(b)
+{
+	CreateNewVar();
+}
+
+Variable::Variable(ParseVar* varPtr, bool b):
+		isbound(b)
+{
+	ValuePtr vPtr = varPtr->value;
+	ParsedValue::TypeCode tp = vPtr->GetTypeCode();
+	//NS_LOG_DEBUG("Tuple typecode:" << tp);
+	if (tp == ParsedValue::STR || tp == ParsedValue::IP_ADDR)
+	{
+		varType = Variable::STRING;
+	}
+	if (tp == ParsedValue::DOUBLE)
+	{
+		varType = Variable::DOUBLE;
+	}
+	if (tp == ParsedValue::INT32)
+	{
+		varType = Variable::INT;
+	}
+	if (tp == ParsedValue::LIST)
+	{
+		varType = Variable::LIST;
+	}
+
+	CreateNewVar();
+}
+
+void
+Variable::CreateNewVar()
+{
+	Variable::varCount = Variable::varCount + 1;
 	ostringstream countStream;
-	countStream << Variable::varCount;  
+	countStream << Variable::varCount;
 	name =  "variable"+ countStream.str();
 }
 
@@ -293,7 +489,7 @@ Variable::TypeCode FunctionSchema::GetRangeType() {
   return range;
 }
 
-void FunctionSchema::PrintSchema() {
+void FunctionSchema::PrintName() const {
   cout << name;
 }
 
@@ -325,6 +521,8 @@ UserFunction::UserFunction(const UserFunction& uf)
 
 UserFunction::~UserFunction()
 {
+	delete schema;
+
 	vector<Term*>::iterator it;
 	for (it = args.begin(); it != args.end(); it++)
 	{
@@ -373,7 +571,8 @@ UserFunction::Clone()
 }
 
 void UserFunction::PrintTerm() {
-  schema->PrintSchema();
+  NS_LOG_DEBUG("Printing function...");
+  schema->PrintName();
   cout << "(";
   vector<Term*>::iterator it;
   for (it = args.begin(); it != args.end(); it++)
@@ -526,21 +725,6 @@ Arithmetic::Arithmetic(const Arithmetic& ari)
 	rightE = ari.rightE->Clone();
 }
 
-Arithmetic::~Arithmetic()
-{
-	Variable* var = dynamic_cast<Variable*>(leftE);
-	if (var == NULL)
-	{
-		delete leftE;
-	}
-
-	var = dynamic_cast<Variable*>(rightE);
-	if (var == NULL)
-	{
-		delete rightE;
-	}
-}
-
 Arithmetic::ArithOp Arithmetic::GetArithOp() {
   return op;
 }
@@ -613,6 +797,21 @@ void Arithmetic::PrintOp() {
     cout << "/";
     break;
   }  
+}
+
+Arithmetic::~Arithmetic()
+{
+	Variable* var = dynamic_cast<Variable*>(leftE);
+	if (var == NULL)
+	{
+		delete leftE;
+	}
+
+	var = dynamic_cast<Variable*>(rightE);
+	if (var == NULL)
+	{
+		delete rightE;
+	}
 }
 
 /* *************************** Arithmetic *********************************** */

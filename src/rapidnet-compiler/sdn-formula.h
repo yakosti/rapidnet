@@ -15,8 +15,11 @@
 #include <sstream>
 
 #include "ns3/log.h"
+#include "parser-util.h"
 
 using namespace std;
+using namespace ns3;
+using namespace rapidnet_compiler;
 
 class Variable;
 
@@ -66,13 +69,11 @@ public:
 		LIST
 	};
 
-	/*
-	 * t: BOOL/INT/DOUBLE/STRING type
-	 * b: free or bound variable?
-	 */
-	Variable(TypeCode t, bool b);
+	Variable(TypeCode, bool);
 
-	~Variable(){}
+	Variable(ParseVar*, bool);
+
+	void CreateNewVar();
 
 	TypeCode GetVariableType();
 	
@@ -108,7 +109,7 @@ public:
 
 	Variable::TypeCode GetRangeType();
 
-	void PrintSchema();
+	void PrintName() const;
 
 private:
 	string name;
@@ -125,8 +126,6 @@ public:
 
 	UserFunction(const UserFunction&);
 
-	~UserFunction();
-
 	FunctionSchema* GetSchema();
 
 	vector<Term*>& GetArgs();
@@ -136,6 +135,8 @@ public:
 	void ReplaceVar(const VarMap&);
 
 	void PrintTerm();
+
+	~UserFunction();
 
 private:
 	FunctionSchema* schema;
@@ -260,8 +261,6 @@ public:
 
 	Arithmetic(const Arithmetic&);
 
-	~Arithmetic();
-
 	ArithOp GetArithOp();
 
 	Term* GetLeftE();
@@ -275,6 +274,8 @@ public:
 	void PrintTerm();
 
 	void PrintOp();
+
+	~Arithmetic();
 
 private:
 	ArithOp op;
@@ -311,6 +312,12 @@ class Formula
 public:
 	Formula(){}
 
+	virtual Formula* Clone() =0;
+
+	virtual void Print() const =0;
+
+	virtual void VarReplace(const VarMap&) =0;
+
 	virtual ~Formula(){}
 };
 
@@ -329,13 +336,21 @@ public:
 
 	Connective(ConnType ct, Formula* formL, Formula* formR);
 
-	~Connective();
+	Connective(const Connective&);
+
+	void VarReplace(const VarMap&);
+
+	Connective* Clone();
 
 	ConnType GetConnType();
 
 	Formula* GetLeftF();
 
 	Formula* GetRightF();
+
+	void Print() const;
+
+	~Connective();
 
 private:
 	ConnType conntype;
@@ -357,15 +372,23 @@ public:
 		EXISTS
 	};
 
-	Quantifier(QuanType q, vector<Variable*>& b, Formula* f);
+	Quantifier(QuanType q, const vector<Variable*>& b, Formula* f);
 
-	~Quantifier();
+	Quantifier(const Quantifier&);
+
+	void VarReplace(const VarMap&);
+
+	Quantifier* Clone();
 
 	vector<Variable*>& GetBoundVariables();
 
 	QuanType GetQuantifierType();
 
 	Formula* GetQuantifierFormula();
+
+	void Print() const;
+
+	~Quantifier();
 
 private:
 	QuanType quantype;
@@ -381,11 +404,13 @@ class PredicateSchema
 public:
 	PredicateSchema(string n, vector<Variable::TypeCode>& t);
 
-	~PredicateSchema();
+	PredicateSchema(const PredicateSchema&);
 
 	string GetName();
 
 	vector<Variable::TypeCode>& GetTypes();
+
+	void Print() const;
 
 private:
 	string name;
@@ -400,11 +425,19 @@ class PredicateInstance: public Formula
 public:
 	PredicateInstance(PredicateSchema* s, vector<Term*>& a);
 
-	~PredicateInstance();
+	PredicateInstance(const PredicateInstance&);
+
+	void VarReplace(const VarMap&);
+
+	PredicateInstance* Clone();
 
 	PredicateSchema* GetSchema();
 
 	vector<Term*>& GetArgs();
+
+	void Print() const;
+
+	~PredicateInstance();
 
 private:
 	PredicateSchema* schema;
@@ -435,17 +468,19 @@ public:
 
 	~Constraint();
 
+	Constraint* Clone();
+
 	Operator GetOperator();
 
 	Term* GetLeftE();
 
 	Term* GetRightE();
 
-	void ReplaceVar(const VarMap&);
+	void VarReplace(const VarMap&);
 
-	void PrintConstraint();
+	void Print() const;
 
-	void PrintOp();
+	void PrintOp() const;
 
 private:
 	Operator op;

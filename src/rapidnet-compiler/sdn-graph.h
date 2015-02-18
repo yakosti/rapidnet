@@ -35,10 +35,19 @@ class Tuple
 public:
 	Tuple(ParseFunctor*);
 
+	Tuple(string, list<Variable::TypeCode>);
+
+	Tuple(string name, vector<Variable*> vargs):
+		tpName(name),args(vargs){}
+
+	VarMap CreateVarMap(const Tuple*) const;
+
 	int GetArgLength() const {return args.size();}
 
 	//TODO: Can GetArgs function be removed?
 	const vector<Variable*>& GetArgs() const {return args;}
+
+	list<Variable::TypeCode> GetSchema() const;
 
 	string GetName() const {return tpName;}
 
@@ -57,7 +66,13 @@ private:
 class ConstraintsTemplate
 {
 public:
+	ConstraintsTemplate();
+
+	ConstraintsTemplate(const ConstraintsTemplate&);
+
 	void AddConstraint(Constraint*);
+
+	void ReplaceVar(VarMap&);
 
 	const ConstraintList& GetConstraints() const {return constraints;}
 
@@ -87,6 +102,8 @@ public:
 
 	const ConstraintList& GetConstraints() const {return cTemp->GetConstraints();}
 
+	const ConstraintsTemplate* GetConsTemp() const {return cTemp;}
+
 	void UpdateUnif(Variable*, Variable*);
 
 	void UpdateConstraint(Constraint*);
@@ -109,11 +126,15 @@ class TupleNode: public Node
 public:
 	TupleNode(ParseFunctor*);
 
+	TupleNode(string, vector<Variable*>);
+
 	int GetArgLength() const {return tuple->GetArgLength();}
+
+	const Tuple* GetTuple() const {return tuple;}
 
 	const vector<Variable*>& GetArgs() const {return tuple->GetArgs();}
 
-	void Instantiate(VarMap&) const;
+	list<Variable::TypeCode> GetSchema() const;
 
 	string GetName() const {return tuple->GetName();}
 
@@ -135,9 +156,13 @@ class MetaNode: public Node
 public:
 	MetaNode(string);
 
+	list<Variable::TypeCode> GetSchema() const;
+
 	string GetName() const {return predName;}
 
 	void AddHeadTuple(TupleNode*);
+
+	void AddBodyTuple(TupleNode*);
 
 	void PrintNode() const;
 
@@ -180,30 +205,37 @@ public:
 							  map<string, Variable*>&,
 							  RuleNode*);
 
-	void ProcessAssign(ParseAssign*,
+	Constraint* ProcessAssign(ParseAssign*,
 					   map<string, Variable*>&,
 					   RuleNode*);
 
-	void ProcessSelect(ParseSelect*,
+	Constraint* ProcessSelect(ParseSelect*,
 					   map<string, Variable*>&,
 					   RuleNode*);
 
+	//In Process* functions, the argument of RuleNode*
+	//is added for update of variable unification.
 	Term* ProcessExpr(ParseExpr*,
-					  map<string, Variable*>&);
+					  map<string, Variable*>&,
+					  RuleNode* rnode);
 
-	Term* ProcessParseVal(ParseVal*);
+	Value* ProcessParseVal(ParseVal*);
 
-	Term* ProcessParseVar(ParseVar*,
-						  map<string, Variable*>&);
+	Variable* ProcessParseVar(ParseVar*,
+						  map<string, Variable*>&,
+						  RuleNode*);
 
-	Term* ProcessParseFunc(ParseFunction*,
-						   map<string, Variable*>&);
+	UserFunction* ProcessParseFunc(ParseFunction*,
+						   map<string, Variable*>&,
+						   RuleNode*);
 
 	Constraint* ProcessConstraint(ParseBool*,
-								  map<string, Variable*>&);
+								  map<string, Variable*>&,
+								  RuleNode*);
 
-	Term* ProcessParseMath(ParseMath*,
-						   map<string, Variable*>&);
+	Arithmetic* ProcessParseMath(ParseMath*,
+						   map<string, Variable*>&,
+						   RuleNode*);
 
 	TupleNode* FindTupleNode(ParseFunctor*);
 
@@ -221,7 +253,8 @@ private:
 	RMBMap inEdgesRM;	//Edges from a rule node to its body metanodes
 };
 
-typedef map<string, Formula*> Annotation;
+typedef pair<Tuple*, Formula*> Annotation;
+typedef map<string, Annotation*> AnnotMap;
 
 class MiniGraph: public RefCountBase
 {
@@ -230,7 +263,9 @@ public:
 
 	//Topological sorting on the dependency graph
 	//in order to obtain an ordered list of rule nodes for processing.
-	pair<MetaListC, RuleListC> TopoSort(const Annotation&);
+	pair<RuleListC, RuleListC> TopoSort(const AnnotMap&) const;
+
+	MetaListC GetBaseTuples() const;
 
 	void PrintGraph() const;
 

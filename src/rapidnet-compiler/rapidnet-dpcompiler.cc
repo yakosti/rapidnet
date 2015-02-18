@@ -171,19 +171,39 @@ void compile (string overlogFile, bool provenanceEnabled)
   Ptr<TableStore> tableStore (new TableStore (ctxt));
   parseOverlog (overlogFile, ctxt, tableStore, provenanceEnabled);
 
-  //  Ptr<DPGraph> graphNdlog = Create<DPGraph>(ctxt);  
   Ptr<DPGraph> graphNdlog (new DPGraph(ctxt));
   //graphNdlog->PrintGraph();
-  Ptr<MiniGraph> miniGraph (new MiniGraph(graphNdlog));
+
+  //Ptr<MiniGraph> miniGraph (new MiniGraph(graphNdlog));
   //miniGraph->PrintGraph();
-//  map<string, Formula*> testMap;
-//  Formula fl = Formula();
-//  string testStr = "path";
-//  testMap[testStr] = &fl;
-//  miniGraph->TopoSort(testMap);
-  //Ptr<Dpool> dpool (new Dpool(graphNdlog));
+
+  AnnotMap testMap;
+  list<Variable::TypeCode> tlist (4, Variable::STRING);
+  Tuple tp = Tuple("verifyPath", tlist);
+  const vector<Variable*> arg = tp.GetArgs();
+  IntVal* value = new IntVal(10000);
+  Constraint* ct = new Constraint(Constraint::EQ, arg[0], value);
+  Quantifier qtf (Quantifier::FORALL, arg, ct);
+  Annotation anno (&tp, &qtf);
+  testMap.insert(AnnotMap::value_type("verifyPath", &anno));
+  Ptr<Dpool> dpool (new Dpool(graphNdlog, testMap));
   //dpool->PrintDpool();
-  //dpool->PrintDerivs();
+  dpool->PrintAllDeriv();
+
+//  pair<RuleListC, RuleListC> p = miniGraph->TopoSort(testMap);
+//  RuleListC::const_iterator it;
+//  cout << "Rules:" << endl;
+//  for (it = p.first.begin();it != p.first.end();it++)
+//  {
+//	  (*it)->PrintName();
+//	  cout << ",";
+//  }
+//  cout << endl;
+//  for (it = p.second.begin();it != p.second.end();it++)
+//  {
+//	  (*it)->PrintName();
+//	  cout << ",";
+//  }
 }
 
 /* 
@@ -603,7 +623,9 @@ int main (int argc, char** argv)
   LogComponentEnable ("Dpool", LOG_INFO);
   LogComponentEnable ("DPGraph", LOG_INFO);
   LogComponentEnable ("Formula", LOG_INFO);
- 
+//  LogComponentEnable ("DPGraph", LOG_INFO);
+//  LogComponentEnable ("Formula", LOG_INFO);
+
   // test cvc4 parsing
   testIntegersArithmetic();
   testVariables();
