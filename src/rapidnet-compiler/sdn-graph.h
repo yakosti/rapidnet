@@ -37,6 +37,9 @@ public:
 
 	Tuple(string, list<Variable::TypeCode>);
 
+	Tuple(string name, vector<Variable*> vargs):
+		tpName(name),args(vargs){}
+
 	VarMap CreateVarMap(const Tuple*) const;
 
 	int GetArgLength() const {return args.size();}
@@ -123,13 +126,13 @@ class TupleNode: public Node
 public:
 	TupleNode(ParseFunctor*);
 
+	TupleNode(string, vector<Variable*>);
+
 	int GetArgLength() const {return tuple->GetArgLength();}
 
 	const Tuple* GetTuple() const {return tuple;}
 
 	const vector<Variable*>& GetArgs() const {return tuple->GetArgs();}
-
-	void Instantiate(VarMap&) const;
 
 	list<Variable::TypeCode> GetSchema() const;
 
@@ -202,30 +205,37 @@ public:
 							  map<string, Variable*>&,
 							  RuleNode*);
 
-	void ProcessAssign(ParseAssign*,
+	Constraint* ProcessAssign(ParseAssign*,
 					   map<string, Variable*>&,
 					   RuleNode*);
 
-	void ProcessSelect(ParseSelect*,
+	Constraint* ProcessSelect(ParseSelect*,
 					   map<string, Variable*>&,
 					   RuleNode*);
 
+	//In Process* functions, the argument of RuleNode*
+	//is added for update of variable unification.
 	Term* ProcessExpr(ParseExpr*,
-					  map<string, Variable*>&);
+					  map<string, Variable*>&,
+					  RuleNode* rnode);
 
-	Term* ProcessParseVal(ParseVal*);
+	Value* ProcessParseVal(ParseVal*);
 
-	Term* ProcessParseVar(ParseVar*,
-						  map<string, Variable*>&);
+	Variable* ProcessParseVar(ParseVar*,
+						  map<string, Variable*>&,
+						  RuleNode*);
 
-	Term* ProcessParseFunc(ParseFunction*,
-						   map<string, Variable*>&);
+	UserFunction* ProcessParseFunc(ParseFunction*,
+						   map<string, Variable*>&,
+						   RuleNode*);
 
 	Constraint* ProcessConstraint(ParseBool*,
-								  map<string, Variable*>&);
+								  map<string, Variable*>&,
+								  RuleNode*);
 
-	Term* ProcessParseMath(ParseMath*,
-						   map<string, Variable*>&);
+	Arithmetic* ProcessParseMath(ParseMath*,
+						   map<string, Variable*>&,
+						   RuleNode*);
 
 	TupleNode* FindTupleNode(ParseFunctor*);
 

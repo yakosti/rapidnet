@@ -393,10 +393,48 @@ Constraint::PrintOp() const
 
 int Variable::varCount = 0;
 
-Variable::Variable(TypeCode t, bool b):varType(t),isbound(b) {
-  Variable::varCount = Variable::varCount + 1;
+/*
+* t: BOOL/INT/DOUBLE/STRING type
+* b: free or bound variable?
+*/
+Variable::Variable(TypeCode t, bool b):
+		varType(t),isbound(b)
+{
+	CreateNewVar();
+}
+
+Variable::Variable(ParseVar* varPtr, bool b):
+		isbound(b)
+{
+	ValuePtr vPtr = varPtr->value;
+	ParsedValue::TypeCode tp = vPtr->GetTypeCode();
+	//NS_LOG_DEBUG("Tuple typecode:" << tp);
+	if (tp == ParsedValue::STR || tp == ParsedValue::IP_ADDR)
+	{
+		varType = Variable::STRING;
+	}
+	if (tp == ParsedValue::DOUBLE)
+	{
+		varType = Variable::DOUBLE;
+	}
+	if (tp == ParsedValue::INT32)
+	{
+		varType = Variable::INT;
+	}
+	if (tp == ParsedValue::LIST)
+	{
+		varType = Variable::LIST;
+	}
+
+	CreateNewVar();
+}
+
+void
+Variable::CreateNewVar()
+{
+	Variable::varCount = Variable::varCount + 1;
 	ostringstream countStream;
-	countStream << Variable::varCount;  
+	countStream << Variable::varCount;
 	name =  "variable"+ countStream.str();
 }
 
@@ -451,7 +489,7 @@ Variable::TypeCode FunctionSchema::GetRangeType() {
   return range;
 }
 
-void FunctionSchema::PrintSchema() {
+void FunctionSchema::PrintName() const {
   cout << name;
 }
 
@@ -533,7 +571,8 @@ UserFunction::Clone()
 }
 
 void UserFunction::PrintTerm() {
-  schema->PrintSchema();
+  NS_LOG_DEBUG("Printing function...");
+  schema->PrintName();
   cout << "(";
   vector<Term*>::iterator it;
   for (it = args.begin(); it != args.end(); it++)

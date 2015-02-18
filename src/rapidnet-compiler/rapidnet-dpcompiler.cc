@@ -174,15 +174,15 @@ void compile (string overlogFile, bool provenanceEnabled)
   //Ptr<MiniGraph> miniGraph (new MiniGraph(graphNdlog));
   //miniGraph->PrintGraph();
 
-//  AnnotMap testMap;
-//  list<Variable::TypeCode> tlist (4, Variable::STRING);
-//  Tuple tp = Tuple("packet", tlist);
-//  const vector<Variable*> arg = tp.GetArgs();
-//  IntVal* value = new IntVal(10000);
-//  Constraint* ct = new Constraint(Constraint::EQ, arg[0], value);
-//  Quantifier qtf (Quantifier::FORALL, arg, ct);
-//  Annotation anno (&tp, &qtf);
-//  testMap.insert(AnnotMap::value_type("packet", &anno));
+  AnnotMap testMap;
+  list<Variable::TypeCode> tlist (4, Variable::STRING);
+  Tuple tp = Tuple("verifyPath", tlist);
+  const vector<Variable*> arg = tp.GetArgs();
+  IntVal* value = new IntVal(10000);
+  Constraint* ct = new Constraint(Constraint::EQ, arg[0], value);
+  Quantifier qtf (Quantifier::FORALL, arg, ct);
+  Annotation anno (&tp, &qtf);
+  testMap.insert(AnnotMap::value_type("verifyPath", &anno));
   Ptr<Dpool> dpool (new Dpool(graphNdlog, testMap));
   //dpool->PrintDpool();
   dpool->PrintAllDeriv();
@@ -212,8 +212,8 @@ int main (int argc, char** argv)
 //  LogComponentEnable ("Formula", LOG_LEVEL_INFO);
 //  LogComponentEnable ("Dpool", LOG_LEVEL_INFO);
   LogComponentEnable ("Dpool", LOG_INFO);
-  LogComponentEnable ("DPGraph", LOG_INFO);
-  LogComponentEnable ("Formula", LOG_INFO);
+//  LogComponentEnable ("DPGraph", LOG_INFO);
+//  LogComponentEnable ("Formula", LOG_INFO);
 
   string overlogFile;
   string baseoverlogFile = DEFAULT_RN_APP_BASE;
