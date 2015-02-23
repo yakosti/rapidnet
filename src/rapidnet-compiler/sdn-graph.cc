@@ -740,6 +740,7 @@ MiniGraph::MiniGraph(Ptr<DPGraph> dpgraph)
 pair<RuleListC, RuleListC>
 MiniGraph::TopoSort(const AnnotMap& invariants) const
 {
+	NS_LOG_INFO("Topological sorting");
 	//Create a copy of the topology for processing
 	RMHMap outEdgeRMCopy = outEdgeRM;
 	RMBMap inEdgesRMCopy = inEdgesRM;
@@ -770,6 +771,7 @@ MiniGraph::TopoSort(const AnnotMap& invariants) const
 		NS_LOG_DEBUG("Enter loop");
 		NS_LOG_DEBUG("rNodeCount: " << rNodeCount);
 		NS_LOG_DEBUG("rNodeNum: " << rNodeNum);
+		NS_LOG_DEBUG("Size of processQueue: " << processQueue.size());
 		//Non-recursive case
 		if (processQueue.size() > 0)
 		{
@@ -894,6 +896,7 @@ MiniGraph::GetBaseTuples() const
 void
 MiniGraph::PrintGraph() const
 {
+	cout << "------------------ Mini Graph --------------------" << endl;
 	cout << "Rule node edges (outbound):" << endl;
 	RMHMap::const_iterator itrh;
 	for (itrh = outEdgeRM.begin();itrh != outEdgeRM.end();itrh++)
