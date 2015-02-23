@@ -112,7 +112,6 @@ public:
 
 	void CreateDerivNode(Tuple*,
 	 	 	   	   	   	 const RuleNode*,
-						 const TupleListC&,
 						 vector<DerivNodeList::const_iterator>&,
 						 VarMap& vmap);
 

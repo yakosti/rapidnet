@@ -65,6 +65,8 @@ DerivNode::PrintDerivNode() const
 	cout << "Rule name:" << ruleName;
 	cout << endl;
 	cout << "Body tuples:" << endl;
+	NS_LOG_DEBUG("Number of bodies: " << bodyDerivs.size());
+	NS_LOG_DEBUG("Number of anno bodies: " << bodyAnnotations.size());
 	DerivNodeList::const_iterator itd;
 	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
 	{
@@ -145,7 +147,6 @@ RecurNode::~RecurNode()
 Dpool::Dpool(const Ptr<DPGraph> dpgraph, const AnnotMap& invariants)
 {
 	//Perform topological sorting on the dependency graph
-	NS_LOG_INFO("Topological sorting");
 	const TupleNode* head = NULL;
 	Ptr<MiniGraph> mGraph (new MiniGraph(dpgraph));
 	pair<RuleListC, RuleListC> topoOrder = mGraph->TopoSort(invariants);
@@ -251,11 +252,14 @@ Dpool::ProcessRuleNode(Tuple* head,
 					   vector<DerivNodeList::const_iterator> bodyDerivs,
 					   VarMap vmap)
 {
+	NS_LOG_DEBUG("Size of bodyList: " << bodyList.size());
 	if (curPos == bodyList.end())
 	{
 		NS_LOG_DEBUG("Create a DerivNode after the recursion is done.");
+		NS_LOG_DEBUG("Head: " << head->GetName());
+		NS_LOG_DEBUG("Size of bodyDerivs: " << bodyDerivs.size());
 		//All possible derivations of body tuples
-		CreateDerivNode(head, rnode, bodyList, bodyDerivs, vmap);
+		CreateDerivNode(head, rnode, bodyDerivs, vmap);
 		return;
 	}
 
@@ -274,13 +278,14 @@ Dpool::ProcessRuleNode(Tuple* head,
 		VarMap newMap = bodyTuple->CreateVarMap((*itd)->GetHeadTuple());
 		vmap.insert(newMap.begin(), newMap.end());
 		ProcessRuleNode(head, rnode, bodyList, curPos, bodyDerivs, vmap);
+
+		bodyDerivs.pop_back();
 	}
 }
 
 void
 Dpool::CreateDerivNode(Tuple* head,
 		 	 	 	   const RuleNode* rnode,
-					   const TupleListC& bodyList,
 					   vector<DerivNodeList::const_iterator>& bodyDerivs,
 					   VarMap& vmap)
 {
@@ -299,7 +304,6 @@ Dpool::CreateDerivNode(Tuple* head,
 
 	//Process the rule
 	vector<DerivNodeList::const_iterator>::iterator it;
-	NS_LOG_DEBUG("Size of bodyDerivs: " << bodyDerivs.size());
 	for (it = bodyDerivs.begin();it != bodyDerivs.end();it++)
 	{
 		//Determine if the DerivNode is RecurNode
