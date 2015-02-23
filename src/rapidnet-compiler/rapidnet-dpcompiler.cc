@@ -230,6 +230,7 @@ void testIntegersArithmetic() {
     std::cout << "\n" << three_plus_four_equals_seven_cvc4 << " is: " << smt.query(three_plus_four_equals_seven_cvc4) << std::endl;
 
     clearAllVariables();
+    delete three_plus_four_equals_seven_rapidnet, three_plus_four_rapidnet, seven, four, three;
 }
 
 /* check that 
@@ -264,6 +265,7 @@ void testVariables() {
     std::cout << "\n" << y_equals_4_cvc4 << " and " << x_equals_4_cvc4 << " implies that: " << x_equals_4_cvc4 << " is: " << smt.query(x_equals_4_cvc4) << std::endl;
 
     clearAllVariables();
+    delete x_equals_4_rapidnet, y_equals_4_rapidnet, x_equals_y_rapidnet, four_rapidnet, y_rapidnet, x_rapidnet;
 }
 
 /*
@@ -293,6 +295,7 @@ void testBoundVariables() {
     std::cout << "\nTest " << forall_x__x_equals_3_cvc4 << " is: "<< smt.query(forall_x__x_equals_3_cvc4) << std::endl;
 
     clearAllVariables();
+    delete forall_x__x_equals_3_rapidnet, x_equals_3, x, three;
 }
 
 /*
@@ -354,6 +357,7 @@ void testBoundPredicate() {
     std::cout  << "\nSky is blue: " << exists_x__isblue_x_cvc4 << smt.query(exists_x__isblue_x_cvc4) << std::endl;
 
     clearAllVariables();
+    delete isblue_sky_rapidnet, sky_string, exists_x__isblue_x_rapidnet, isblue_x_rapidnet, x, isblue_rapidnet;
 }
 
 /*
@@ -388,6 +392,7 @@ void testArithmeticNestedQuantifier() {
     std::cout << "\n" << forall_x__exists_y__x_plus_y_eq_4__cvc4 << " is: " << smt.query(forall_x__exists_y__x_plus_y_eq_4__cvc4) << std::endl;
 
     clearAllVariables();
+    delete forall_x__exists_y__x_plus_y_eq_4, exists_y__x_plus_y_eq_4, x_plus_y_eq_4, x_plus_y, y, x, four;
 }
 
 /*
@@ -416,6 +421,7 @@ void connective__x_gt_y__AND__y_gt_z__IMPLIES__x_gt_z() {
     std::cout << "\nTest: " << implies_cvc4 << " is: " << smt.query(implies_cvc4) << std::endl;
 
     clearAllVariables();
+    delete implies, x_gt_y__AND__y_gt_z, x_gt_z, y_gt_z, x_gt_y, x, y, z;
 }
 
 /*
@@ -443,6 +449,7 @@ void arithmetic__4_plus_3__minus__2_plus_1__equals__4() {
     std::cout << "\nTest" << equal_sides_cvc4 << " is: " << smt.query(equal_sides_cvc4) << std::endl;
 
     clearAllVariables();
+    delete equal_sides, four_plus_three__minus__two_plus_one, two_plus_one, four_plus_three, four, three, two, one;
 }
 
 /* ADAM is the ancestor of everyone 
@@ -498,6 +505,7 @@ void quantifier__predicate__ancestor() {
     std::cout << "\nSince " << forall_x__ancestor_ADAM_x_cvc4 << " hence "<<  ancestor_obama_cvc4 << " is: " << smt.query(ancestor_obama_cvc4) << std::endl;
 
     clearAllVariables();
+    delete ancestor_adam_obama, OBAMA, forall_x__ancestor_ADAM_x, ancestor_adam_x, str1, ADAM, ancestor_rapidnet; 
 }
 
 /*
@@ -534,6 +542,7 @@ void quantifier__function_child_younger_than_mother() {
     std::cout << "\nSince " << michelle_is_mother_of_malia_cvc4 << ", hence " << barbara_is_mother_of_malia_cvc4 << " is: " << smt.query(barbara_is_mother_of_malia_cvc4) << std::endl;
 
     clearAllVariables();
+    delete barbara_is_mother_of_malia, michelle_is_mother_of_malia, BarbaraBush, MichelleObama, mother_malia, MaliaObama, mother_schema;
 }
 
 /*
@@ -610,7 +619,9 @@ void nested_function_check() {
     std::cout << "Since "<< forall_x__YOUNGER_x_motherx_cvc4 << " therefore " << malia_younger_than_her_mother_cvc4 << " is: " << smt.query(malia_younger_than_her_mother_cvc4) << std::endl;
 
     clearAllVariables();
+    delete malia_younger_than_her_mother, mother_malia, MaliaObama, forall_x__YOUNGER_x_motherx, YOUNGER_x_motherx,  YOUNGER_schema, mother_function, mother_schema; 
 }
+
 
 //NDLog program should be free of recursion
 //NDLog program should have no value as argument of a tuple
