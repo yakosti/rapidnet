@@ -455,7 +455,6 @@ void arithmetic__4_plus_3__minus__2_plus_1__equals__4() {
 
     clearAllVariables();
     //delete four_plus_three__minus__two_plus_one, two_plus_one, four_plus_three, four, three, two, one;
-    delete equal_sides;
 }
 
 /* ADAM is the ancestor of everyone 
