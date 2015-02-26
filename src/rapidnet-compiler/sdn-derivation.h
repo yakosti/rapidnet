@@ -57,6 +57,8 @@ public:
 
 	const ConstraintsTemplate* GetConstraints() const{return ruleConstraints;}
 
+	const DerivNodeList& GetBodyDerivs() const{return bodyDerivs;}
+
 	void PrintHead() const;
 
 	//Just print the current DerivNode
@@ -116,6 +118,18 @@ public:
 						 VarMap& vmap);
 
 	void UpdateDerivNode(string tpName, DerivNode* dnode);
+
+	bool VerifyInvariants(const AnnotMap&) const;
+
+	//TODO: to be tested with z3
+	bool VerifyRecurInv(DerivNodeList::const_iterator,
+						DerivNodeList::const_iterator,
+						vector<const ConstraintsTemplate*>,
+						vector<Formula*>&,
+						const AnnotMap&,
+						string veriTuple,
+						const VarMap& vmap,
+						const ConstraintsTemplate*) const;
 
 	void PrintDpool() const;
 
