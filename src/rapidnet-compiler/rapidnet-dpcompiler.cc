@@ -41,6 +41,7 @@
 
 #include "sdn-graph.h"
 #include "sdn-derivation.h"
+#include "sdn-parse-smtlib.h"
 
 using namespace std;
 using namespace ns3;
@@ -203,17 +204,93 @@ void compile (string overlogFile, bool provenanceEnabled)
 //  }
 }
 
+/* 
+ * *******************************************************************************
+ *                                                                               *
+ *                                  Check Parsing                                *
+ *                                                                               *
+ * *******************************************************************************
+ */
+
+/* PROGRAM
+   ------------------------
+   (set-logic QF_LIA)
+   (assert (= (+ 3 4) 7))
+   (check-sat)
+   ------------------------
+ * checks that given x=3, then x+4=7
+ */
+void testIntegersArithmetic() {
+    /* RAPIDNET */
+    IntVal* three = new IntVal(3);
+    IntVal* four = new IntVal(4);
+    IntVal* seven = new IntVal(7);
+
+    Arithmetic* three_plus_four_rapidnet = new Arithmetic(Arithmetic::PLUS, three, four); 
+    Constraint* three_plus_four_equals_seven_rapidnet = new Constraint(Constraint::EQ, three_plus_four_rapidnet, seven);
+
+    /* parse and checl */
+    string three_plus_four_equals_seven_smt = parseConstraint(three_plus_four_equals_seven_rapidnet);
+    cout << three_plus_four_equals_seven_smt << endl;
+}
+
+
+/* Program
+ * ---------------------
+   (set-logic QF_LIA)
+   (declare-fun x () Int)
+   (declare-fun y () Int)
+   (assert (= x y))
+   (assert (= y 4))
+   (assert (= x 4))
+   (check-sat)
+ * ----------------------
+ * checks that give x=4, x=y, then x=4 as well
+ */
+void testVariables() {
+    /* RAPIDNET */
+    Variable* x_rapidnet = new Variable(Variable::INT, false);
+    Variable* y_rapidnet = new Variable(Variable::INT, false);
+    IntVal* four_rapidnet = new IntVal(4);
+
+    Constraint* x_equals_y_rapidnet = new Constraint(Constraint::EQ, x_rapidnet, y_rapidnet);
+    Constraint* y_equals_4_rapidnet = new Constraint(Constraint::EQ, y_rapidnet, four_rapidnet);
+    Constraint* x_equals_4_rapidnet = new Constraint(Constraint::EQ, x_rapidnet, four_rapidnet);
+
+    /* parsing */
+    string x_equals_y_smt = parseFormula(x_equals_y_rapidnet);
+    //string y_equals_4_smt = parseTerm(y_equals_4_rapidnet);
+    //string x_equals_4_smt = parseTerm(x_equals_4_rapidnet);
+
+    cout << x_equals_y_smt << endl;
+    //cout << y_equals_4_smt << endl;
+    //cout << x_equals_4_smt << endl;
+}
+
+/* 
+ * *******************************************************************************
+ *                                                                               *
+ *                                  Check Parsing                                *
+ *                                                                               *
+ * *******************************************************************************
+ */
+
+
+
+
 //NDLog program should be free of recursion
 //NDLog program should have no value as argument of a tuple
 int main (int argc, char** argv)
 {
-  LogComponentEnable ("RapidNetDPGraph", LOG_LEVEL_INFO);
+// LogComponentEnable ("RapidNetDPGraph", LOG_LEVEL_INFO);
 //  LogComponentEnable ("DPGraph", LOG_LEVEL_INFO);
 //  LogComponentEnable ("Formula", LOG_LEVEL_INFO);
 //  LogComponentEnable ("Dpool", LOG_LEVEL_INFO);
-  LogComponentEnable ("Dpool", LOG_INFO);
+// LogComponentEnable ("Dpool", LOG_INFO);
 //  LogComponentEnable ("DPGraph", LOG_INFO);
 //  LogComponentEnable ("Formula", LOG_INFO);
+  testIntegersArithmetic();
+  testVariables();
 
   string overlogFile;
   string baseoverlogFile = DEFAULT_RN_APP_BASE;
