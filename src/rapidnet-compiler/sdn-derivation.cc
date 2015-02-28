@@ -342,6 +342,134 @@ Dpool::UpdateDerivNode(string tpName, DerivNode* dnode)
 	derivations[tpName].push_back(dnode);
 }
 
+bool
+Dpool::VerifyInvariants(const AnnotMap& invariant) const
+{
+	AnnotMap::const_iterator ita;
+	for (ita = invariant.begin();ita != invariant.end();ita++)
+	{
+		string tpName = ita->first;
+		const Annotation* annot = ita->second;
+		Tuple* tp = annot->first;
+		Formula* tupleInv = annot->second;
+
+		const DerivNodeList& dlist = derivations.at(tpName);
+		DerivNodeList::const_iterator itd;
+		for (itd = dlist.begin();itd != dlist.end();itd++)
+		{
+			const RecurNode* rnode = dynamic_cast<const RecurNode*>(*itd);
+			if (rnode == NULL)
+			{
+				//Base case
+				//Unify the head tuple
+				const Tuple* head = (*itd)->GetHeadTuple();
+				VarMap vmap = tp->CreateVarMap(head);
+				Formula* newInv = tupleInv->Clone();
+				newInv->VarReplace(vmap);
+
+				const ConstraintsTemplate* cst = (*itd)->GetConstraints();
+				//Translate cst into assertions in CVC4
+				//Query newInv
+				//Return false if false
+
+				delete newInv;
+			}
+			else
+			{
+				//Recursive case
+				const DerivNodeList& bodyList = (*itd)->GetBodyDerivs();
+				vector<const ConstraintsTemplate*> clist;
+				vector<Formula*> flist;
+				VarMap vmap;
+				const ConstraintsTemplate* cts = (*itd)->GetConstraints();
+				bool recurFlag = VerifyRecurInv(bodyList.begin(), bodyList.end(), clist,
+												flist, invariant, tpName, vmap, cts);
+
+				//TODO: Any alternative to garbage collection?
+				vector<Formula*>::iterator itf;
+				for (itf = flist.begin();itf != flist.end();itf++)
+				{
+					delete (*itf);
+				}
+
+				if (recurFlag == false)
+				{
+					return false;
+				}
+			}
+		}
+	}
+
+	return true;
+}
+
+bool
+Dpool::VerifyRecurInv(DerivNodeList::const_iterator curPos,
+					  DerivNodeList::const_iterator endItr,
+					  vector<const ConstraintsTemplate*> clist,
+					  vector<Formula*>& flist,
+					  const AnnotMap& annot,
+					  string veriTuple,
+					  const VarMap& vmap,
+					  const ConstraintsTemplate* ruleCons) const
+{
+	if (curPos == endItr)
+	{
+		//Assert clist
+		//Unify ruleCons
+		//Query veriTuple's formula after Variable mapping
+
+	}
+
+	//TODO: Unify the head tuples
+	bool veriResult = false;
+	const Tuple* bodyTuple = (*curPos)->GetHeadTuple();
+	string bodyName = bodyTuple->GetName();
+	curPos++;
+	AnnotMap::const_iterator ita = annot.find(bodyName);
+	if (ita == annot.end())
+	{
+		//Non-recursive body
+		const DerivNodeList& dlist = derivations.at(bodyName);
+		DerivNodeList::const_iterator itd;
+		for (itd = dlist.begin();itd != dlist.end();itd++)
+		{
+			const Tuple* head = (*itd)->GetHeadTuple();
+			VarMap headMap = bodyTuple->CreateVarMap(head);
+			headMap.insert(vmap.begin(), vmap.end());
+			clist.push_back((*itd)->GetConstraints());
+			veriResult = VerifyRecurInv(curPos, endItr, clist, flist, annot,
+										veriTuple, headMap, ruleCons);
+			if (veriResult == false)
+			{
+				return false;
+			}
+			clist.pop_back();
+		}
+	}
+	else
+	{
+		//A recursive body
+		//Use invariant instead of all its derivations
+		Annotation* bodyInv = ita->second;
+		Tuple* tupleInv = bodyInv->first;
+		Formula* formInv = bodyInv->second;
+
+		VarMap formMap = tupleInv->CreateVarMap(bodyTuple);
+		Formula* newInv = formInv->Clone();
+		newInv->VarReplace(formMap);
+		flist.push_back(newInv);
+		veriResult = VerifyRecurInv(curPos, endItr, clist, flist, annot,
+				 	 	 	 	 	veriTuple, vmap, ruleCons);
+		if (veriResult == false)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void
 Dpool::PrintDpool() const
 {
