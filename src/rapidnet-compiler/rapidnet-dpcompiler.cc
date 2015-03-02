@@ -277,13 +277,6 @@ void testVariables() {
    (set-logic QF_LIA)
    (assert(forall ((x Int)) (= x 3)))
    (check-sat)
- *
-   (set-logic AUFNIRA)
-   (assert(exists ((x Int)) (= x 3)))
-   (check-sat)
- * 
- * (set-logic AUFNIRA)
- * (assert(exists ((x Int)) (exists ((y Int)) (> y x) ) ))
  */
 void testBoundVariables() {
   /* rapidnet */
@@ -300,6 +293,39 @@ void testBoundVariables() {
   /* CVC4 */
   string parsed = parseFormula(forall_x__x_equals_3_rapidnet);
   cout << "---------- forall x (x > 3) ------------" << endl;
+  cout << parsed << endl;
+
+  clearAllVariables();
+}
+
+/*
+ * (set-logic AUFNIRA)
+ * (exists ((y Int)) (=> (> y 3) (exists ((x Int)) (> x 2)) ) )
+ */
+void testMixedQuantifiers() {
+  /* rapidnet */
+  IntVal* two = new IntVal(2);
+  IntVal* three = new IntVal(3);
+  Variable* x = new Variable(Variable::INT, true);
+  Variable* y = new Variable(Variable::INT, true);
+
+  vector<Variable*> boundVarListX;
+  boundVarListX.push_back(x);
+
+  vector<Variable*> boundVarListY;
+  boundVarListY.push_back(y);
+
+  Constraint* x_gt_2 = new Constraint(Constraint::GT, x, two);
+  Quantifier* exists_x__x_gt_2 = new Quantifier(Quantifier::EXISTS, boundVarListX, x_gt_2);
+
+  Constraint* y_gt_3 = new Constraint(Constraint::GT, y, three);
+
+  Connective* implies = new Connective(Connective::IMPLY, y_gt_3, exists_x__x_gt_2);
+
+  Quantifier* exists_y__y_gt_3__implies__exists_x__x_gt_2 = new Quantifier(Quantifier::EXISTS, boundVarListY, implies);
+  
+  string parsed = parseFormula(exists_y__y_gt_3__implies__exists_x__x_gt_2);
+  cout << "---------- exists y ((y > 3) => exists x (x > 2)) ------------" << endl;
   cout << parsed << endl;
 
   clearAllVariables();
@@ -336,12 +362,6 @@ void testExistVariables() {
    (set-logic QF_LIA)
    (assert(forall ((x Int)) (> x 3)))
    (check-sat)
- * 
- * (set-logic AUFNIRA)
- * (assert(exists ((x Int)) (exists ((y Int)) (> y x) ) ))
- */
-
-/*
  * ((x > y) /\ (y > z)) => (x > z)
  */
 void connective__x_gt_y__AND__y_gt_z__IMPLIES__x_gt_z() {
@@ -390,11 +410,14 @@ int main (int argc, char** argv)
 // LogComponentEnable ("Dpool", LOG_INFO);
 //  LogComponentEnable ("DPGraph", LOG_INFO);
 //  LogComponentEnable ("Formula", LOG_INFO);
+
+  /* testing parsing */
   testIntegersArithmetic();
   testVariables();
   connective__x_gt_y__AND__y_gt_z__IMPLIES__x_gt_z();
   testBoundVariables(); 
   testExistVariables();
+  testMixedQuantifiers();
 
   string overlogFile;
   string baseoverlogFile = DEFAULT_RN_APP_BASE;

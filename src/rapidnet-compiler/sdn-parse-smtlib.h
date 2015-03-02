@@ -23,6 +23,7 @@ std::map<string, string> all_bound_variables;
 
 void clearAllVariables() {
 	all_free_variables.clear();
+	all_bound_variables.clear();
 }
 
 void printFreeVariablesDeclaration() {
@@ -148,7 +149,9 @@ string parseBoundVariable(Variable* v, string qt) {
 			all_bound_variables[varname] = declare;
 			return varname;
 		} case Variable::DOUBLE: {
-			return "";
+			string declare = qt + " ((" + varname + " Real))";
+			all_bound_variables[varname] = declare;
+			return varname;
 		} case Variable::BOOL: {
 			//return makeVariableType(em, em->booleanType(), isbound, v);
 			return "";
@@ -173,11 +176,10 @@ string makeQuantifierString(string parsed_formula, vector<Variable*> bound_var_l
 }
 
 string parseQuantifier(Quantifier* q) {	
+	cout << "I have been called!" << endl;
 	Formula* f = q->GetQuantifierFormula();
 	string f_parsed = parseFormula(f);
-
 	vector<Variable*> bound_var_list = q->GetBoundVariables();
-
 	Quantifier::QuanType qt = q->GetQuantifierType();
 	switch (qt) {
 		case Quantifier::FORALL: {
@@ -207,7 +209,6 @@ string parseTerm(Term* t) {
 	} else if (dynamic_cast<Variable*>(t)) {
 		Variable* v = (Variable*)t;
 		bool isbound = v->GetFreeOrBound();
-		//if (isbound) return parseBoundVariable(v);
 		if (isbound) return v->GetVariableName();
 		return parseFreeVariable(v);
 	} else if (dynamic_cast<UserFunction*>(t)) {
