@@ -275,7 +275,11 @@ void testVariables() {
 /* Program
  * ---------------------
    (set-logic QF_LIA)
-   (assert(forall ((x Int)) (> x 3)))
+   (assert(forall ((x Int)) (= x 3)))
+   (check-sat)
+ *
+   (set-logic AUFNIRA)
+   (assert(exists ((x Int)) (= x 3)))
    (check-sat)
  * 
  * (set-logic AUFNIRA)
@@ -289,13 +293,39 @@ void testBoundVariables() {
   vector<Variable*> boundVarList;
   boundVarList.push_back(x);
 
-  Constraint* x_equals_3 = new Constraint(Constraint::EQ, x, three);
+  Constraint* x_equals_3 = new Constraint(Constraint::GT, x, three);
 
   Quantifier* forall_x__x_equals_3_rapidnet = new Quantifier(Quantifier::FORALL, boundVarList, x_equals_3);
 
   /* CVC4 */
   string parsed = parseFormula(forall_x__x_equals_3_rapidnet);
   cout << "---------- forall x (x > 3) ------------" << endl;
+  cout << parsed << endl;
+
+  clearAllVariables();
+}
+
+/* Program
+ * ---------------------
+   (set-logic AUFNIRA)
+   (assert(exists ((x Int)) (= x 3)))
+   (check-sat)
+ */
+void testExistVariables() {
+  /* rapidnet */
+  IntVal* three = new IntVal(3);
+  Variable* x = new Variable(Variable::INT, true);
+
+  vector<Variable*> boundVarList;
+  boundVarList.push_back(x);
+
+  Constraint* x_equals_3 = new Constraint(Constraint::GT, x, three);
+
+  Quantifier* exists_x__x_equals_3_rapidnet = new Quantifier(Quantifier::EXISTS, boundVarList, x_equals_3);
+
+  /* CVC4 */
+  string parsed = parseFormula(exists_x__x_equals_3_rapidnet);
+  cout << "---------- exists x (x > 3) ------------" << endl;
   cout << parsed << endl;
 
   clearAllVariables();
@@ -364,6 +394,7 @@ int main (int argc, char** argv)
   testVariables();
   connective__x_gt_y__AND__y_gt_z__IMPLIES__x_gt_z();
   testBoundVariables(); 
+  testExistVariables();
 
   string overlogFile;
   string baseoverlogFile = DEFAULT_RN_APP_BASE;

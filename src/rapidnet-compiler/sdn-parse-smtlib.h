@@ -100,9 +100,9 @@ string parseConstraint(Constraint* c) {
 		case Constraint::EQ: 
 			return "(= " + leftE + " " + rightE + ")";
 		case Constraint::GT:
-			//return em->mkExpr(kind::GT, leftE, rightE);
+			return "(> " + leftE + " " + rightE + ")";
 		case Constraint::LT:
-			//return em->mkExpr(kind::LT, leftE, rightE);
+			return "(<" + leftE + " " + rightE + ")";
 		default:
 			return "Invalid constraint format";
 	}
@@ -134,18 +134,19 @@ string IntegerToString(int number) {
 }
 
 
-
-
 string parseBoundVariable(Variable* v) {
 	Variable::TypeCode vartype = v->GetVariableType();
 	string varname = v->GetVariableName();
 
-	//absent, create and store in hash map
+	//present, return stored variable
+	if (all_bound_variables.find(varname) != all_bound_variables.end()) return varname;
+
+	//absent, create and store in hash map, but return variable name only
 	switch (vartype) {
 		case Variable::INT: {
 			string declare = "forall ((" + varname + " Int))";
 			all_bound_variables[varname] = declare;
-			return "";
+			return varname;
 		} case Variable::DOUBLE: {
 			return "";
 		} case Variable::BOOL: {
@@ -170,9 +171,22 @@ string parseQuantifier(Quantifier* q) {
 	switch (qt) {
 		case Quantifier::FORALL: {
 			string declare = "";
-			return declare;
+			string end_brackets = "";
+			for (int i=0; i<bound_var_list.size(); i++) {
+				string bound_var_declaration = parseBoundVariable(bound_var_list[i]);
+				declare = declare + "(" + all_bound_variables.find(bound_var_declaration)->second;
+				end_brackets = end_brackets + ")";
+			}
+			return declare + f_parsed + end_brackets;
 		} case Quantifier::EXISTS: {
-			return "";
+			string declare = "";
+			string end_brackets = "";
+			for (int i=0; i<bound_var_list.size(); i++) {
+				string bound_var_declaration = parseBoundVariable(bound_var_list[i]);
+				declare = declare + "(" + all_bound_variables.find(bound_var_declaration)->second;
+				end_brackets = end_brackets + ")";
+			}
+			return declare + f_parsed + end_brackets;
 		} default: {
 			return "invalid quantifier format";
 		}
