@@ -18,7 +18,7 @@ string parseQuantifier(Quantifier* q);
 // (variableName, variableDeclaration)
 std::map<string, string> all_free_variables;
 std::map<string, string> all_bound_variables;
-//std::map<PredicateSchema*, Expr> all_predicate_schemas;
+std::map<string, string> all_predicate_schemas;
 //std::map<FunctionSchema*, Expr> all_function_schemas;
 
 void clearAllVariables() {
@@ -32,9 +32,10 @@ void printFreeVariablesDeclaration() {
 	}
 }
 
+
 string parseFormula(Formula* f) { 
 	if (dynamic_cast<PredicateInstance*>(f)) {
-		return "";
+		//return parsePredicateInstance((PredicateInstance*)pi);
 	} else if (dynamic_cast<Constraint*>(f)) {
 		return parseConstraint((Constraint*)f);
 	} else {
@@ -82,11 +83,13 @@ string parseFreeVariable(Variable* v) {
 			all_free_variables[varname] = declare;
 			return varname;
 		} case Variable::BOOL: {
-			//return makeVariableType(em, em->booleanType(), isbound, v);
-			return "";
+			string declare = "(declare-fun " + varname + " () Bool)";
+			all_free_variables[varname] = declare;
+			return varname;
 		} case Variable::STRING: {
-			//return makeVariableType(em, em->stringType(), isbound, v);
-			return "";
+			string declare = "(declare-fun " + varname + " () String)";
+			all_free_variables[varname] = declare;
+			return varname;
 		} default: {
 			return "Not a valid variable type, must be INT/DOUBLE/BOOL/STRING";
 		}
@@ -153,11 +156,12 @@ string parseBoundVariable(Variable* v, string qt) {
 			all_bound_variables[varname] = declare;
 			return varname;
 		} case Variable::BOOL: {
-			//return makeVariableType(em, em->booleanType(), isbound, v);
-			return "";
+			string declare = qt + " ((" + varname + " Bool))";
+			all_bound_variables[varname] = declare;
+			return varname;
 		} case Variable::STRING: {
-			//return makeVariableType(em, em->stringType(), isbound, v);
-			return "";
+			string declare = qt + " ((" + varname + " String))";
+			all_bound_variables[varname] = declare;
 		} default: {
 			return "Not a valid variable type, must be INT/DOUBLE/BOOL/STRING";
 		}
@@ -176,7 +180,6 @@ string makeQuantifierString(string parsed_formula, vector<Variable*> bound_var_l
 }
 
 string parseQuantifier(Quantifier* q) {	
-	cout << "I have been called!" << endl;
 	Formula* f = q->GetQuantifierFormula();
 	string f_parsed = parseFormula(f);
 	vector<Variable*> bound_var_list = q->GetBoundVariables();

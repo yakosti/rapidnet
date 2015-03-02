@@ -267,14 +267,14 @@ void testVariables() {
   printFreeVariablesDeclaration();
   cout << x_equals_y_smt << endl;
   cout << y_equals_4_smt << endl;
-  cout << x_equals_4_smt << endl;
+  cout << x_equals_4_smt << "\n" << endl;
 
   clearAllVariables();
 }
 
 /* Program
  * ---------------------
-   (set-logic QF_LIA)
+   (set-logic AUFLIA)
    (assert(forall ((x Int)) (= x 3)))
    (check-sat)
  */
@@ -292,8 +292,8 @@ void testBoundVariables() {
 
   /* CVC4 */
   string parsed = parseFormula(forall_x__x_equals_3_rapidnet);
-  cout << "---------- forall x (x > 3) ------------" << endl;
-  cout << parsed << endl;
+  cout << "\n---------- forall x (x > 3) ------------" << endl;
+  cout << parsed << "\n" << endl;
 
   clearAllVariables();
 }
@@ -325,8 +325,8 @@ void testMixedQuantifiers() {
   Quantifier* exists_y__y_gt_3__implies__exists_x__x_gt_2 = new Quantifier(Quantifier::EXISTS, boundVarListY, implies);
   
   string parsed = parseFormula(exists_y__y_gt_3__implies__exists_x__x_gt_2);
-  cout << "---------- exists y ((y > 3) => exists x (x > 2)) ------------" << endl;
-  cout << parsed << endl;
+  cout << "\n---------- exists y ((y > 3) => exists x (x > 2)) ------------" << endl;
+  cout << parsed << "\n" << endl;
 
   clearAllVariables();
 }
@@ -386,6 +386,50 @@ void connective__x_gt_y__AND__y_gt_z__IMPLIES__x_gt_z() {
   clearAllVariables();
 }
 
+/* 
+   DECLARING
+   ---------
+   (set-logic QF_UFLIA)
+   (declare-fun even (Int) Bool)
+   (assert (even 2))
+   (assert (not (even 3)))
+
+   CHECKING
+   --------
+   (assert (even 2))
+   (check-sat)
+
+   (assert (even 3))
+   (check-sat)
+ */
+void testEvenPredicate() {
+  /* ***************************** rapidnet: make isblue function ****************** */
+  vector<Variable::TypeCode> types_rapidnet;
+  types_rapidnet.push_back(Variable::INT);
+  PredicateSchema* iseven_schema = new PredicateSchema("iseven", types_rapidnet);
+
+  // make the formula iseven(2)
+  IntVal* two = new IntVal(2);
+  vector<Term*> args_two;
+  args_two.push_back(two);
+  PredicateInstance* iseven_2 = new PredicateInstance(iseven_schema, args_two);
+
+  // make the formula iseven(3)
+  IntVal* three = new IntVal(3);
+  vector<Term*> args_three;
+  args_three.push_back(three);
+  PredicateInstance* iseven_3 = new PredicateInstance(iseven_schema, args_three);
+
+  /* what to do */
+
+
+  /* ***************************** parsing ************************** */
+
+  clearAllVariables();
+}
+
+
+
 
 
 /* 
@@ -418,6 +462,7 @@ int main (int argc, char** argv)
   testBoundVariables(); 
   testExistVariables();
   testMixedQuantifiers();
+  testEvenPredicate();
 
   string overlogFile;
   string baseoverlogFile = DEFAULT_RN_APP_BASE;
