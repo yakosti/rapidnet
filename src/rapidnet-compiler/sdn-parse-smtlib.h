@@ -60,7 +60,7 @@ string parsePredicateSchema(PredicateSchema* s) {
 		types_smtlib = types_smtlib + type_smtlib + " ";
 	}
 
-	string predicateVariable_smtlib = "(declare-fun even (" + types_smtlib + ") Bool)";
+	string predicateVariable_smtlib = "(declare-fun " + schema_name + " (" + types_smtlib + ") Bool)";
 
 	all_predicate_schemas[schema_name] = predicateVariable_smtlib;
 	return predicateVariable_smtlib;
@@ -69,7 +69,17 @@ string parsePredicateSchema(PredicateSchema* s) {
 
 string parsePredicateInstance(PredicateInstance* pi) {
 	string schema_cvc4 = parsePredicateSchema(pi->GetSchema());
-	return schema_cvc4;
+
+	//parse args
+	vector<Term*> args_rapidnet = pi->GetArgs();
+	string args_smtlib = "";
+	for (int i=0; i<args_rapidnet.size(); i++) {
+		string current_term_smtlib = parseTerm(args_rapidnet[i]);
+		args_smtlib = args_smtlib + current_term_smtlib + " "; 
+	}
+
+	string schema_name = (pi->GetSchema())->GetName();
+	return "(" + schema_name + " " + args_smtlib + ")";
 }
 
 

@@ -420,12 +420,12 @@ void testEvenPredicate() {
   args_three.push_back(three);
   PredicateInstance* iseven_3 = new PredicateInstance(iseven_schema, args_three);
 
-  /* what to do */
+  /* ****************************** what to do *************************** */
   cout << "\n------------------ Test iseven(n) ----------------------" << endl;
   string PredicateSchema_smtlib = parsePredicateSchema(iseven_schema);
   cout << PredicateSchema_smtlib << endl;
-
-  /* ***************************** parsing ************************** */
+  string iseven2_smtlib = parseFormula(iseven_2);
+  cout << iseven2_smtlib << endl;
 
   clearAllVariables();
 }
