@@ -19,11 +19,13 @@ string parseQuantifier(Quantifier* q);
 std::map<string, string> all_free_variables;
 std::map<string, string> all_bound_variables;
 std::map<string, string> all_predicate_schemas;
-//std::map<FunctionSchema*, Expr> all_function_schemas;
+std::map<string, string> all_function_schemas;
 
 void clearAllVariables() {
 	all_free_variables.clear();
 	all_bound_variables.clear();
+	all_predicate_schemas.clear();
+	all_function_schemas.clear();
 }
 
 void printFreeVariablesDeclaration() {
