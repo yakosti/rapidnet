@@ -392,15 +392,14 @@ void connective__x_gt_y__AND__y_gt_z__IMPLIES__x_gt_z() {
    (set-logic QF_UFLIA)
    (declare-fun iseven (Int) Bool)
    (assert (even 2))
-   (assert (not (even 3)))
 
    CHECKING
    --------
    (assert (even 2))
-   (check-sat)
+   (check-sat) !sat
 
-   (assert (even 3))
-   (check-sat)
+   (assert (not (iseven 2)))
+   (check-sat) !unsat
  */
 void testEvenPredicate() {
   /* ***************************** rapidnet: make isblue function ****************** */
@@ -414,11 +413,7 @@ void testEvenPredicate() {
   args_two.push_back(two);
   PredicateInstance* iseven_2 = new PredicateInstance(iseven_schema, args_two);
 
-  // make the formula iseven(3)
-  IntVal* three = new IntVal(3);
-  vector<Term*> args_three;
-  args_three.push_back(three);
-  PredicateInstance* iseven_3 = new PredicateInstance(iseven_schema, args_three);
+  //make the formula neg (iseven(2))
 
   /* ****************************** what to do *************************** */
   cout << "\n------------------ Test iseven(n) ----------------------" << endl;
@@ -432,7 +427,58 @@ void testEvenPredicate() {
 
 
 
+/*
+ * CVC4
+ * ----
+   (set-logic S)
+   (declare-fun isblue (String) Bool)
+   (assert (isblue "sky"))
+   (exists ((x String)) (isblue x) )
+   (check-sat) !sat
+ */
+void testBoundPredicate() {
+  /* ***************************** rapidnet: make isblue function ****************** */
 
+  vector<Variable::TypeCode> types_rapidnet;
+  types_rapidnet.push_back(Variable::STRING);
+  PredicateSchema* isblue_rapidnet = new PredicateSchema("isblue", types_rapidnet);
+
+  /* ************************ rapidnet: exists x, isblue(x) ************************ */
+
+  //make bound var
+  Variable* x = new Variable(Variable::STRING, true);
+  vector<Variable*> boundVarList;
+  boundVarList.push_back(x);
+
+  // make the formula isblue(x)
+  // x is a bound variable
+  vector<Term*> args;
+  args.push_back(x);
+
+  PredicateInstance* isblue_x_rapidnet = new PredicateInstance(isblue_rapidnet, args);
+
+  //make it quantifier
+  Quantifier* exists_x__isblue_x_rapidnet = new Quantifier(Quantifier::EXISTS, boundVarList, isblue_x_rapidnet);
+
+  /* ************************ rapidnet: isblue("sky") ********************* */
+
+  StringVal* sky_string = new StringVal("sky");
+  vector<Term*> args_sky_rapidnet;
+  args_sky_rapidnet.push_back(sky_string);
+
+  PredicateInstance* isblue_sky_rapidnet = new PredicateInstance(isblue_rapidnet, args_sky_rapidnet);
+
+
+  /* ******************************* SMTLIB ******************************** */
+
+  cout << "\n----------------- isblue ----------------------- " << endl;
+  string isblue_sky_smtlib = parseFormula(isblue_sky_rapidnet);
+  cout << isblue_sky_smtlib << endl;
+  string exists_x__isblue_x_smtlib = parseFormula(exists_x__isblue_x_rapidnet);
+  cout << exists_x__isblue_x_smtlib << endl;
+  
+  clearAllVariables();
+}
 
 /* 
  * *******************************************************************************
@@ -465,6 +511,7 @@ int main (int argc, char** argv)
   testExistVariables();
   testMixedQuantifiers();
   testEvenPredicate();
+  testBoundPredicate();
 
   string overlogFile;
   string baseoverlogFile = DEFAULT_RN_APP_BASE;
@@ -482,3 +529,10 @@ int main (int argc, char** argv)
   compile (overlogFile, provenance);
   return 0;
 }
+
+
+
+
+
+
+

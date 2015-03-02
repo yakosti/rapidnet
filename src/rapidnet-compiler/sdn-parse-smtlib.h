@@ -212,6 +212,7 @@ string parseBoundVariable(Variable* v, string qt) {
 		} case Variable::STRING: {
 			string declare = qt + " ((" + varname + " String))";
 			all_bound_variables[varname] = declare;
+			return varname;
 		} default: {
 			return "Not a valid variable type, must be INT/DOUBLE/BOOL/STRING";
 		}
