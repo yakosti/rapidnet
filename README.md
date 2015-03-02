@@ -143,3 +143,7 @@ In the command line, cd into the rapidnet folder. Get the entire path the the ND
 
     ./rapidnet/dpcompiler/dpcompile <path-to-file>/<My-NDLog-Program>.olg
 
+10) SMT-LIB
+-----------
+* [SMT-LIB Official Website](http://smtlib.cs.uiowa.edu/)
+* [String Declaration](http://cvc4.cs.nyu.edu/wiki/Strings)
