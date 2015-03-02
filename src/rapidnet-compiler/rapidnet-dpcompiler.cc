@@ -232,6 +232,8 @@ void testIntegersArithmetic() {
     /* parse and checl */
     string three_plus_four_equals_seven_smt = parseConstraint(three_plus_four_equals_seven_rapidnet);
     cout << three_plus_four_equals_seven_smt << endl;
+
+    clearAllVariables();
 }
 
 
@@ -248,24 +250,93 @@ void testIntegersArithmetic() {
  * checks that give x=4, x=y, then x=4 as well
  */
 void testVariables() {
-    /* RAPIDNET */
-    Variable* x_rapidnet = new Variable(Variable::INT, false);
-    Variable* y_rapidnet = new Variable(Variable::INT, false);
-    IntVal* four_rapidnet = new IntVal(4);
+  /* RAPIDNET */
+  Variable* x_rapidnet = new Variable(Variable::INT, false);
+  Variable* y_rapidnet = new Variable(Variable::INT, false);
+  IntVal* four_rapidnet = new IntVal(4);
 
-    Constraint* x_equals_y_rapidnet = new Constraint(Constraint::EQ, x_rapidnet, y_rapidnet);
-    Constraint* y_equals_4_rapidnet = new Constraint(Constraint::EQ, y_rapidnet, four_rapidnet);
-    Constraint* x_equals_4_rapidnet = new Constraint(Constraint::EQ, x_rapidnet, four_rapidnet);
+  Constraint* x_equals_y_rapidnet = new Constraint(Constraint::EQ, x_rapidnet, y_rapidnet);
+  Constraint* y_equals_4_rapidnet = new Constraint(Constraint::EQ, y_rapidnet, four_rapidnet);
+  Constraint* x_equals_4_rapidnet = new Constraint(Constraint::EQ, x_rapidnet, four_rapidnet);
 
-    /* parsing */
-    string x_equals_y_smt = parseFormula(x_equals_y_rapidnet);
-    //string y_equals_4_smt = parseTerm(y_equals_4_rapidnet);
-    //string x_equals_4_smt = parseTerm(x_equals_4_rapidnet);
+  /* parsing */
+  string x_equals_y_smt = parseFormula(x_equals_y_rapidnet);
+  string y_equals_4_smt = parseFormula(y_equals_4_rapidnet);
+  string x_equals_4_smt = parseFormula(x_equals_4_rapidnet);
 
-    cout << x_equals_y_smt << endl;
-    //cout << y_equals_4_smt << endl;
-    //cout << x_equals_4_smt << endl;
+  printFreeVariablesDeclaration();
+  cout << x_equals_y_smt << endl;
+  cout << y_equals_4_smt << endl;
+  cout << x_equals_4_smt << endl;
+
+  clearAllVariables();
 }
+
+/* Program
+ * ---------------------
+   (set-logic QF_LIA)
+   (assert(forall ((x Int)) (> x 3)))
+   (check-sat)
+ * 
+ * (set-logic AUFNIRA)
+ * (assert(exists ((x Int)) (exists ((y Int)) (> y x) ) ))
+ */
+void testBoundVariables() {
+  /* rapidnet */
+  IntVal* three = new IntVal(3);
+  Variable* x = new Variable(Variable::INT, true);
+
+  vector<Variable*> boundVarList;
+  boundVarList.push_back(x);
+
+  Constraint* x_equals_3 = new Constraint(Constraint::EQ, x, three);
+
+  Quantifier* forall_x__x_equals_3_rapidnet = new Quantifier(Quantifier::FORALL, boundVarList, x_equals_3);
+
+  /* CVC4 */
+  string parsed = parseFormula(forall_x__x_equals_3_rapidnet);
+  cout << "---------- forall x (x > 3) ------------" << endl;
+  cout << parsed << endl;
+
+  clearAllVariables();
+}
+
+/* Program
+ * ---------------------
+   (set-logic QF_LIA)
+   (assert(forall ((x Int)) (> x 3)))
+   (check-sat)
+ * 
+ * (set-logic AUFNIRA)
+ * (assert(exists ((x Int)) (exists ((y Int)) (> y x) ) ))
+ */
+
+/*
+ * ((x > y) /\ (y > z)) => (x > z)
+ */
+void connective__x_gt_y__AND__y_gt_z__IMPLIES__x_gt_z() {
+  /* RAPIDNET */
+  Variable* x = new Variable(Variable::INT, false);
+  Variable* y = new Variable(Variable::INT, false);
+  Variable* z = new Variable(Variable::INT, false);
+
+  Constraint* x_gt_y = new Constraint(Constraint::EQ, x, y);
+  Constraint* y_gt_z = new Constraint(Constraint::EQ, y, z);
+  Constraint* x_gt_z = new Constraint(Constraint::EQ, x, z);
+
+  Connective* x_gt_y__AND__y_gt_z = new Connective(Connective::AND, x_gt_y, y_gt_z);
+  Connective* implies = new Connective(Connective::IMPLY, x_gt_y__AND__y_gt_z, x_gt_z);
+
+  /* checking */
+  string implies_smt = parseFormula(implies);
+
+  printFreeVariablesDeclaration();
+  cout << implies_smt << endl;
+
+  clearAllVariables();
+}
+
+
 
 /* 
  * *******************************************************************************
@@ -291,6 +362,8 @@ int main (int argc, char** argv)
 //  LogComponentEnable ("Formula", LOG_INFO);
   testIntegersArithmetic();
   testVariables();
+  connective__x_gt_y__AND__y_gt_z__IMPLIES__x_gt_z();
+  testBoundVariables(); 
 
   string overlogFile;
   string baseoverlogFile = DEFAULT_RN_APP_BASE;

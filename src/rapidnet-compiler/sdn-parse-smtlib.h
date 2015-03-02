@@ -2,6 +2,8 @@
 #include <string>
 #include "sdn-formula.h"
 #include <stdio.h>
+#include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -9,17 +11,25 @@ string parseArithmetic(Arithmetic* a);
 string parseTerm(Term* t);
 string parseFormula(Formula* f);
 string parseConstraint(Constraint* c);
+string parseConnective(Connective* c);
+string parseQuantifier(Quantifier* q);
 
 // All seperate variables should have DIFFERENT names
 // (variableName, variableDeclaration)
-std::map<string, string> all_variables;
+std::map<string, string> all_free_variables;
+std::map<string, string> all_bound_variables;
 //std::map<PredicateSchema*, Expr> all_predicate_schemas;
 //std::map<FunctionSchema*, Expr> all_function_schemas;
 
 void clearAllVariables() {
-	all_variables.clear();
+	all_free_variables.clear();
 }
 
+void printFreeVariablesDeclaration() {
+	for (std::map<string,string>::const_iterator it = all_free_variables.begin(); it != all_free_variables.end(); it++) {
+	    cout << it->second << endl;
+	}
+}
 
 string parseFormula(Formula* f) { 
 	if (dynamic_cast<PredicateInstance*>(f)) {
@@ -28,33 +38,48 @@ string parseFormula(Formula* f) {
 		return parseConstraint((Constraint*)f);
 	} else {
 		if (dynamic_cast<Quantifier*>(f)) {
-			return "";
+			return parseQuantifier((Quantifier*)f);
 		} else if (dynamic_cast<Connective*>(f)) {
-			return "";
+			return parseConnective((Connective*)f);
 		}
+	}
+}
+
+string parseConnective(Connective* c) {
+	Connective::ConnType ct = c->GetConnType();
+	string leftF = parseFormula(c->GetLeftF());
+	string rightF = parseFormula(c->GetRightF());
+	switch (ct) {
+		case Connective::IMPLY:
+			return "(=> " + leftF + " " + rightF + ")";
+		case Connective::OR:
+			return "(or " + leftF + " " + rightF + ")";
+		case Connective::AND:
+			return "(and " + leftF + " " + rightF + ")";
+		default:
+			return "Error";
 	}
 }
 
 
 
-string parseVariable(Variable* v) {
+string parseFreeVariable(Variable* v) {
 	Variable::TypeCode vartype = v->GetVariableType();
-	bool isbound = v->GetFreeOrBound();
-
 	string varname = v->GetVariableName();
 
 	//present, return stored variable
-	if (all_variables.find(varname) != all_variables.end()) return varname;
+	if (all_free_variables.find(varname) != all_free_variables.end()) return varname;
 
 	//absent, create and store in hash map
 	switch (vartype) {
 		case Variable::INT: {
 			string declare = "(declare-fun " + varname + " () Int)";
-			all_variables[varname] = declare;
+			all_free_variables[varname] = declare;
 			return varname;
 		} case Variable::DOUBLE: {
-			//return makeVariableType(em, em->realType(), isbound, v);
-			return "";
+			string declare = "(declare-fun " + varname + " () Real)";
+			all_free_variables[varname] = declare;
+			return varname;
 		} case Variable::BOOL: {
 			//return makeVariableType(em, em->booleanType(), isbound, v);
 			return "";
@@ -108,6 +133,57 @@ string IntegerToString(int number) {
 	return theNumberString;
 }
 
+bool isBoundVariablePresent(string varname) {
+	return std::find(all_bound_variables.begin(), all_bound_variables.end(), varname) != all_bound_variables.end();
+}
+
+string parseBoundVariable(Variable* v) {
+	Variable::TypeCode vartype = v->GetVariableType();
+	string varname = v->GetVariableName();
+
+	//absent, create and store in hash map
+	switch (vartype) {
+		case Variable::INT: {
+			if (isBoundVariablePresent(varname)) return varname;
+			all_bound_variables.push_back(varname);
+			return "forall ((" + varname + " Int))";
+		} case Variable::DOUBLE: {
+			return "";
+		} case Variable::BOOL: {
+			//return makeVariableType(em, em->booleanType(), isbound, v);
+			return "";
+		} case Variable::STRING: {
+			//return makeVariableType(em, em->stringType(), isbound, v);
+			return "";
+		} default: {
+			return "Not a valid variable type, must be INT/DOUBLE/BOOL/STRING";
+		}
+	}
+}
+
+string parseQuantifier(Quantifier* q) {	
+	Formula* f = q->GetQuantifierFormula();
+	string f_parsed = parseFormula(f);
+
+	vector<Variable*> bound_var_list = q->GetBoundVariables();
+
+	Quantifier::QuanType qt = q->GetQuantifierType();
+	switch (qt) {
+		case Quantifier::FORALL: {
+			string declare = "";
+			for (int i=0; i<bound_var_list.size(); i++) {
+				string vardeclare = parseBoundVariable(bound_var_list[i]);
+				declare = declare + "(" + vardeclare;
+			}
+			return declare + f_parsed + ")";
+		} case Quantifier::EXISTS: {
+			return "";
+		} default: {
+			return "invalid quantifier format";
+		}
+	}
+}
+
 
 // Parse Terms
 // needs bitvector for double integers
@@ -123,7 +199,10 @@ string parseTerm(Term* t) {
 		string value = ((StringVal*)t)->GetStringValue();
 		return value;
 	} else if (dynamic_cast<Variable*>(t)) {
-		return parseVariable((Variable*)t);
+		Variable* v = (Variable*)t;
+		bool isbound = v->GetFreeOrBound();
+		if (isbound) return parseBoundVariable(v);
+		return parseFreeVariable(v);
 	} else if (dynamic_cast<UserFunction*>(t)) {
 		//return parseUserFunction(em, (UserFunction*)t);
 		return "";
