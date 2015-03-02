@@ -390,7 +390,7 @@ void connective__x_gt_y__AND__y_gt_z__IMPLIES__x_gt_z() {
    DECLARING
    ---------
    (set-logic QF_UFLIA)
-   (declare-fun even (Int) Bool)
+   (declare-fun iseven (Int) Bool)
    (assert (even 2))
    (assert (not (even 3)))
 
@@ -421,7 +421,9 @@ void testEvenPredicate() {
   PredicateInstance* iseven_3 = new PredicateInstance(iseven_schema, args_three);
 
   /* what to do */
-
+  cout << "\n------------------ Test iseven(n) ----------------------" << endl;
+  string PredicateSchema_smtlib = parsePredicateSchema(iseven_schema);
+  cout << PredicateSchema_smtlib << endl;
 
   /* ***************************** parsing ************************** */
 

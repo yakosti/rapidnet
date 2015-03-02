@@ -32,10 +32,50 @@ void printFreeVariablesDeclaration() {
 	}
 }
 
+string parseVariableType(Variable::TypeCode v) {
+	switch (v) {
+		case Variable::INT:
+			return "Int";
+		case Variable::BOOL:
+			return "Bool";
+		case Variable::DOUBLE:
+			return "Real";
+		case Variable::STRING:
+			return "String";
+		default:
+			return "Not a valid type";
+	}
+}
+
+
+string parsePredicateSchema(PredicateSchema* s) {
+	string schema_name = s->GetName();
+	if (all_predicate_schemas.find(schema_name) != all_predicate_schemas.end()) 
+		return all_predicate_schemas[schema_name];
+
+	vector<Variable::TypeCode> types_rapidnet = s->GetTypes();
+	string types_smtlib = "";
+	for (int i=0; i<types_rapidnet.size(); i++) {
+		string type_smtlib = parseVariableType(types_rapidnet[i]);
+		types_smtlib = types_smtlib + type_smtlib + " ";
+	}
+
+	string predicateVariable_smtlib = "(declare-fun even (" + types_smtlib + ") Bool)";
+
+	all_predicate_schemas[schema_name] = predicateVariable_smtlib;
+	return predicateVariable_smtlib;
+}
+
+
+string parsePredicateInstance(PredicateInstance* pi) {
+	string schema_cvc4 = parsePredicateSchema(pi->GetSchema());
+	return schema_cvc4;
+}
+
 
 string parseFormula(Formula* f) { 
 	if (dynamic_cast<PredicateInstance*>(f)) {
-		//return parsePredicateInstance((PredicateInstance*)pi);
+		return parsePredicateInstance((PredicateInstance*)f);
 	} else if (dynamic_cast<Constraint*>(f)) {
 		return parseConstraint((Constraint*)f);
 	} else {
