@@ -134,7 +134,7 @@ string IntegerToString(int number) {
 }
 
 
-string parseBoundVariable(Variable* v) {
+string parseBoundVariable(Variable* v, string qt) {
 	Variable::TypeCode vartype = v->GetVariableType();
 	string varname = v->GetVariableName();
 
@@ -144,7 +144,7 @@ string parseBoundVariable(Variable* v) {
 	//absent, create and store in hash map, but return variable name only
 	switch (vartype) {
 		case Variable::INT: {
-			string declare = "forall ((" + varname + " Int))";
+			string declare = qt + " ((" + varname + " Int))";
 			all_bound_variables[varname] = declare;
 			return varname;
 		} case Variable::DOUBLE: {
@@ -161,6 +161,17 @@ string parseBoundVariable(Variable* v) {
 	}
 }
 
+string makeQuantifierString(string parsed_formula, vector<Variable*> bound_var_list, string qt) {
+	string declare = "";
+	string end_brackets = "";
+	for (int i=0; i<bound_var_list.size(); i++) {
+		string bound_var_declaration = parseBoundVariable(bound_var_list[i], qt);
+		declare = declare + "(" + all_bound_variables.find(bound_var_declaration)->second;
+		end_brackets = end_brackets + ")";
+	}
+	return declare + parsed_formula + end_brackets;
+}
+
 string parseQuantifier(Quantifier* q) {	
 	Formula* f = q->GetQuantifierFormula();
 	string f_parsed = parseFormula(f);
@@ -170,23 +181,9 @@ string parseQuantifier(Quantifier* q) {
 	Quantifier::QuanType qt = q->GetQuantifierType();
 	switch (qt) {
 		case Quantifier::FORALL: {
-			string declare = "";
-			string end_brackets = "";
-			for (int i=0; i<bound_var_list.size(); i++) {
-				string bound_var_declaration = parseBoundVariable(bound_var_list[i]);
-				declare = declare + "(" + all_bound_variables.find(bound_var_declaration)->second;
-				end_brackets = end_brackets + ")";
-			}
-			return declare + f_parsed + end_brackets;
+			return makeQuantifierString(f_parsed, bound_var_list, "forall");
 		} case Quantifier::EXISTS: {
-			string declare = "";
-			string end_brackets = "";
-			for (int i=0; i<bound_var_list.size(); i++) {
-				string bound_var_declaration = parseBoundVariable(bound_var_list[i]);
-				declare = declare + "(" + all_bound_variables.find(bound_var_declaration)->second;
-				end_brackets = end_brackets + ")";
-			}
-			return declare + f_parsed + end_brackets;
+			return makeQuantifierString(f_parsed, bound_var_list, "exists");
 		} default: {
 			return "invalid quantifier format";
 		}
@@ -210,7 +207,8 @@ string parseTerm(Term* t) {
 	} else if (dynamic_cast<Variable*>(t)) {
 		Variable* v = (Variable*)t;
 		bool isbound = v->GetFreeOrBound();
-		if (isbound) return parseBoundVariable(v);
+		//if (isbound) return parseBoundVariable(v);
+		if (isbound) return v->GetVariableName();
 		return parseFreeVariable(v);
 	} else if (dynamic_cast<UserFunction*>(t)) {
 		//return parseUserFunction(em, (UserFunction*)t);
