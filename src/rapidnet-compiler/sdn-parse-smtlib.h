@@ -133,9 +133,8 @@ string IntegerToString(int number) {
 	return theNumberString;
 }
 
-bool isBoundVariablePresent(string varname) {
-	return std::find(all_bound_variables.begin(), all_bound_variables.end(), varname) != all_bound_variables.end();
-}
+
+
 
 string parseBoundVariable(Variable* v) {
 	Variable::TypeCode vartype = v->GetVariableType();
@@ -144,9 +143,9 @@ string parseBoundVariable(Variable* v) {
 	//absent, create and store in hash map
 	switch (vartype) {
 		case Variable::INT: {
-			if (isBoundVariablePresent(varname)) return varname;
-			all_bound_variables.push_back(varname);
-			return "forall ((" + varname + " Int))";
+			string declare = "forall ((" + varname + " Int))";
+			all_bound_variables[varname] = declare;
+			return "";
 		} case Variable::DOUBLE: {
 			return "";
 		} case Variable::BOOL: {
@@ -171,11 +170,7 @@ string parseQuantifier(Quantifier* q) {
 	switch (qt) {
 		case Quantifier::FORALL: {
 			string declare = "";
-			for (int i=0; i<bound_var_list.size(); i++) {
-				string vardeclare = parseBoundVariable(bound_var_list[i]);
-				declare = declare + "(" + vardeclare;
-			}
-			return declare + f_parsed + ")";
+			return declare;
 		} case Quantifier::EXISTS: {
 			return "";
 		} default: {
