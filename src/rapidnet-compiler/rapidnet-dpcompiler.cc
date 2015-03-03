@@ -264,7 +264,7 @@ void testVariables() {
   string y_equals_4_smt = parseFormula(y_equals_4_rapidnet);
   string x_equals_4_smt = parseFormula(x_equals_4_rapidnet);
 
-  printFreeVariablesDeclaration();
+  printDeclaration(all_free_variables);
   cout << x_equals_y_smt << endl;
   cout << y_equals_4_smt << endl;
   cout << x_equals_4_smt << "\n" << endl;
@@ -380,7 +380,7 @@ void connective__x_gt_y__AND__y_gt_z__IMPLIES__x_gt_z() {
   /* checking */
   string implies_smt = parseFormula(implies);
 
-  printFreeVariablesDeclaration();
+  printDeclaration(all_free_variables);
   cout << implies_smt << endl;
 
   clearAllVariables();
@@ -474,11 +474,57 @@ void testBoundPredicate() {
   cout << "\n----------------- isblue ----------------------- " << endl;
   string isblue_sky_smtlib = parseFormula(isblue_sky_rapidnet);
   cout << isblue_sky_smtlib << endl;
+  printDeclaration(all_predicate_schemas);
   string exists_x__isblue_x_smtlib = parseFormula(exists_x__isblue_x_rapidnet);
   cout << exists_x__isblue_x_smtlib << endl;
   
   clearAllVariables();
 }
+
+/*
+ * Function symbols testing
+ * 
+   (set-logic S)
+   (declare-fun mother (String) String)
+   (assert (= (mother "MaliaObama") "MichelleObama"))
+   (assert (= (mother "MaliaObama") "BarbaraBush"))
+   (check-sat) !unsat, as Barbara Bush is not the mother of Malia Obama
+ */
+void quantifier__function_child_younger_than_mother() {
+  /* ---------------------------- RAPIDNET ------------------------------ */
+  //mother
+  vector<Variable::TypeCode> domain_types;
+  domain_types.push_back(Variable::STRING);
+  FunctionSchema* mother_schema = new FunctionSchema("mother", domain_types, Variable::STRING);
+
+  //assert that MichelleObama is the mother of MaliaObama
+  vector<Term*> args;
+  StringVal* MaliaObama = new StringVal("MaliaObama");
+  args.push_back(MaliaObama);
+  UserFunction* mother_malia = new UserFunction(mother_schema, args);
+
+  StringVal* MichelleObama = new StringVal("MichelleObama");
+  StringVal* BarbaraBush = new StringVal("BarbaraBush");
+
+  //true
+  Constraint* michelle_is_mother_of_malia = new Constraint(Constraint::EQ, mother_malia, MichelleObama); 
+  //false
+  Constraint* barbara_is_mother_of_malia = new Constraint(Constraint::EQ, mother_malia, BarbaraBush);
+
+  /* ------------------------------ CVC4 ------------------------------ */
+
+  cout << "\n---------------- Function mother -----------------------" << endl;
+  string testing = parseFunctionSchema(mother_schema);
+  printDeclaration(all_function_schemas);
+  string michelle_is_mother_of_malia_smtlib = parseFormula(michelle_is_mother_of_malia);
+  cout << michelle_is_mother_of_malia_smtlib << endl;
+  //string barbara_is_mother_of_malia_smtlib = parseFormula(barbara_is_mother_of_malia);
+
+  clearAllVariables();
+}
+
+
+
 
 /* 
  * *******************************************************************************
@@ -512,6 +558,7 @@ int main (int argc, char** argv)
   testMixedQuantifiers();
   testEvenPredicate();
   testBoundPredicate();
+  quantifier__function_child_younger_than_mother();
 
   string overlogFile;
   string baseoverlogFile = DEFAULT_RN_APP_BASE;

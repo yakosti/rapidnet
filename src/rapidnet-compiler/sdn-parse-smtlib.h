@@ -28,8 +28,8 @@ void clearAllVariables() {
 	all_function_schemas.clear();
 }
 
-void printFreeVariablesDeclaration() {
-	for (std::map<string,string>::const_iterator it = all_free_variables.begin(); it != all_free_variables.end(); it++) {
+void printDeclaration(std::map<string, string> mymap) {
+	for (std::map<string,string>::const_iterator it = mymap.begin(); it != mymap.end(); it++) {
 	    cout << it->second << endl;
 	}
 }
@@ -248,6 +248,41 @@ string parseQuantifier(Quantifier* q) {
 	}
 }
 
+string parseFunctionSchema(FunctionSchema* s) {
+	string fname = s->GetName();
+	if (all_function_schemas.find(fname) != all_function_schemas.end()) return fname;
+
+	vector<Variable::TypeCode> domain_types_rapidnet = s->GetDomainTypes();
+	string domain_types_smtlib;
+	for (int i=0; i<domain_types_rapidnet.size(); i++) {
+		string domain_type_smtlib = parseVariableType(domain_types_rapidnet[i]);
+		domain_types_smtlib = domain_types_smtlib + domain_type_smtlib + " ";
+	}
+
+	string range_type_smtlib = parseVariableType(s->GetRangeType());
+	
+	string function_smtlib = "(declare-fun " + fname + " (" + domain_types_smtlib + ") " + range_type_smtlib + ")";
+	all_function_schemas[fname] = function_smtlib;
+	return fname;
+}
+
+
+
+string parseUserFunction(UserFunction* uf) {
+	string user_function_schema_smtlib = parseFunctionSchema(uf->GetSchema());
+
+	// vector<Term*> user_function_args_rapidnet = uf->GetArgs();
+	// vector<Expr> user_function_args_cvc4;
+	// for (int i=0; i<user_function_args_rapidnet.size(); i++) {
+	// 	Expr current_term_cvc4 = parseTerm(em, user_function_args_rapidnet[i]);
+	// 	user_function_args_cvc4.push_back(current_term_cvc4);
+	// }
+
+	// Expr user_function_cvc4 = em->mkExpr(kind::APPLY_UF, user_function_schema_cvc4, user_function_args_cvc4);
+
+	return user_function_schema_smtlib;
+}
+
 
 // Parse Terms
 // needs bitvector for double integers
@@ -268,7 +303,7 @@ string parseTerm(Term* t) {
 		if (isbound) return v->GetVariableName();
 		return parseFreeVariable(v);
 	} else if (dynamic_cast<UserFunction*>(t)) {
-		//return parseUserFunction(em, (UserFunction*)t);
+		return parseUserFunction((UserFunction*)t);
 		return "";
 	} else { 
 		return parseArithmetic((Arithmetic*)t);
