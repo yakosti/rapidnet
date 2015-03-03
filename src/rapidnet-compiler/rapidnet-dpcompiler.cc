@@ -518,11 +518,84 @@ void quantifier__function_child_younger_than_mother() {
   printDeclaration(all_function_schemas);
   string michelle_is_mother_of_malia_smtlib = parseFormula(michelle_is_mother_of_malia);
   cout << michelle_is_mother_of_malia_smtlib << endl;
-  //string barbara_is_mother_of_malia_smtlib = parseFormula(barbara_is_mother_of_malia);
+  string barbara_is_mother_of_malia_smtlib = parseFormula(barbara_is_mother_of_malia);
+  cout << barbara_is_mother_of_malia_smtlib << endl;
 
   clearAllVariables();
 }
 
+/*
+ * Function
+ * --------
+ * mother(x): returns the mother of x
+ *
+ * Predicate
+ * ---------
+ * YOUNGER(x,y): x is younger than y
+ *
+ * ASSERT forall x, YOUNGER(x, mother(x))
+ * (everyone is younger than his/her mother)
+ * 
+ * QUERY YOUNGER("MaliaObama", mother("MaliaObama"))? //should be true
+ *
+   (set-logic S)
+   (assert (forall ((y String)) (YOUNGER y (mother y))))
+ */
+void nested_function_check() {
+  /* ---------------------------- RAPIDNET ------------------------------ */
+  //bound vars
+  Variable* child = new Variable(Variable::STRING, true); 
+
+  //mother schema
+  vector<Variable::TypeCode> mother_domain_types;
+  mother_domain_types.push_back(Variable::STRING);
+  FunctionSchema* mother_schema = new FunctionSchema("mother", mother_domain_types, Variable::STRING);
+
+  //mother UserFunction
+  vector<Term*> mother_args;
+  mother_args.push_back(child);
+  UserFunction* mother_function = new UserFunction(mother_schema, mother_args);
+
+  //YOUNGER schema
+  vector<Variable::TypeCode> younger_domain_types;
+  younger_domain_types.push_back(Variable::STRING);
+  younger_domain_types.push_back(Variable::STRING);
+  PredicateSchema* YOUNGER_schema = new PredicateSchema("YOUNGER", younger_domain_types);
+
+  //Younger terms
+  vector<Term*> YOUNGER_args;
+  YOUNGER_args.push_back(child);
+  YOUNGER_args.push_back(mother_function);
+  PredicateInstance* YOUNGER_x_motherx = new PredicateInstance(YOUNGER_schema, YOUNGER_args);
+
+  // forall x, YOUNGER(x, mother(x))
+  vector<Variable*> quantifier_bound_vars;
+  quantifier_bound_vars.push_back(child);
+  Quantifier* forall_x__YOUNGER_x_motherx = new Quantifier(Quantifier::FORALL, quantifier_bound_vars, YOUNGER_x_motherx);
+
+  /* ---------------------------- RAPIDNET ------------------------------ */
+
+  StringVal* MaliaObama = new StringVal("MaliaObama");
+
+  // mother("MaliaObama")
+  vector<Term*> malia_schema_args;
+  malia_schema_args.push_back(MaliaObama);
+  UserFunction* mother_malia = new UserFunction(mother_schema, malia_schema_args);
+
+  vector<Term*> YOUNGER_malia_args;
+  YOUNGER_malia_args.push_back(MaliaObama);
+  YOUNGER_malia_args.push_back(mother_malia);
+  PredicateInstance* malia_younger_than_her_mother = new PredicateInstance(YOUNGER_schema, YOUNGER_malia_args);
+
+  /* ---------------------------- CVC4 ------------------------------ */
+  std::cout << "\n------------------- Nested Function Check --------------" << std::endl;
+  string forall_x__YOUNGER_x_motherx_cvc4 = parseFormula(forall_x__YOUNGER_x_motherx);
+  printDeclaration(all_predicate_schemas);
+  printDeclaration(all_function_schemas);
+  cout << forall_x__YOUNGER_x_motherx_cvc4 << endl;
+
+  clearAllVariables();
+}
 
 
 
@@ -559,6 +632,7 @@ int main (int argc, char** argv)
   testEvenPredicate();
   testBoundPredicate();
   quantifier__function_child_younger_than_mother();
+  nested_function_check();
 
   string overlogFile;
   string baseoverlogFile = DEFAULT_RN_APP_BASE;

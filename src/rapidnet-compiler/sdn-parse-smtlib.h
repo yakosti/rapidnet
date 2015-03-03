@@ -271,16 +271,15 @@ string parseFunctionSchema(FunctionSchema* s) {
 string parseUserFunction(UserFunction* uf) {
 	string user_function_schema_smtlib = parseFunctionSchema(uf->GetSchema());
 
-	// vector<Term*> user_function_args_rapidnet = uf->GetArgs();
-	// vector<Expr> user_function_args_cvc4;
-	// for (int i=0; i<user_function_args_rapidnet.size(); i++) {
-	// 	Expr current_term_cvc4 = parseTerm(em, user_function_args_rapidnet[i]);
-	// 	user_function_args_cvc4.push_back(current_term_cvc4);
-	// }
+	vector<Term*> user_function_args_rapidnet = uf->GetArgs();
+	string user_function_args_smtlib = "";
+	for (int i=0; i<user_function_args_rapidnet.size(); i++) {
+		string current_term_cvc4 = parseTerm(user_function_args_rapidnet[i]);
+		user_function_args_smtlib = user_function_args_smtlib + current_term_cvc4 + " ";
+	}
 
-	// Expr user_function_cvc4 = em->mkExpr(kind::APPLY_UF, user_function_schema_cvc4, user_function_args_cvc4);
-
-	return user_function_schema_smtlib;
+	string user_function_smtlib = "(" + user_function_schema_smtlib + " " + user_function_args_smtlib + ")";
+	return user_function_smtlib;
 }
 
 
