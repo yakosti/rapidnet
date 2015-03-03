@@ -331,6 +331,35 @@ Constraint::Print() const
   rightE->PrintTerm();
 }
 
+bool
+Constraint::IsEquiv()
+{
+	return ((op == Constraint::EQ)?true:false);
+}
+
+bool
+Constraint::IsUnif()
+{
+	Variable* varL = NULL;
+	Variable* varR = NULL;
+	varL = dynamic_cast<Variable*>(leftE);
+	varR = dynamic_cast<Variable*>(rightE);
+	if (varL != NULL && varR != NULL && this->IsEquiv())
+	{
+		return true;
+	}
+
+	return false;
+
+}
+
+void
+Constraint::GetVars(vector<Variable*>& vlist)
+{
+	leftE->GetVars(vlist);
+	rightE->GetVars(vlist);
+}
+
 void
 Constraint::VarReplace(const VarMap& vmap)
 {
@@ -361,6 +390,40 @@ Constraint::VarReplace(const VarMap& vmap)
 	else
 	{
 		rightE->ReplaceVar(vmap);
+	}
+}
+
+void
+Constraint::VarReplace(UnionFindSet ufs,
+					   const map<Variable*, int> varTable,
+					   const map<int, Variable*> varRevTable)
+{
+	Variable* var = NULL;
+	int varId = 0;
+	int newId = 0;
+
+	var = dynamic_cast<Variable*>(leftE);
+	if (var != NULL)
+	{
+		varId = varTable.at(var);
+		newId = ufs.Root(varId);
+		Variable* newVar = varRevTable.at(newId);
+	}
+	else
+	{
+		leftE->VarReplace(ufs, varTable, varRevTable);
+	}
+
+	var = dynamic_cast<Variable*>(rightE);
+	if (var != NULL)
+	{
+		varId = varTable.at(var);
+		newId = ufs.Root(varId);
+		Variable* newVar = varRevTable.at(newId);
+	}
+	else
+	{
+		rightE->VarReplace(ufs, varTable, varRevTable);
 	}
 }
 
@@ -446,6 +509,11 @@ string Variable::GetVariableName() {
   return name;
 }
 
+void Variable::GetVars(vector<Variable*>& vlist)
+{
+	vlist.push_back(this);
+}
+
 void Variable::PrintTerm() {
   cout << name;
 }
@@ -519,6 +587,16 @@ UserFunction::UserFunction(const UserFunction& uf)
 	}
 }
 
+void
+UserFunction::GetVars(vector<Variable*>& vlist)
+{
+	vector<Term*>::iterator itv;
+	for (itv = args.begin();itv != args.end();itv++)
+	{
+		(*itv)->GetVars(vlist);
+	}
+}
+
 UserFunction::~UserFunction()
 {
 	delete schema;
@@ -539,7 +617,7 @@ FunctionSchema* UserFunction::GetSchema() {
 }
 
 void
-UserFunction::ReplaceVar(const VarMap& vmap)
+UserFunction::VarReplace(const VarMap& vmap)
 {
 	vector<Term*>::iterator it;
 	for (it = args.begin(); it != args.end(); it++)
@@ -559,6 +637,34 @@ UserFunction::ReplaceVar(const VarMap& vmap)
 		}
 	}
 }
+
+void
+UserFunction::VarReplace(UnionFindSet ufs,
+						 const map<Variable*, int> varTable,
+						 const map<int, Variable*> varRevTable)
+{
+	Variable* var = NULL;
+	int varId = 0;
+	int newId = 0;
+
+	vector<Term*>::iterator itv;
+	for (itv = args.begin();itv != args.end();itv++)
+	{
+		var = dynamic_cast<Variable*>(*itv);
+		if (var != NULL)
+		{
+			varId = varTable.at(var);
+			newId = ufs.Root(varId);
+			Variable* newVar = varRevTable.at(newId);
+			(*itv) = newVar;
+		}
+		else
+		{
+			(*itv)->VarReplace(ufs, varTable, varRevTable);
+		}
+	}
+}
+
 
 vector<Term*>& UserFunction::GetArgs() {
   return args;
@@ -774,6 +880,47 @@ Arithmetic::ReplaceVar(const VarMap& vmap)
 	{
 		rightE->ReplaceVar(vmap);
 	}
+}
+
+void
+Arithmetic::VarReplace(UnionFindSet ufs,
+					   const map<Variable*, int> varTable,
+					   const map<int, Variable*> varRevTable)
+{
+	Variable* var = NULL;
+	int varId = 0;
+	int newId = 0;
+
+	var = dynamic_cast<Variable*>(leftE);
+	if (var != NULL)
+	{
+		varId = varTable.at(var);
+		newId = ufs.Root(varId);
+		Variable* newVar = varRevTable.at(newId);
+	}
+	else
+	{
+		leftE->VarReplace(ufs, varTable, varRevTable);
+	}
+
+	var = dynamic_cast<Variable*>(rightE);
+	if (var != NULL)
+	{
+		varId = varTable.at(var);
+		newId = ufs.Root(varId);
+		Variable* newVar = varRevTable.at(newId);
+	}
+	else
+	{
+		rightE->VarReplace(ufs, varTable, varRevTable);
+	}
+}
+
+void
+Arithmetic::GetVars(vector<Variable*>& vlist)
+{
+	leftE->GetVars(vlist);
+	rightE->GetVars(vlist);
 }
 
 void Arithmetic::PrintTerm() {

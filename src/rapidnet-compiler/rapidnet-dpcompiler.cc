@@ -175,7 +175,7 @@ void compile (string overlogFile, bool provenanceEnabled)
   //miniGraph->PrintGraph();
 
   AnnotMap testMap;
-  list<Variable::TypeCode> tlist (4, Variable::STRING);
+  list<Variable::TypeCode> tlist (9, Variable::STRING);
   Tuple tp = Tuple("verifyPath", tlist);
   const vector<Variable*> arg = tp.GetArgs();
   IntVal* value = new IntVal(10000);
@@ -208,10 +208,10 @@ void compile (string overlogFile, bool provenanceEnabled)
 int main (int argc, char** argv)
 {
   LogComponentEnable ("RapidNetDPGraph", LOG_LEVEL_INFO);
-//  LogComponentEnable ("DPGraph", LOG_LEVEL_INFO);
+  LogComponentEnable ("DPGraph", LOG_LEVEL_INFO);
 //  LogComponentEnable ("Formula", LOG_LEVEL_INFO);
-//  LogComponentEnable ("Dpool", LOG_LEVEL_INFO);
-  LogComponentEnable ("Dpool", LOG_INFO);
+  LogComponentEnable ("Dpool", LOG_LEVEL_INFO);
+//  LogComponentEnable ("Dpool", LOG_INFO);
 //  LogComponentEnable ("DPGraph", LOG_INFO);
 //  LogComponentEnable ("Formula", LOG_INFO);
 

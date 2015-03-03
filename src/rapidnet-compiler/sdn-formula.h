@@ -16,6 +16,7 @@
 
 #include "ns3/log.h"
 #include "parser-util.h"
+#include "auxiliary.h"
 
 using namespace std;
 using namespace ns3;
@@ -49,7 +50,13 @@ public:
 	
 	virtual Term* Clone() {return NULL;}
 
+	virtual void GetVars(vector<Variable*>& vlist){}
+
 	virtual void ReplaceVar(const VarMap&){}
+
+	void VarReplace(UnionFindSet,
+					const map<Variable*, int>,
+					const map<int, Variable*>){}
 
 	virtual void PrintTerm() =0;
 };
@@ -78,6 +85,8 @@ public:
 	TypeCode GetVariableType();
 	
 	string GetVariableName();
+
+	void GetVars(vector<Variable*>&);
 
 	bool GetFreeOrBound();
 
@@ -132,7 +141,13 @@ public:
 
 	UserFunction* Clone();
 
-	void ReplaceVar(const VarMap&);
+	void GetVars(vector<Variable*>&);
+
+	void VarReplace(const VarMap&);
+
+	void VarReplace(UnionFindSet,
+					const map<Variable*, int>,
+					const map<int, Variable*>);
 
 	void PrintTerm();
 
@@ -155,6 +170,8 @@ public:
 	virtual ~Value(){}
 
 	virtual Value* Clone() {return NULL;}
+
+	void GetVars(vector<const Variable*>&) const{}
 
     void PrintTerm(){}
 };
@@ -270,6 +287,12 @@ public:
 	Arithmetic* Clone();
 
 	void ReplaceVar(const VarMap&);
+
+	void VarReplace(UnionFindSet,
+					const map<Variable*, int>,
+					const map<int, Variable*>);
+
+	void GetVars(vector<Variable*>&);
 
 	void PrintTerm();
 
@@ -450,7 +473,7 @@ private:
 
 
 
-
+//TODO: variables in Constraint should be independent
 class Constraint: public Formula
 {
 public:
@@ -476,7 +499,18 @@ public:
 
 	Term* GetRightE();
 
+	bool IsEquiv();
+
+	bool IsUnif();
+
+	//TODO: This member function should be const
+	void GetVars(vector<Variable*>&);
+
 	void VarReplace(const VarMap&);
+
+	void VarReplace(UnionFindSet,
+					const map<Variable*, int>,
+					const map<int, Variable*>);
 
 	void Print() const;
 
