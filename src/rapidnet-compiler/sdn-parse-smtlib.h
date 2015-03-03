@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <vector>
 #include <algorithm>
+#include <fstream>
 
 using namespace std;
 
@@ -28,11 +29,39 @@ void clearAllVariables() {
 	all_function_schemas.clear();
 }
 
-void printDeclaration(std::map<string, string> mymap) {
+void writeDeclaration(std::map<string,string> mymap, ofstream& myfile) {
+	if (myfile.is_open()) {
+		for (std::map<string,string>::const_iterator it = mymap.begin(); it != mymap.end(); it++) {
+			myfile << it->second + "\n";
+		}
+	}
+}
+
+/* Call only at the end 
+ */
+void writeToFile(char const* filename, vector<string> smtlib_array) {
+	ofstream myfile;
+	myfile.open(filename);
+
+	// print all the variables
+	writeDeclaration(all_free_variables, myfile);
+	// writeDeclaration(all_bound_variables, myfile);
+	// writeDeclaration(all_predicate_schemas, myfile);
+	// writeDeclaration(all_function_schemas, myfile);
+
+	for (int i=0; i<smtlib_array.size(); i++) {
+		myfile << smtlib_array[i] + "\n";
+	}
+	
+	myfile.close();
+}
+
+void printDeclaration(std::map<string,string> mymap) {
 	for (std::map<string,string>::const_iterator it = mymap.begin(); it != mymap.end(); it++) {
 	    cout << it->second << endl;
 	}
 }
+
 
 string parseVariableType(Variable::TypeCode v) {
 	switch (v) {

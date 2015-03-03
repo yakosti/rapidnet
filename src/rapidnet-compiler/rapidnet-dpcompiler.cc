@@ -233,6 +233,9 @@ void testIntegersArithmetic() {
     string three_plus_four_equals_seven_smt = parseConstraint(three_plus_four_equals_seven_rapidnet);
     cout << three_plus_four_equals_seven_smt << endl;
 
+    vector<string> to_print;
+    to_print.push_back(three_plus_four_equals_seven_smt);
+    writeToFile("test_integers_arithmetic.txt", to_print);
     clearAllVariables();
 }
 
