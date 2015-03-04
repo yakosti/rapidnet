@@ -45,9 +45,9 @@ void writeToFile(char const* filename, vector<string> smtlib_array) {
 
 	// print all the variables
 	writeDeclaration(all_free_variables, myfile);
-	// writeDeclaration(all_bound_variables, myfile);
-	// writeDeclaration(all_predicate_schemas, myfile);
-	// writeDeclaration(all_function_schemas, myfile);
+	writeDeclaration(all_bound_variables, myfile);
+	writeDeclaration(all_predicate_schemas, myfile);
+	writeDeclaration(all_function_schemas, myfile);
 
 	for (int i=0; i<smtlib_array.size(); i++) {
 		myfile << smtlib_array[i] + "\n";

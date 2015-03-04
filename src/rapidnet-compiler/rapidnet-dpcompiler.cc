@@ -235,7 +235,7 @@ void testIntegersArithmetic() {
 
     vector<string> to_print;
     to_print.push_back(three_plus_four_equals_seven_smt);
-    writeToFile("test_integers_arithmetic.txt", to_print);
+    writeToFile("test_integers_arithmetic.smt2", to_print);
     clearAllVariables();
 }
 
