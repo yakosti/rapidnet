@@ -28,6 +28,8 @@ typedef list<const DerivNode*> DerivNodeList;
 typedef map<string, DerivNodeList> DerivMap;
 typedef list<const RecurNode*> DerivAnnoList;
 
+typedef pair<const ConsList&, const FormList&> Obligation;
+
 //TODO: Create a class called BaseNode for base tuples.
 //DerivNode points to a derivation of a body tuple
 class DerivNode
@@ -55,7 +57,12 @@ public:
 
 	const ConsList& GetCumuConsts() const{return allConstraints;}
 
+	//Obtain all constraints and invariants that should be satisfied to
+	Obligation GetAllObligs() const;
+
 	const ConstraintsTemplate* GetConstraints() const{return ruleConstraints;}
+
+	const DerivNodeList& GetBodyDerivs() const{return bodyDerivs;}
 
 	void PrintHead() const;
 
@@ -116,6 +123,20 @@ public:
 						 VarMap& vmap);
 
 	void UpdateDerivNode(string tpName, DerivNode* dnode);
+
+	bool VerifyInvariants(const AnnotMap&) const;
+
+	//TODO: to be tested with z3
+	bool VerifyRecurInv(DerivNodeList::const_iterator,
+						DerivNodeList::const_iterator,
+						vector<const ConstraintsTemplate*>,
+						vector<Formula*>&,
+						const AnnotMap&,
+						string veriTuple,
+						const VarMap& vmap,
+						const ConstraintsTemplate*) const;
+
+	const DerivNodeList& GetDerivList(string tpName) const;
 
 	void PrintDpool() const;
 

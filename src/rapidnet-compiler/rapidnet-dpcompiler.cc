@@ -186,7 +186,9 @@ void compile (string overlogFile, bool provenanceEnabled)
   testMap.insert(AnnotMap::value_type("verifyPath", &anno));
   Ptr<Dpool> dpool (new Dpool(graphNdlog, testMap));
   //dpool->PrintDpool();
-  dpool->PrintAllDeriv();
+  //dpool->PrintAllDeriv();
+  const DerivNodeList& dlist = dpool->GetDerivList("advertisements");
+  //Use DerivNode::GetAllObligs() to get all proof obligations
 
 //  pair<RuleListC, RuleListC> p = miniGraph->TopoSort(testMap);
 //  RuleListC::const_iterator it;
