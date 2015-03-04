@@ -28,6 +28,8 @@ typedef list<const DerivNode*> DerivNodeList;
 typedef map<string, DerivNodeList> DerivMap;
 typedef list<const RecurNode*> DerivAnnoList;
 
+typedef pair<const ConsList&, const FormList&> Obligation;
+
 //TODO: Create a class called BaseNode for base tuples.
 //DerivNode points to a derivation of a body tuple
 class DerivNode
@@ -54,6 +56,9 @@ public:
 	const Tuple* GetHeadTuple() const{return head;}
 
 	const ConsList& GetCumuConsts() const{return allConstraints;}
+
+	//Obtain all constraints and invariants that should be satisfied to
+	Obligation GetAllObligs() const;
 
 	const ConstraintsTemplate* GetConstraints() const{return ruleConstraints;}
 
@@ -130,6 +135,8 @@ public:
 						string veriTuple,
 						const VarMap& vmap,
 						const ConstraintsTemplate*) const;
+
+	const DerivNodeList& GetDerivList(string tpName) const;
 
 	void PrintDpool() const;
 

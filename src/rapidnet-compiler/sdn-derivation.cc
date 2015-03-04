@@ -49,6 +49,12 @@ DerivNode::UpdateConstraint(ConstraintsTemplate* ctp)
 	ruleConstraints = ctp;
 }
 
+Obligation
+DerivNode::GetAllObligs() const
+{
+	return Obligation(allConstraints, allInvs);
+}
+
 void
 DerivNode::PrintHead() const
 {
@@ -468,6 +474,12 @@ Dpool::VerifyRecurInv(DerivNodeList::const_iterator curPos,
 	}
 
 	return true;
+}
+
+const DerivNodeList&
+Dpool::GetDerivList(string tpName) const
+{
+	return derivations.at(tpName);
 }
 
 void
