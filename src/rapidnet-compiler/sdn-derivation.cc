@@ -89,6 +89,11 @@ DerivNode::PrintDerivNode() const
 	{
 		cout << "Constraints:" << endl;
 		ruleConstraints->PrintTemplate();
+		cout << endl;
+		cout << "###### Simplified constraints ######" << endl;
+		SimpConstraints simpCons(*ruleConstraints);
+		simpCons.Print();
+		cout << "####################################" << endl;
 	}
 }
 

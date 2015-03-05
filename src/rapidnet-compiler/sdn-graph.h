@@ -20,6 +20,7 @@
 #include "sdn-formula.h"
 #include "ol-context.h"
 #include "parser-util.h"
+#include "auxiliary.h"
 
 using namespace std;
 using namespace ns3;
@@ -61,7 +62,7 @@ private:
 };
 
 /*
- * Class ConstraintsTemplate represents the schema of constraints in NDLog program
+ * Class ConstraintsTemplate represents a set of constraints in NDLog program
  */
 class ConstraintsTemplate
 {
@@ -82,6 +83,24 @@ public:
 
 private:
 	ConstraintList constraints;
+};
+
+class SimpConstraints
+{
+public:
+	SimpConstraints();
+
+	SimpConstraints(const ConstraintsTemplate&);
+
+	map<int, list<Variable*> > GetEqualClass();
+
+	void Print();
+
+private:
+	ConstraintsTemplate cts;
+	map<Variable*, int> varTable;
+	map<int, Variable*> varRevTable;
+	UnionFindSet varSet;
 };
 
 /*
