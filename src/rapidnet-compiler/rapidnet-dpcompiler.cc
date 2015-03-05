@@ -158,6 +158,25 @@ void parseOverlog (string overlogFile, Ptr<OlContext> ctxt,
     }
 }
 
+/* test parsing to smtlib
+ * Lay Kuan, Mar 5, 2015
+ */
+void test_derivations_parsing(const DerivNodeList& dlist) {
+  const DerivNode* f_elem = dlist.front(); //get first element in derivation list
+  cout << " &&&&&&&&&&&&&&&&&&&&& test parse &&&&&&&&&&&&&&&&&&&&&&& " << endl;
+  f_elem->PrintDerivation();
+  const ConstraintsTemplate* contemp = f_elem->GetConstraints();
+  const ConstraintList& clist = contemp->GetConstraints();
+
+  ConstraintList::const_iterator itc;
+  //First iteration: register all variables
+  for (itc = clist.begin(); itc != clist.end(); itc++) {
+    Constraint* newCons = new Constraint((**itc));
+    newCons->Print();
+  }
+
+} 
+
 /**
  * Compiles the application to generate depndency graph
  */
@@ -188,8 +207,8 @@ void compile (string overlogFile, bool provenanceEnabled)
   Ptr<Dpool> dpool (new Dpool(graphNdlog, testMap));
   //dpool->PrintDpool();
   //dpool->PrintAllDeriv();
-  cout << "PIGLET PRINCESS" << endl;
   const DerivNodeList& dlist = dpool->GetDerivList("advertisements");
+  test_derivations_parsing(dlist);
   //Use DerivNode::GetAllObligs() to get all proof obligations
 
 //  pair<RuleListC, RuleListC> p = miniGraph->TopoSort(testMap);

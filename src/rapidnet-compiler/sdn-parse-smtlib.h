@@ -5,6 +5,7 @@
 #include <vector>
 #include <algorithm>
 #include <fstream>
+#include <stdexcept>
 
 using namespace std;
 
@@ -74,7 +75,7 @@ string parseVariableType(Variable::TypeCode v) {
 		case Variable::STRING:
 			return "String";
 		default:
-			return "Not a valid type";
+			throw std::invalid_argument("Not a valid type, must be INT/BOOL/DOUBLE/STRING");
 	}
 }
 
@@ -140,7 +141,7 @@ string parseConnective(Connective* c) {
 		case Connective::AND:
 			return "(and " + leftF + " " + rightF + ")";
 		default:
-			return "Error";
+			throw std::invalid_argument("Not a valid connective");
 	}
 }
 
@@ -189,7 +190,7 @@ string parseConstraint(Constraint* c) {
 		case Constraint::LT:
 			return "(<" + leftE + " " + rightE + ")";
 		default:
-			return "Invalid constraint format";
+			throw std::invalid_argument("Invalid Constraint format");
 	}
 }
 
@@ -207,7 +208,7 @@ string parseArithmetic(Arithmetic* a) {
 		case Arithmetic::DIVIDE:
 			return "(div " + leftE + " " + rightE + ")";
 		default:
-			return "Not a valid arithmetic expression";
+			throw std::invalid_argument("Not a valid arithmetic expression");
 	}
 }
 
@@ -245,7 +246,7 @@ string parseBoundVariable(Variable* v, string qt) {
 			all_bound_variables[varname] = declare;
 			return varname;
 		} default: {
-			return "Not a valid variable type, must be INT/DOUBLE/BOOL/STRING";
+			throw std::invalid_argument("Not a valid variable type, must be INT/DOUBLE/BOOL/STRING");
 		}
 	}
 }
@@ -272,7 +273,7 @@ string parseQuantifier(Quantifier* q) {
 		} case Quantifier::EXISTS: {
 			return makeQuantifierString(f_parsed, bound_var_list, "exists");
 		} default: {
-			return "invalid quantifier format";
+			throw std::invalid_argument("invalid quantifier format");
 		}
 	}
 }
