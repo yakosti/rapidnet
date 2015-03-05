@@ -48,20 +48,21 @@ void clearAllVariables() {
 	}
 }
 
-void derivations_parsing(const DerivNodeList& dlist) {
+vector<string> derivations_parsing(const DerivNodeList& dlist) {
   const DerivNode* f_elem = dlist.front(); //get first element in derivation list
 
-  cout << " &&&&&&&&&&&&&&&&&&&&& test parse &&&&&&&&&&&&&&&&&&&&&&& " << endl;
   f_elem->PrintDerivation();
   const ConstraintsTemplate* contemp = f_elem->GetConstraints();
   const ConstraintList& clist = contemp->GetConstraints();
 
   ConstraintList::const_iterator itc;
-  //First iteration: register all variables
+  vector<string> all_constraints;
   for (itc = clist.begin(); itc != clist.end(); itc++) {
     Constraint* newCons = new Constraint((**itc));
     string constr = parseConstraint(newCons);
+    all_constraints.push_back("(assert " + constr + ")\n");
   }
+  return all_constraints;
 } 
 
 /* Call only at the end 
@@ -70,15 +71,21 @@ void writeToFile(char const* filename, const DerivNodeList& dlist) {
 	ofstream myfile;
 	myfile.open(filename);
 
-	myfile << "(set-logic S)\n";
+	myfile << "(set-logic S)\n"; // type of logic has strings
 
-	derivations_parsing(dlist);
+	vector<string> all_constraints = derivations_parsing(dlist);
 
-	// print all the variables
+	// print all the variables declarations
 	writeDeclaration(all_free_variables, myfile);
 	writeDeclaration(all_bound_variables, myfile);
 	writeDeclaration(all_predicate_schemas, myfile);
 	writeDeclaration(all_function_schemas, myfile);
+
+	//assert the constraints
+	for (int i=0; i<all_constraints.size(); i++) {
+		string constrd = all_constraints[i];
+		myfile << constrd;
+	}
 	
 	myfile.close();
 }
