@@ -963,6 +963,194 @@ Arithmetic::~Arithmetic()
 
 /* *************************** Arithmetic *********************************** */
 
+//Implementation of ConstraintsTemplate
+ConstraintsTemplate::ConstraintsTemplate()
+{
+	constraints = ConstraintList();
+}
+
+ConstraintsTemplate::ConstraintsTemplate(const ConstraintsTemplate& ct)
+{
+	ConstraintList::const_iterator it;
+	Constraint* newCons;
+	for (it = ct.constraints.begin(); it != ct.constraints.end();it++)
+	{
+		newCons = new Constraint((**it));
+		constraints.push_back(newCons);
+	}
+}
+
+void
+ConstraintsTemplate::AddConstraint(Constraint* cst)
+{
+	constraints.push_back(cst);
+}
+
+void
+ConstraintsTemplate::ReplaceVar(VarMap& vmap)
+{
+	ConstraintList::iterator it;
+	for (it = constraints.begin();it != constraints.end();it++)
+	{
+		(*it)->VarReplace(vmap);
+	}
+}
+
+ConstraintsTemplate::~ConstraintsTemplate()
+{
+	ConstraintList::iterator it;
+	for (it = constraints.begin(); it != constraints.end(); it++)
+	{
+		delete (*it);
+	}
+}
+
+void
+ConstraintsTemplate::PrintTemplate() const
+{
+	ConstraintList::const_iterator itc;
+	for (itc = constraints.begin(); itc != constraints.end(); itc++)
+	{
+	  cout << "\t";
+	  (*itc)->Print();
+	  cout << endl;
+	}
+}
+
+SimpConstraints::SimpConstraints()
+{
+	cts = ConstraintsTemplate();
+	varTable = map<Variable*, int>();
+	varRevTable = map<int, Variable*>();
+	varSet = UnionFindSet();
+}
+
+SimpConstraints::SimpConstraints(const ConsList& ctempList)
+{
+	int count = 0;
+	pair<map<Variable*,int>::iterator, bool> ret;
+	ConsList::const_iterator itcl;
+	ConstraintList::const_iterator itc;
+	cts = ConstraintsTemplate();
+
+	NS_LOG_DEBUG("Reach here!!!");
+	NS_LOG_DEBUG("Size of ConList:" << ctempList.size());
+
+	//First iteration: register all variables
+	for (itcl = ctempList.begin();itcl != ctempList.end();itcl++)
+	{
+		const ConstraintList& clist = (*itcl)->GetConstraints();
+		for (itc = clist.begin();itc != clist.end();itc++)
+		{
+			vector<Variable*> vlist;
+			(*itc)->GetVars(vlist);
+			vector<Variable*>::iterator itv;
+			for (itv = vlist.begin();itv != vlist.end();itv++)
+			{
+				ret = varTable.insert(map<Variable*, int>::value_type(*itv, count));
+				if (ret.second == true)
+				{
+					varRevTable.insert(map<int, Variable*>::value_type(count, *itv));
+					count++;
+				}
+			}
+		}
+	}
+
+	NS_LOG_DEBUG("Reach here???");
+
+	varSet = UnionFindSet(count);
+
+	//Second iteration: Build equivalent classes
+	for (itcl = ctempList.begin();itcl != ctempList.end();itcl++)
+	{
+		const ConstraintList& clist = (*itcl)->GetConstraints();
+		for (itc = clist.begin();itc != clist.end();itc++)
+		{
+			//Only process equivalence
+			if ((*itc)->IsUnif())
+			{
+				Term* leftE = (*itc)->GetLeftE();
+				Term* rightE = (*itc)->GetRightE();
+				Variable* leftVar = dynamic_cast<Variable*>(leftE);
+				Variable* rightVar = dynamic_cast<Variable*>(rightE);
+				int leftId = varTable.at(leftVar);
+				int rightId = varTable.at(rightVar);
+				varSet.Union(leftId, rightId);
+			}
+		}
+	}
+
+	NS_LOG_DEBUG("Reach here?");
+
+	Constraint* newCst;
+	//Third iteration: Build a new ConstraintsTemplate
+	for (itcl = ctempList.begin();itcl != ctempList.end();itcl++)
+	{
+		const ConstraintList& clist = (*itcl)->GetConstraints();
+		for (itc = clist.begin();itc != clist.end();itc++)
+		{
+			//Replace variables in constraints and
+			//insert non-equality constraints
+			if ((*itc)->IsUnif() == false)
+			{
+				newCst = new Constraint(**itc);
+				newCst->VarReplace(varSet, varTable, varRevTable);
+				cts.AddConstraint(newCst);
+			}
+		}
+	}
+}
+
+
+map<int, list<Variable*> >
+SimpConstraints::GetEqualClass()
+{
+	map<int, list<Variable*> > equiClass;
+	map<int, list<Variable*> >::iterator itv =  equiClass.begin();
+
+	map<Variable*, int>::iterator itm;
+	for (itm = varTable.begin();itm != varTable.end();itm++)
+	{
+		int root = varSet.Root(itm->second);
+		itv = equiClass.find(root);
+		if (itv == equiClass.end())
+		{
+			list<Variable*> vlist(1, itm->first);
+			equiClass.insert(map<int, list<Variable*> >::value_type(root, vlist));
+		}
+		else
+		{
+			itv->second.push_back(itm->first);
+		}
+	}
+
+	return equiClass;
+}
+
+void
+SimpConstraints::Print()
+{
+	cts.PrintTemplate();
+	cout << endl;
+
+	cout << "--------- Equivalent Classes --------" << endl;
+	int count = 0;
+	map<int, list<Variable*> > equaList = GetEqualClass();
+	map<int, list<Variable*> >::iterator itm;
+	list<Variable*>::iterator itl;
+	for (itm = equaList.begin(); itm != equaList.end();itm++)
+	{
+		cout << "Class " << count << ":";
+		for (itl = itm->second.begin();itl != itm->second.end();itl++)
+		{
+			(*itl)->PrintTerm();
+			cout << ",";
+		}
+		count++;
+		cout << endl;
+	}
+}
 
 
 

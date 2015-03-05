@@ -26,8 +26,6 @@ using namespace std;
 using namespace ns3;
 using namespace rapidnet_compiler;
 
-typedef list<Constraint*> ConstraintList;
-
 /*
  * Class tuple represents the schema of tuples in NDLog program
  */
@@ -61,47 +59,7 @@ private:
 	vector<Variable*> args;
 };
 
-/*
- * Class ConstraintsTemplate represents a set of constraints in NDLog program
- */
-class ConstraintsTemplate
-{
-public:
-	ConstraintsTemplate();
 
-	ConstraintsTemplate(const ConstraintsTemplate&);
-
-	void AddConstraint(Constraint*);
-
-	void ReplaceVar(VarMap&);
-
-	const ConstraintList& GetConstraints() const {return constraints;}
-
-	void PrintTemplate() const;
-
-	~ConstraintsTemplate();
-
-private:
-	ConstraintList constraints;
-};
-
-class SimpConstraints
-{
-public:
-	SimpConstraints();
-
-	SimpConstraints(const ConstraintsTemplate&);
-
-	map<int, list<Variable*> > GetEqualClass();
-
-	void Print();
-
-private:
-	ConstraintsTemplate cts;
-	map<Variable*, int> varTable;
-	map<int, Variable*> varRevTable;
-	UnionFindSet varSet;
-};
 
 /*
  * Components of Dependency graph
