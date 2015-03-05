@@ -48,27 +48,9 @@ void clearAllVariables() {
 	}
 }
 
-/* Call only at the end 
- */
-void writeToFile(char const* filename, vector<string> smtlib_array) {
-	ofstream myfile;
-	myfile.open(filename);
-
-	// print all the variables
-	writeDeclaration(all_free_variables, myfile);
-	writeDeclaration(all_bound_variables, myfile);
-	writeDeclaration(all_predicate_schemas, myfile);
-	writeDeclaration(all_function_schemas, myfile);
-
-	for (int i=0; i<smtlib_array.size(); i++) {
-		myfile << smtlib_array[i] + "\n";
-	}
-	
-	myfile.close();
-}
-
 void derivations_parsing(const DerivNodeList& dlist) {
   const DerivNode* f_elem = dlist.front(); //get first element in derivation list
+
   cout << " &&&&&&&&&&&&&&&&&&&&& test parse &&&&&&&&&&&&&&&&&&&&&&& " << endl;
   f_elem->PrintDerivation();
   const ConstraintsTemplate* contemp = f_elem->GetConstraints();
@@ -78,9 +60,28 @@ void derivations_parsing(const DerivNodeList& dlist) {
   //First iteration: register all variables
   for (itc = clist.begin(); itc != clist.end(); itc++) {
     Constraint* newCons = new Constraint((**itc));
-    //newCons->Print();
+    string constr = parseConstraint(newCons);
   }
 } 
+
+/* Call only at the end 
+ */
+void writeToFile(char const* filename, const DerivNodeList& dlist) {
+	ofstream myfile;
+	myfile.open(filename);
+
+	myfile << "(set-logic S)\n";
+
+	derivations_parsing(dlist);
+
+	// print all the variables
+	writeDeclaration(all_free_variables, myfile);
+	writeDeclaration(all_bound_variables, myfile);
+	writeDeclaration(all_predicate_schemas, myfile);
+	writeDeclaration(all_function_schemas, myfile);
+	
+	myfile.close();
+}
 
 
 void printDeclaration(std::map<string,string> mymap) {

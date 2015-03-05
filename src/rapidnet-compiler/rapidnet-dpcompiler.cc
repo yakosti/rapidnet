@@ -189,7 +189,9 @@ void compile (string overlogFile, bool provenanceEnabled)
   //dpool->PrintDpool();
   //dpool->PrintAllDeriv();
   const DerivNodeList& dlist = dpool->GetDerivList("advertisements");
-  derivations_parsing(dlist);
+  
+  writeToFile("testing_constraints.smt2", dlist); //laykuan testing
+
   //Use DerivNode::GetAllObligs() to get all proof obligations
 
 //  pair<RuleListC, RuleListC> p = miniGraph->TopoSort(testMap);
