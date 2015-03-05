@@ -49,20 +49,21 @@ void clearAllVariables() {
 }
 
 vector<string> derivations_parsing(const DerivNodeList& dlist) {
-  const DerivNode* f_elem = dlist.front(); //get first element in derivation list
+	const DerivNode* f_elem = dlist.front(); //get first element in derivation list
 
-  f_elem->PrintDerivation();
-  const ConstraintsTemplate* contemp = f_elem->GetConstraints();
-  const ConstraintList& clist = contemp->GetConstraints();
+	f_elem->PrintDerivation();
+	const ConstraintsTemplate* contemp = f_elem->GetConstraints();
+	const ConstraintList& clist = contemp->GetConstraints();
 
-  ConstraintList::const_iterator itc;
-  vector<string> all_constraints;
-  for (itc = clist.begin(); itc != clist.end(); itc++) {
-    Constraint* newCons = new Constraint((**itc));
-    string constr = parseConstraint(newCons);
-    all_constraints.push_back("(assert " + constr + ")\n");
-  }
-  return all_constraints;
+	ConstraintList::const_iterator itc;
+	vector<string> all_constraints;
+	for (itc = clist.begin(); itc != clist.end(); itc++) {
+	    Constraint* newCons = new Constraint((**itc));
+	    newCons->Print();
+	    string constr = parseFormula(newCons);
+	    all_constraints.push_back("(assert " + constr + ")\n");
+	}
+	return all_constraints;
 } 
 
 /* Call only at the end 
@@ -163,7 +164,7 @@ string parseFreeVariable(Variable* v) {
 			all_free_variables[varname] = declare;
 			return varname;
 		} default: {
-			return "Not a valid variable type, must be INT/DOUBLE/BOOL/STRING";
+			throw std::invalid_argument("Not a valid variable type, must be INT/DOUBLE/BOOL/STRING");
 		}
 	}
 }
@@ -395,7 +396,6 @@ string parseTerm(Term* t) {
 		return parseFreeVariable(v);
 	} else if (dynamic_cast<UserFunction*>(t)) {
 		return parseUserFunction((UserFunction*)t);
-		return "";
 	} else { 
 		return parseArithmetic((Arithmetic*)t);
 	}
