@@ -1,6 +1,8 @@
 #include <iostream>
 #include <string>
 #include "sdn-formula.h"
+#include "sdn-graph.h"
+#include "sdn-derivation.h"
 #include <stdio.h>
 #include <vector>
 #include <algorithm>
@@ -29,6 +31,21 @@ void clearAllVariables() {
 	all_predicate_schemas.clear();
 	all_function_schemas.clear();
 }
+
+void derivations_parsing(const DerivNodeList& dlist) {
+  const DerivNode* f_elem = dlist.front(); //get first element in derivation list
+  cout << " &&&&&&&&&&&&&&&&&&&&& test parse &&&&&&&&&&&&&&&&&&&&&&& " << endl;
+  f_elem->PrintDerivation();
+  const ConstraintsTemplate* contemp = f_elem->GetConstraints();
+  const ConstraintList& clist = contemp->GetConstraints();
+
+  ConstraintList::const_iterator itc;
+  //First iteration: register all variables
+  for (itc = clist.begin(); itc != clist.end(); itc++) {
+    Constraint* newCons = new Constraint((**itc));
+    newCons->Print();
+  }
+} 
 
 void writeDeclaration(std::map<string,string> mymap, ofstream& myfile) {
 	if (myfile.is_open()) {
