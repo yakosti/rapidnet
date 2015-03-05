@@ -188,7 +188,8 @@ void compile (string overlogFile, bool provenanceEnabled)
   Ptr<Dpool> dpool (new Dpool(graphNdlog, testMap));
   //dpool->PrintDpool();
   //dpool->PrintAllDeriv();
-  //const DerivNodeList& dlist = dpool->GetDerivList("advertisements");
+  cout << "PIGLET PRINCESS" << endl;
+  const DerivNodeList& dlist = dpool->GetDerivList("advertisements");
   //Use DerivNode::GetAllObligs() to get all proof obligations
 
 //  pair<RuleListC, RuleListC> p = miniGraph->TopoSort(testMap);
@@ -603,7 +604,18 @@ void nested_function_check() {
   clearAllVariables();
 }
 
-
+void test_parsing() {
+  testIntegersArithmetic();
+  testVariables();
+  connective__x_gt_y__AND__y_gt_z__IMPLIES__x_gt_z();
+  testBoundVariables(); 
+  testExistVariables();
+  testMixedQuantifiers();
+  testEvenPredicate();
+  testBoundPredicate();
+  quantifier__function_child_younger_than_mother();
+  nested_function_check();
+}
 
 /* 
  * *******************************************************************************
@@ -628,17 +640,7 @@ int main (int argc, char** argv)
 //  LogComponentEnable ("DPGraph", LOG_INFO);
 //  LogComponentEnable ("Formula", LOG_INFO);
 
-  /* testing parsing */
-  testIntegersArithmetic();
-  testVariables();
-  connective__x_gt_y__AND__y_gt_z__IMPLIES__x_gt_z();
-  testBoundVariables(); 
-  testExistVariables();
-  testMixedQuantifiers();
-  testEvenPredicate();
-  testBoundPredicate();
-  quantifier__function_child_younger_than_mother();
-  nested_function_check();
+  test_parsing();
 
   string overlogFile;
   string baseoverlogFile = DEFAULT_RN_APP_BASE;
@@ -653,7 +655,7 @@ int main (int argc, char** argv)
     provenance);
   cmd.Parse (argc, argv);
 
-  compile (overlogFile, provenance);
+  compile(overlogFile, provenance);
   return 0;
 }
 
