@@ -158,6 +158,121 @@ ConstraintsTemplate::PrintTemplate() const
 	}
 }
 
+SimpConstraints::SimpConstraints()
+{
+	cts = ConstraintsTemplate();
+	varTable = map<Variable*, int>();
+	varRevTable = map<int, Variable*>();
+	varSet = UnionFindSet();
+}
+
+SimpConstraints::SimpConstraints(const ConstraintsTemplate& cTemp)
+{
+	int count = 0;
+	pair<map<Variable*,int>::iterator, bool> ret;
+
+	cts = ConstraintsTemplate();
+	const ConstraintList& clist = cTemp.GetConstraints();
+	ConstraintList::const_iterator itc;
+	//First iteration: register all variables
+	for (itc = clist.begin();itc != clist.end();itc++)
+	{
+		vector<Variable*> vlist;
+		(*itc)->GetVars(vlist);
+		vector<Variable*>::iterator itv;
+		for (itv = vlist.begin();itv != vlist.end();itv++)
+		{
+			ret = varTable.insert(map<Variable*, int>::value_type(*itv, count));
+			if (ret.second == true)
+			{
+				varRevTable.insert(map<int, Variable*>::value_type(count, *itv));
+				count++;
+			}
+		}
+	}
+
+	varSet = UnionFindSet(count);
+
+	//Second iteration: Build equivalent classes
+	for (itc = clist.begin();itc != clist.end();itc++)
+	{
+		//Only process equivalence
+		if ((*itc)->IsUnif())
+		{
+			Term* leftE = (*itc)->GetLeftE();
+			Term* rightE = (*itc)->GetRightE();
+			Variable* leftVar = dynamic_cast<Variable*>(leftE);
+			Variable* rightVar = dynamic_cast<Variable*>(rightE);
+			int leftId = varTable.at(leftVar);
+			int rightId = varTable.at(rightVar);
+			varSet.Union(leftId, rightId);
+		}
+	}
+
+	Constraint* newCst;
+	//Third iteration: Build a new ConstraintsTemplate
+	for (itc = clist.begin();itc != clist.end();itc++)
+	{
+		//Replace variables in constraints and
+		//insert non-equality constraints
+		if ((*itc)->IsUnif() == false)
+		{
+			newCst = new Constraint(**itc);
+			newCst->VarReplace(varSet, varTable, varRevTable);
+			cts.AddConstraint(newCst);
+		}
+	}
+}
+
+map<int, list<Variable*> >
+SimpConstraints::GetEqualClass()
+{
+	map<int, list<Variable*> > equiClass;
+	map<int, list<Variable*> >::iterator itv =  equiClass.begin();
+
+	map<Variable*, int>::iterator itm;
+	for (itm = varTable.begin();itm != varTable.end();itm++)
+	{
+		int root = varSet.Root(itm->second);
+		itv = equiClass.find(root);
+		if (itv == equiClass.end())
+		{
+			list<Variable*> vlist(1, itm->first);
+			equiClass.insert(map<int, list<Variable*> >::value_type(root, vlist));
+		}
+		else
+		{
+			itv->second.push_back(itm->first);
+		}
+	}
+
+	return equiClass;
+}
+
+void
+SimpConstraints::Print()
+{
+	cts.PrintTemplate();
+	cout << endl;
+
+	cout << "--------- Equivalent Classes --------" << endl;
+	int count = 0;
+	map<int, list<Variable*> > equaList = GetEqualClass();
+	map<int, list<Variable*> >::iterator itm;
+	list<Variable*>::iterator itl;
+	for (itm = equaList.begin(); itm != equaList.end();itm++)
+	{
+		cout << "Class " << count << ":";
+		for (itl = itm->second.begin();itl != itm->second.end();itl++)
+		{
+			(*itl)->PrintTerm();
+			cout << ",";
+		}
+		count++;
+		cout << endl;
+	}
+}
+
 //Implementation of RuleNode
 RuleNode::RuleNode(string rName)
 {
@@ -191,6 +306,11 @@ RuleNode::PrintNode() const
 	cout << "Constraints:" << endl;
 	NS_LOG_DEBUG("To print template");
 	cTemp->PrintTemplate();
+	cout << endl;
+	cout << "###### Simplified constraints ######" << endl;
+	SimpConstraints simpCons(*cTemp);
+	simpCons.Print();
+	cout << "####################################" << endl;
 	NS_LOG_DEBUG("Template printed");
 }
 
