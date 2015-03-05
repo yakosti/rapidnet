@@ -175,19 +175,19 @@ void compile (string overlogFile, bool provenanceEnabled)
   //Ptr<MiniGraph> miniGraph (new MiniGraph(graphNdlog));
   //miniGraph->PrintGraph();
 
-  AnnotMap testMap;
-  list<Variable::TypeCode> tlist (4, Variable::STRING);
-  Tuple tp = Tuple("verifyPath", tlist);
-  const vector<Variable*> arg = tp.GetArgs();
-  IntVal* value = new IntVal(10000);
-  Constraint* ct = new Constraint(Constraint::EQ, arg[0], value);
-  Quantifier qtf (Quantifier::FORALL, arg, ct);
-  Annotation anno (&tp, &qtf);
-  testMap.insert(AnnotMap::value_type("verifyPath", &anno));
-  Ptr<Dpool> dpool (new Dpool(graphNdlog, testMap));
+  // AnnotMap testMap;
+  // list<Variable::TypeCode> tlist (4, Variable::STRING);
+  // Tuple tp = Tuple("verifyPath", tlist);
+  // const vector<Variable*> arg = tp.GetArgs();
+  // IntVal* value = new IntVal(10000);
+  // Constraint* ct = new Constraint(Constraint::EQ, arg[0], value);
+  // Quantifier qtf (Quantifier::FORALL, arg, ct);
+  // Annotation anno (&tp, &qtf);
+  //testMap.insert(AnnotMap::value_type("verifyPath", &anno));
+  //Ptr<Dpool> dpool (new Dpool(graphNdlog, testMap));
   //dpool->PrintDpool();
   //dpool->PrintAllDeriv();
-  const DerivNodeList& dlist = dpool->GetDerivList("advertisements");
+  //const DerivNodeList& dlist = dpool->GetDerivList("advertisements");
   //Use DerivNode::GetAllObligs() to get all proof obligations
 
 //  pair<RuleListC, RuleListC> p = miniGraph->TopoSort(testMap);
