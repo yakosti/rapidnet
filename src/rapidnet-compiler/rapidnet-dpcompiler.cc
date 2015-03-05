@@ -158,25 +158,6 @@ void parseOverlog (string overlogFile, Ptr<OlContext> ctxt,
     }
 }
 
-/* test parsing to smtlib
- * Lay Kuan, Mar 5, 2015
- */
-// void test_derivations_parsing(const DerivNodeList& dlist) {
-//   const DerivNode* f_elem = dlist.front(); //get first element in derivation list
-//   cout << " &&&&&&&&&&&&&&&&&&&&& test parse &&&&&&&&&&&&&&&&&&&&&&& " << endl;
-//   f_elem->PrintDerivation();
-//   const ConstraintsTemplate* contemp = f_elem->GetConstraints();
-//   const ConstraintList& clist = contemp->GetConstraints();
-
-//   ConstraintList::const_iterator itc;
-//   //First iteration: register all variables
-//   for (itc = clist.begin(); itc != clist.end(); itc++) {
-//     Constraint* newCons = new Constraint((**itc));
-
-//   }
-
-// } 
-
 /**
  * Compiles the application to generate depndency graph
  */
@@ -256,9 +237,6 @@ void testIntegersArithmetic() {
     string three_plus_four_equals_seven_smt = parseConstraint(three_plus_four_equals_seven_rapidnet);
     cout << three_plus_four_equals_seven_smt << endl;
 
-    vector<string> to_print;
-    to_print.push_back(three_plus_four_equals_seven_smt);
-    writeToFile("test_integers_arithmetic.smt2", to_print);
     clearAllVariables();
 }
 

@@ -32,22 +32,15 @@ void clearAllVariables() {
 	all_function_schemas.clear();
 }
 
-void derivations_parsing(const DerivNodeList& dlist) {
-  const DerivNode* f_elem = dlist.front(); //get first element in derivation list
-  cout << " &&&&&&&&&&&&&&&&&&&&& test parse &&&&&&&&&&&&&&&&&&&&&&& " << endl;
-  f_elem->PrintDerivation();
-  const ConstraintsTemplate* contemp = f_elem->GetConstraints();
-  const ConstraintList& clist = contemp->GetConstraints();
+/* 
+ * *******************************************************************************
+ *                                                                               *
+ *                                WRITE TO FILE                                  *
+ *                                                                               *
+ * *******************************************************************************
+ */
 
-  ConstraintList::const_iterator itc;
-  //First iteration: register all variables
-  for (itc = clist.begin(); itc != clist.end(); itc++) {
-    Constraint* newCons = new Constraint((**itc));
-    newCons->Print();
-  }
-} 
-
-void writeDeclaration(std::map<string,string> mymap, ofstream& myfile) {
+ void writeDeclaration(std::map<string,string> mymap, ofstream& myfile) {
 	if (myfile.is_open()) {
 		for (std::map<string,string>::const_iterator it = mymap.begin(); it != mymap.end(); it++) {
 			myfile << it->second + "\n";
@@ -74,12 +67,52 @@ void writeToFile(char const* filename, vector<string> smtlib_array) {
 	myfile.close();
 }
 
+void derivations_parsing(const DerivNodeList& dlist) {
+  const DerivNode* f_elem = dlist.front(); //get first element in derivation list
+  cout << " &&&&&&&&&&&&&&&&&&&&& test parse &&&&&&&&&&&&&&&&&&&&&&& " << endl;
+  f_elem->PrintDerivation();
+  const ConstraintsTemplate* contemp = f_elem->GetConstraints();
+  const ConstraintList& clist = contemp->GetConstraints();
+
+  ConstraintList::const_iterator itc;
+  //First iteration: register all variables
+  for (itc = clist.begin(); itc != clist.end(); itc++) {
+    Constraint* newCons = new Constraint((**itc));
+    //newCons->Print();
+  }
+} 
+
+
 void printDeclaration(std::map<string,string> mymap) {
 	for (std::map<string,string>::const_iterator it = mymap.begin(); it != mymap.end(); it++) {
 	    cout << it->second << endl;
 	}
 }
 
+/* 
+ * *******************************************************************************
+ *                                                                               *
+ *                                WRITE TO FILE                                  *
+ *                                                                               *
+ * *******************************************************************************
+ */
+
+
+
+
+/* 
+ * *******************************************************************************
+ *                                                                               *
+ *                                    BASE CASE                                  *
+ *                                                                               *
+ * *******************************************************************************
+ */
+string IntegerToString(int number) {
+	std::ostringstream ostr; //output string stream
+	ostr << number; 
+	std::string theNumberString = ostr.str(); //the str() function of the stream 
+	return theNumberString;
+}
 
 string parseVariableType(Variable::TypeCode v) {
 	switch (v) {
@@ -95,6 +128,79 @@ string parseVariableType(Variable::TypeCode v) {
 			throw std::invalid_argument("Not a valid type, must be INT/BOOL/DOUBLE/STRING");
 	}
 }
+
+string parseFreeVariable(Variable* v) {
+	Variable::TypeCode vartype = v->GetVariableType();
+	string varname = v->GetVariableName();
+
+	//present, return stored variable
+	if (all_free_variables.find(varname) != all_free_variables.end()) return varname;
+
+	//absent, create and store in hash map
+	switch (vartype) {
+		case Variable::INT: {
+			string declare = "(declare-fun " + varname + " () Int)";
+			all_free_variables[varname] = declare;
+			return varname;
+		} case Variable::DOUBLE: {
+			string declare = "(declare-fun " + varname + " () Real)";
+			all_free_variables[varname] = declare;
+			return varname;
+		} case Variable::BOOL: {
+			string declare = "(declare-fun " + varname + " () Bool)";
+			all_free_variables[varname] = declare;
+			return varname;
+		} case Variable::STRING: {
+			string declare = "(declare-fun " + varname + " () String)";
+			all_free_variables[varname] = declare;
+			return varname;
+		} default: {
+			return "Not a valid variable type, must be INT/DOUBLE/BOOL/STRING";
+		}
+	}
+}
+
+
+string parseBoundVariable(Variable* v, string qt) {
+	Variable::TypeCode vartype = v->GetVariableType();
+	string varname = v->GetVariableName();
+
+	//present, return stored variable
+	if (all_bound_variables.find(varname) != all_bound_variables.end()) return varname;
+
+	//absent, create and store in hash map, but return variable name only
+	switch (vartype) {
+		case Variable::INT: {
+			string declare = qt + " ((" + varname + " Int))";
+			all_bound_variables[varname] = declare;
+			return varname;
+		} case Variable::DOUBLE: {
+			string declare = qt + " ((" + varname + " Real))";
+			all_bound_variables[varname] = declare;
+			return varname;
+		} case Variable::BOOL: {
+			string declare = qt + " ((" + varname + " Bool))";
+			all_bound_variables[varname] = declare;
+			return varname;
+		} case Variable::STRING: {
+			string declare = qt + " ((" + varname + " String))";
+			all_bound_variables[varname] = declare;
+			return varname;
+		} default: {
+			throw std::invalid_argument("Not a valid variable type, must be INT/DOUBLE/BOOL/STRING");
+		}
+	}
+}
+
+
+/* 
+ * *******************************************************************************
+ *                                                                               *
+ *                                    BASE CASE                                  *
+ *                                                                               *
+ * *******************************************************************************
+ */
+
 
 
 string parsePredicateSchema(PredicateSchema* s) {
@@ -164,36 +270,6 @@ string parseConnective(Connective* c) {
 
 
 
-string parseFreeVariable(Variable* v) {
-	Variable::TypeCode vartype = v->GetVariableType();
-	string varname = v->GetVariableName();
-
-	//present, return stored variable
-	if (all_free_variables.find(varname) != all_free_variables.end()) return varname;
-
-	//absent, create and store in hash map
-	switch (vartype) {
-		case Variable::INT: {
-			string declare = "(declare-fun " + varname + " () Int)";
-			all_free_variables[varname] = declare;
-			return varname;
-		} case Variable::DOUBLE: {
-			string declare = "(declare-fun " + varname + " () Real)";
-			all_free_variables[varname] = declare;
-			return varname;
-		} case Variable::BOOL: {
-			string declare = "(declare-fun " + varname + " () Bool)";
-			all_free_variables[varname] = declare;
-			return varname;
-		} case Variable::STRING: {
-			string declare = "(declare-fun " + varname + " () String)";
-			all_free_variables[varname] = declare;
-			return varname;
-		} default: {
-			return "Not a valid variable type, must be INT/DOUBLE/BOOL/STRING";
-		}
-	}
-}
 
 string parseConstraint(Constraint* c) {
 	Constraint::Operator op = c->GetOperator();
@@ -226,45 +302,6 @@ string parseArithmetic(Arithmetic* a) {
 			return "(div " + leftE + " " + rightE + ")";
 		default:
 			throw std::invalid_argument("Not a valid arithmetic expression");
-	}
-}
-
-string IntegerToString(int number) {
-	std::ostringstream ostr; //output string stream
-	ostr << number; 
-	std::string theNumberString = ostr.str(); //the str() function of the stream 
-	return theNumberString;
-}
-
-
-string parseBoundVariable(Variable* v, string qt) {
-	Variable::TypeCode vartype = v->GetVariableType();
-	string varname = v->GetVariableName();
-
-	//present, return stored variable
-	if (all_bound_variables.find(varname) != all_bound_variables.end()) return varname;
-
-	//absent, create and store in hash map, but return variable name only
-	switch (vartype) {
-		case Variable::INT: {
-			string declare = qt + " ((" + varname + " Int))";
-			all_bound_variables[varname] = declare;
-			return varname;
-		} case Variable::DOUBLE: {
-			string declare = qt + " ((" + varname + " Real))";
-			all_bound_variables[varname] = declare;
-			return varname;
-		} case Variable::BOOL: {
-			string declare = qt + " ((" + varname + " Bool))";
-			all_bound_variables[varname] = declare;
-			return varname;
-		} case Variable::STRING: {
-			string declare = qt + " ((" + varname + " String))";
-			all_bound_variables[varname] = declare;
-			return varname;
-		} default: {
-			throw std::invalid_argument("Not a valid variable type, must be INT/DOUBLE/BOOL/STRING");
-		}
 	}
 }
 
