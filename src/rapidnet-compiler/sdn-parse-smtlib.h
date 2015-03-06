@@ -62,11 +62,19 @@ vector<string> derivations_parsing(const DerivNodeList& dlist) {
 	for (itc = clist.begin(); itc != clist.end(); itc++) {
 	    Constraint* newCons = new Constraint((**itc));
 	    newCons->Print();
+	    //cout << "\n" << endl;
 	    string constr = parseFormula(newCons);
 	    all_constraints.push_back("(assert" + constr + ")\n");
 	}
 	return all_constraints;
 } 
+
+void printDeclaration(std::map<string,string> mymap) {
+	for (std::map<string,string>::const_iterator it = mymap.begin(); it != mymap.end(); it++) {
+	    cout << it->second << endl;
+	}
+}
+
 
 /* Call only at the end 
  */
@@ -94,12 +102,6 @@ void writeToFile(char const* filename, const DerivNodeList& dlist) {
 	myfile.close();
 }
 
-
-void printDeclaration(std::map<string,string> mymap) {
-	for (std::map<string,string>::const_iterator it = mymap.begin(); it != mymap.end(); it++) {
-	    cout << it->second << endl;
-	}
-}
 
 /* 
  * *******************************************************************************
@@ -196,6 +198,7 @@ string parseBoundVariable(Variable* v, string qt) {
 			all_bound_variables[varname] = declare;
 			return varname;
 		} case Variable::STRING: {
+			//cout << "&&&&&" << varname << endl;
 			string declare = qt + " ((" + varname + " String))";
 			all_bound_variables[varname] = declare;
 			return varname;
@@ -334,6 +337,7 @@ string parseQuantifier(Quantifier* q) {
 	string f_parsed = parseFormula(f);
 	vector<Variable*> bound_var_list = q->GetBoundVariables();
 	Quantifier::QuanType qt = q->GetQuantifierType();
+	//cout << "HEY IM A QUANTIFIER" << endl;
 	switch (qt) {
 		case Quantifier::FORALL: {
 			return makeQuantifierString(f_parsed, bound_var_list, "forall");
@@ -371,6 +375,7 @@ string parseUserFunction(UserFunction* uf) {
 	vector<Term*> user_function_args_rapidnet = uf->GetArgs();
 	string user_function_args_smtlib = "";
 	for (int i=0; i<user_function_args_rapidnet.size(); i++) {
+		//cout << "***** " << ((Variable*)user_function_args_rapidnet[i])->GetVariableName() << endl;
 		string current_term_cvc4 = parseTerm(user_function_args_rapidnet[i]);
 		user_function_args_smtlib = user_function_args_smtlib + current_term_cvc4 + " ";
 	}
@@ -388,6 +393,8 @@ string parseTerm(Term* t) {
 	if (dynamic_cast<IntVal*>(t)) {
 		int value = ((IntVal*)t)->GetIntValue();
 		string strvalue = IntegerToString(value);
+		if (all_constants.find(strvalue) == all_constants.end()) //not declared, declare and store
+			all_constants[strvalue] = "(declare-const " + strvalue + " String)";
 	 	return strvalue;
 	} else if (dynamic_cast<BoolVal*>(t)) {
 		bool value = ((BoolVal*)t)->GetBoolValue();
@@ -401,7 +408,11 @@ string parseTerm(Term* t) {
 	} else if (dynamic_cast<Variable*>(t)) {
 		Variable* v = (Variable*)t;
 		bool isbound = v->GetFreeOrBound();
-		if (isbound) return v->GetVariableName();
+		if (isbound) {
+			//cout << "******** " << v->GetVariableName() << endl;
+			return v->GetVariableName();
+			//return parseBoundVariable(v);
+		}
 		return parseFreeVariable(v);
 	} else if (dynamic_cast<UserFunction*>(t)) {
 		return parseUserFunction((UserFunction*)t);
