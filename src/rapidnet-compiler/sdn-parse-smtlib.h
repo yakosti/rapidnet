@@ -8,6 +8,9 @@
 #include <algorithm>
 #include <fstream>
 #include <stdexcept>
+#include <stdlib.h>
+#include <cstring>
+#include <memory>
 
 using namespace std;
 
@@ -75,6 +78,27 @@ void printDeclaration(std::map<string,string> mymap) {
 	}
 }
 
+string get_console_output(char const* filename) {
+	char* result = (char*) malloc(100);
+	strcpy(result, "cvc4 "); // copy string one into the result.
+	strcat(result, filename); // append string two to the result.
+
+	FILE* fp = popen(result, "r");
+    
+    if (fp == NULL) { 
+        printf("FAIL!\n"); 
+    } 
+
+    char buffer[1028];
+    string str = ""; 
+    while (fgets(buffer, 1028, fp) != NULL) { 
+        str = str + buffer;
+    } 
+
+    pclose(fp);
+    return str;
+}
+
 
 /* Call only at the end 
  */
@@ -99,6 +123,8 @@ void writeToFile(char const* filename, const DerivNodeList& dlist) {
 		myfile << constrd;
 	}
 	
+	myfile << "(check-sat)\n"; // type of logic has strings
+
 	myfile.close();
 }
 

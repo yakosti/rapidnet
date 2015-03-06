@@ -50,3 +50,4 @@
 (assert(= variable269 variable191))
 (assert(= variable266 variable192))
 (assert(= variable190 (f_prepend variable191 variable192 )))
+(check-sat)
