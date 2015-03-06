@@ -24,7 +24,7 @@ Tuple::Tuple(ParseFunctor* tuple):
 		ParseVar* varPtr = dynamic_cast<ParseVar*>(*it);
 		if (varPtr != NULL)
 		{
-			newVar = new Variable(varPtr, true);
+			newVar = new Variable(varPtr, false);
 			args.push_back(newVar);
 		}
 		else
@@ -642,7 +642,7 @@ DPGraph::ProcessParseVar(ParseVar* pVar,
 						 map<string, Variable*>& unifier,
 						 RuleNode* rnode)
 {
-	Variable* newVar = new Variable(pVar, true);
+	Variable* newVar = new Variable(pVar, false);
 	pair<map<string,Variable*>::iterator, bool> ret;
 	ret = unifier.insert(pair<string,Variable*>(pVar->ToString(), newVar));
 	if (ret.second == false)
