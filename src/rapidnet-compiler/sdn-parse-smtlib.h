@@ -279,6 +279,8 @@ string parseConnective(Connective* c) {
 			return "(or " + leftF + " " + rightF + ")";
 		case Connective::AND:
 			return "(and " + leftF + " " + rightF + ")";
+		case Connective::NEG:
+			return "(not " + leftF + " " + rightF + ")";
 		default:
 			throw std::invalid_argument("Not a valid connective");
 	}
