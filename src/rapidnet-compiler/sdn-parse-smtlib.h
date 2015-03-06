@@ -22,12 +22,14 @@ string parseQuantifier(Quantifier* q);
 // (variableName, variableDeclaration)
 std::map<string, string> all_free_variables;
 std::map<string, string> all_bound_variables;
+std::map<string, string> all_constants;
 std::map<string, string> all_predicate_schemas;
 std::map<string, string> all_function_schemas;
 
 void clearAllVariables() {
 	all_free_variables.clear();
 	all_bound_variables.clear();
+	all_constants.clear();
 	all_predicate_schemas.clear();
 	all_function_schemas.clear();
 }
@@ -61,7 +63,7 @@ vector<string> derivations_parsing(const DerivNodeList& dlist) {
 	    Constraint* newCons = new Constraint((**itc));
 	    newCons->Print();
 	    string constr = parseFormula(newCons);
-	    all_constraints.push_back("(assert " + constr + ")\n");
+	    all_constraints.push_back("(assert" + constr + ")\n");
 	}
 	return all_constraints;
 } 
@@ -78,6 +80,7 @@ void writeToFile(char const* filename, const DerivNodeList& dlist) {
 
 	// print all the variables declarations
 	writeDeclaration(all_free_variables, myfile);
+	writeDeclaration(all_constants, myfile);
 	writeDeclaration(all_bound_variables, myfile);
 	writeDeclaration(all_predicate_schemas, myfile);
 	writeDeclaration(all_function_schemas, myfile);
@@ -116,6 +119,7 @@ void printDeclaration(std::map<string,string> mymap) {
  *                                                                               *
  * *******************************************************************************
  */
+
 string IntegerToString(int number) {
 	std::ostringstream ostr; //output string stream
 	ostr << number; 
@@ -376,18 +380,23 @@ string parseUserFunction(UserFunction* uf) {
 }
 
 
-// Parse Terms
-// needs bitvector for double integers
+/* Parse Terms
+ * needs bitvector for double integers
+ * constants are store here
+ */
 string parseTerm(Term* t) {
 	if (dynamic_cast<IntVal*>(t)) {
 		int value = ((IntVal*)t)->GetIntValue();
-	 	return IntegerToString(value);
+		string strvalue = IntegerToString(value);
+	 	return strvalue;
 	} else if (dynamic_cast<BoolVal*>(t)) {
 		bool value = ((BoolVal*)t)->GetBoolValue();
 	 	if (value) return "true";
 	 	return "false";
 	} else if (dynamic_cast<StringVal*>(t)) {
 		string value = ((StringVal*)t)->GetStringValue();
+		if (all_constants.find(value) == all_constants.end()) //not declared, declare and store
+			all_constants[value] = "(declare-const " + value + " String)";
 		return value;
 	} else if (dynamic_cast<Variable*>(t)) {
 		Variable* v = (Variable*)t;

@@ -175,7 +175,6 @@ void compile (string overlogFile, bool provenanceEnabled)
   //Ptr<MiniGraph> miniGraph (new MiniGraph(graphNdlog));
   //miniGraph->PrintGraph();
 
-
   AnnotMap testMap;
   list<Variable::TypeCode> tlist (9, Variable::STRING);
   Tuple tp = Tuple("verifyPath", tlist);
@@ -189,7 +188,6 @@ void compile (string overlogFile, bool provenanceEnabled)
   //dpool->PrintDpool();
   //dpool->PrintAllDeriv();
   const DerivNodeList& dlist = dpool->GetDerivList("advertisements");
-  
   writeToFile("testing_constraints.smt2", dlist); //laykuan testing
 
   //Use DerivNode::GetAllObligs() to get all proof obligations
@@ -526,6 +524,7 @@ void quantifier__function_child_younger_than_mother() {
   cout << michelle_is_mother_of_malia_smtlib << endl;
   string barbara_is_mother_of_malia_smtlib = parseFormula(barbara_is_mother_of_malia);
   cout << barbara_is_mother_of_malia_smtlib << endl;
+  printDeclaration(all_constants);
 
   clearAllVariables();
 }
