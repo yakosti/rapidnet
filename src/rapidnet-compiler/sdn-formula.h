@@ -9,6 +9,7 @@
 #define SDN_FORMULA_H_
 
 #include <vector>
+#include <list>
 #include <string>
 #include <map>
 #include <iostream>
@@ -521,6 +522,52 @@ private:
 	Operator op;
 	Term* leftE;
 	Term* rightE;
+};
+
+typedef list<Constraint*> ConstraintList;
+
+/*
+ * Class ConstraintsTemplate represents a set of constraints in NDLog program
+ */
+class ConstraintsTemplate
+{
+public:
+	ConstraintsTemplate();
+
+	ConstraintsTemplate(const ConstraintsTemplate&);
+
+	void AddConstraint(Constraint*);
+
+	void ReplaceVar(VarMap&);
+
+	const ConstraintList& GetConstraints() const {return constraints;}
+
+	void PrintTemplate() const;
+
+	~ConstraintsTemplate();
+
+private:
+	ConstraintList constraints;
+};
+
+typedef list<const ConstraintsTemplate*> ConsList;
+
+class SimpConstraints
+{
+public:
+	SimpConstraints();
+
+	SimpConstraints(const ConsList&);
+
+	map<int, list<Variable*> > GetEqualClass();
+
+	void Print();
+
+private:
+	ConstraintsTemplate cts;
+	map<Variable*, int> varTable;
+	map<int, Variable*> varRevTable;
+	UnionFindSet varSet;
 };
 
 /* 

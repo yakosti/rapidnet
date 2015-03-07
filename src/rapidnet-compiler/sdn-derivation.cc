@@ -62,6 +62,17 @@ DerivNode::PrintHead() const
 }
 
 void
+DerivNode::PrintCumuCons() const
+{
+	cout << endl;
+	cout << "============ Simplified Cumulative Constraints ===========" << endl;
+	SimpConstraints simp(allConstraints);
+	simp.Print();
+	cout << "=======================";
+	cout << endl;
+}
+
+void
 DerivNode::PrintDerivNode() const
 {
 	cout << "Derivation Node:" << endl;
@@ -91,7 +102,8 @@ DerivNode::PrintDerivNode() const
 		ruleConstraints->PrintTemplate();
 		cout << endl;
 		cout << "###### Simplified constraints ######" << endl;
-		SimpConstraints simpCons(*ruleConstraints);
+		ConsList clist(1, ruleConstraints);
+		SimpConstraints simpCons(clist);
 		simpCons.Print();
 		cout << "####################################" << endl;
 	}
@@ -101,6 +113,7 @@ void
 DerivNode::PrintDerivation() const
 {
 	PrintDerivNode();
+	PrintCumuCons();
 
 	DerivNodeList::const_iterator itd;
 	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
@@ -137,6 +150,7 @@ RecurNode::AddInvariant(Formula* inv)
 void
 RecurNode::PrintDerivNode() const
 {
+	cout << "Recursive Node:" << endl;
 	DerivNode::PrintDerivNode();
 
 	cout << "User-annotated formula:" << endl;
@@ -313,6 +327,11 @@ Dpool::CreateDerivNode(Tuple* head,
 	ConsList cslist;
 	FormList flist;
 
+	//Replace variables in rule constraints
+	const ConstraintsTemplate* ruleCons = rnode->GetConsTemp();
+	ConstraintsTemplate* newCons = new ConstraintsTemplate(*ruleCons);
+	newCons->ReplaceVar(vmap);
+
 	//Process the rule
 	vector<DerivNodeList::const_iterator>::iterator it;
 	for (it = bodyDerivs.begin();it != bodyDerivs.end();it++)
@@ -332,14 +351,13 @@ Dpool::CreateDerivNode(Tuple* head,
 			//Add references to cumulative constraints
 			const ConsList& clist = (**it)->GetCumuConsts();
 			cslist.insert(cslist.end(), clist.begin(), clist.end());
-			cslist.push_back((**it)->GetConstraints());
 		}
 	}
-
-	//Replace variables in rule constraints
-	const ConstraintsTemplate* ruleCons = rnode->GetConsTemp();
-	ConstraintsTemplate* newCons = new ConstraintsTemplate(*ruleCons);
-	newCons->ReplaceVar(vmap);
+	//Add local constraints into cumulative constraint list
+	if (newCons != NULL)
+	{
+		cslist.push_back(newCons);
+	}
 
 	DerivNode* dnode = new DerivNode(head, rnode->GetName(),
 									 newCons, dblist, dalist,

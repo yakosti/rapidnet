@@ -187,6 +187,8 @@ void compile (string overlogFile, bool provenanceEnabled)
   Ptr<Dpool> dpool (new Dpool(graphNdlog, testMap));
   //dpool->PrintDpool();
   //dpool->PrintAllDeriv();
+  //dpool->PrintDeriv("advertisements");
+
   const DerivNodeList& dlist = dpool->GetDerivList("advertisements");
   
   writeToFile("testing_constraints", dlist); //laykuan testing
@@ -630,10 +632,10 @@ void test_parsing() {
 int main (int argc, char** argv)
 {
   LogComponentEnable ("RapidNetDPGraph", LOG_LEVEL_INFO);
-  LogComponentEnable ("DPGraph", LOG_LEVEL_INFO);
+//  LogComponentEnable ("DPGraph", LOG_LEVEL_INFO);
 //  LogComponentEnable ("Formula", LOG_LEVEL_INFO);
-  LogComponentEnable ("Dpool", LOG_LEVEL_INFO);
-//  LogComponentEnable ("Dpool", LOG_INFO);
+//  LogComponentEnable ("Dpool", LOG_LEVEL_INFO);
+  LogComponentEnable ("Dpool", LOG_INFO);
 //  LogComponentEnable ("DPGraph", LOG_INFO);
 //  LogComponentEnable ("Formula", LOG_INFO);
 
