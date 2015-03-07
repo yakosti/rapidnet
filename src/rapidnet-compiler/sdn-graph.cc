@@ -60,6 +60,7 @@ Tuple::CreateVarMap(const Tuple* tp) const
 	vector<Variable*>::const_iterator its = tp->args.begin();
 	for (;itf != args.end();itf++, its++)
 	{
+		//TODO: Type checking?
 		vmap.insert(VarMap::value_type((*itf),(*its)));
 	}
 	return vmap;
