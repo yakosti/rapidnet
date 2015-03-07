@@ -102,7 +102,19 @@ string get_console_output(const char* filename) {
     return str;
 }
 
+const char* dlist_filename(const char* dlist_name, int counter) {
+	stringstream temp_str;
+	temp_str<<counter;
+	std::string str = temp_str.str();
+	const char* pchar = str.c_str();
+	char* result = (char*)malloc(100);
 
+	strcpy(result, dlist_name); // copy string one into the result.
+	strcat(result, pchar); // append string two to the result.
+	strcat(result, ".smt2");
+
+	return result;
+}
 
 
 /* Call only at the end 
@@ -113,22 +125,13 @@ void writeToFile(const char* filename, const DerivNodeList& dlist) {
 
 	for (itd = dlist.begin(); itd != dlist.end(); itd++) { 
 		ofstream myfile;
-
-		stringstream temp_str;
-		temp_str<<counter;
-		std::string str = temp_str.str();
-		const char* pchar = str.c_str();
-		char* result = (char*)malloc(100);
-		strcpy(result, filename); // copy string one into the result.
-		strcat(result, pchar); // append string two to the result.
-		strcat(result, ".smt2");
-
-		myfile.open(result);
+		const char* dfname = dlist_filename(filename, counter);
+		myfile.open(dfname);
 
 		myfile << "(set-logic S)\n"; // type of logic has strings
 
 		vector<string> all_constraints = parse_one_derivation(*itd);
-
+		
 		// print all the variables declarations
 		writeDeclaration(all_free_variables, myfile);
 		writeDeclaration(all_constants, myfile);
@@ -146,8 +149,8 @@ void writeToFile(const char* filename, const DerivNodeList& dlist) {
 
 		myfile.close();
 
-		//string output = get_console_output("testing_constraints");
-  		//cout << "result of running cvc4 on file: " << output << endl;
+		string output = get_console_output(dfname);
+  		cout << "result of running cvc4 on file: " << output << endl;
 	}
 }
 
