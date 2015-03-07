@@ -124,6 +124,8 @@ void writeToFile(const char* filename, const DerivNodeList& dlist) {
 	int counter = 0;
 
 	for (itd = dlist.begin(); itd != dlist.end(); itd++) { 
+		counter = counter+1;
+		
 		ofstream myfile;
 		const char* dfname = dlist_filename(filename, counter);
 		myfile.open(dfname);
@@ -131,7 +133,7 @@ void writeToFile(const char* filename, const DerivNodeList& dlist) {
 		myfile << "(set-logic S)\n"; // type of logic has strings
 
 		vector<string> all_constraints = parse_one_derivation(*itd);
-		
+
 		// print all the variables declarations
 		writeDeclaration(all_free_variables, myfile);
 		writeDeclaration(all_constants, myfile);

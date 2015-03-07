@@ -209,6 +209,7 @@ void compile (string overlogFile, bool provenanceEnabled)
 //  }
 }
 
+
 /* 
  * *******************************************************************************
  *                                                                               *
@@ -623,9 +624,6 @@ void test_parsing() {
  *                                                                               *
  * *******************************************************************************
  */
-
-
-
 
 //NDLog program should be free of recursion
 //NDLog program should have no value as argument of a tuple
