@@ -191,7 +191,7 @@ void compile (string overlogFile, bool provenanceEnabled)
   
   writeToFile("testing_constraints.smt2", dlist); //laykuan testing
   string output = get_console_output("testing_constraints.smt2");
-  cout << "result of running laykuan file: " << output << endl;
+  cout << "result of running cvc4 on file: " << output << endl;
 
   //Use DerivNode::GetAllObligs() to get all proof obligations
 

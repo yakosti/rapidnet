@@ -37,6 +37,13 @@ void clearAllVariables() {
 	all_function_schemas.clear();
 }
 
+string IntegerToString(int number) {
+	std::ostringstream ostr; //output string stream
+	ostr << number; 
+	std::string theNumberString = ostr.str(); //the str() function of the stream 
+	return theNumberString;
+}
+
 /* 
  * *******************************************************************************
  *                                                                               *
@@ -53,11 +60,9 @@ void clearAllVariables() {
 	}
 }
 
-vector<string> derivations_parsing(const DerivNodeList& dlist) {
-	const DerivNode* f_elem = dlist.front(); //get first element in derivation list
-
-	f_elem->PrintDerivation();
-	const ConstraintsTemplate* contemp = f_elem->GetConstraints();
+vector<string> parse_one_derivation(const DerivNode* deriv) {
+	deriv->PrintDerivation();
+	const ConstraintsTemplate* contemp = deriv->GetConstraints();
 	const ConstraintList& clist = contemp->GetConstraints();
 
 	ConstraintList::const_iterator itc;
@@ -65,12 +70,12 @@ vector<string> derivations_parsing(const DerivNodeList& dlist) {
 	for (itc = clist.begin(); itc != clist.end(); itc++) {
 	    Constraint* newCons = new Constraint((**itc));
 	    newCons->Print();
-	    //cout << "\n" << endl;
 	    string constr = parseFormula(newCons);
 	    all_constraints.push_back("(assert" + constr + ")\n");
 	}
 	return all_constraints;
-} 
+}
+
 
 void printDeclaration(std::map<string,string> mymap) {
 	for (std::map<string,string>::const_iterator it = mymap.begin(); it != mymap.end(); it++) {
@@ -78,54 +83,59 @@ void printDeclaration(std::map<string,string> mymap) {
 	}
 }
 
+
 string get_console_output(char const* filename) {
 	char* result = (char*) malloc(100);
 	strcpy(result, "cvc4 "); // copy string one into the result.
 	strcat(result, filename); // append string two to the result.
-
+	
 	FILE* fp = popen(result, "r");
-    
     if (fp == NULL) { 
-        printf("FAIL!\n"); 
+        throw std::invalid_argument("Reading file failed");
     } 
-
     char buffer[1028];
     string str = ""; 
     while (fgets(buffer, 1028, fp) != NULL) { 
         str = str + buffer;
     } 
-
     pclose(fp);
     return str;
 }
 
 
+
+
 /* Call only at the end 
  */
 void writeToFile(char const* filename, const DerivNodeList& dlist) {
-	ofstream myfile;
-	myfile.open(filename);
+	DerivNodeList::const_iterator itd;
+	int counter = 0;
 
-	myfile << "(set-logic S)\n"; // type of logic has strings
+	for (itd = dlist.begin(); itd != dlist.end(); itd++) { 
+		ofstream myfile;
+		myfile.open("test_parsing.smt2");
 
-	vector<string> all_constraints = derivations_parsing(dlist);
+		myfile << "(set-logic S)\n"; // type of logic has strings
 
-	// print all the variables declarations
-	writeDeclaration(all_free_variables, myfile);
-	writeDeclaration(all_constants, myfile);
-	writeDeclaration(all_bound_variables, myfile);
-	writeDeclaration(all_predicate_schemas, myfile);
-	writeDeclaration(all_function_schemas, myfile);
+		vector<string> all_constraints = parse_one_derivation(*itd);
 
-	//assert the constraints
-	for (int i=0; i<all_constraints.size(); i++) {
-		string constrd = all_constraints[i];
-		myfile << constrd;
+		// print all the variables declarations
+		writeDeclaration(all_free_variables, myfile);
+		writeDeclaration(all_constants, myfile);
+		writeDeclaration(all_bound_variables, myfile);
+		writeDeclaration(all_predicate_schemas, myfile);
+		writeDeclaration(all_function_schemas, myfile);
+
+		//assert the constraints
+		for (int i=0; i<all_constraints.size(); i++) {
+			string constrd = all_constraints[i];
+			myfile << constrd;
+		}
+		
+		myfile << "(check-sat)\n"; // type of logic has strings
+
+		myfile.close();
 	}
-	
-	myfile << "(check-sat)\n"; // type of logic has strings
-
-	myfile.close();
 }
 
 
@@ -148,12 +158,6 @@ void writeToFile(char const* filename, const DerivNodeList& dlist) {
  * *******************************************************************************
  */
 
-string IntegerToString(int number) {
-	std::ostringstream ostr; //output string stream
-	ostr << number; 
-	std::string theNumberString = ostr.str(); //the str() function of the stream 
-	return theNumberString;
-}
 
 string parseVariableType(Variable::TypeCode v) {
 	switch (v) {
