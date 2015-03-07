@@ -84,7 +84,7 @@ void printDeclaration(std::map<string,string> mymap) {
 }
 
 
-string get_console_output(char const* filename) {
+string get_console_output(const char* filename) {
 	char* result = (char*) malloc(100);
 	strcpy(result, "cvc4 "); // copy string one into the result.
 	strcat(result, filename); // append string two to the result.
@@ -107,13 +107,23 @@ string get_console_output(char const* filename) {
 
 /* Call only at the end 
  */
-void writeToFile(char const* filename, const DerivNodeList& dlist) {
+void writeToFile(const char* filename, const DerivNodeList& dlist) {
 	DerivNodeList::const_iterator itd;
 	int counter = 0;
 
 	for (itd = dlist.begin(); itd != dlist.end(); itd++) { 
 		ofstream myfile;
-		myfile.open("test_parsing.smt2");
+
+		stringstream temp_str;
+		temp_str<<counter;
+		std::string str = temp_str.str();
+		const char* pchar = str.c_str();
+		char* result = (char*)malloc(100);
+		strcpy(result, filename); // copy string one into the result.
+		strcat(result, pchar); // append string two to the result.
+		strcat(result, ".smt2");
+
+		myfile.open(result);
 
 		myfile << "(set-logic S)\n"; // type of logic has strings
 
@@ -135,6 +145,9 @@ void writeToFile(char const* filename, const DerivNodeList& dlist) {
 		myfile << "(check-sat)\n"; // type of logic has strings
 
 		myfile.close();
+
+		//string output = get_console_output("testing_constraints");
+  		//cout << "result of running cvc4 on file: " << output << endl;
 	}
 }
 
