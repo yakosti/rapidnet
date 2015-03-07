@@ -57,7 +57,8 @@ public:
 
 	const ConsList& GetCumuConsts() const{return allConstraints;}
 
-	//Obtain all constraints and invariants that should be satisfied to
+	//Obtain all constraints and invariants that should be satisfied
+	//to make execution possible
 	Obligation GetAllObligs() const;
 
 	const ConstraintsTemplate* GetConstraints() const{return ruleConstraints;}
@@ -65,6 +66,8 @@ public:
 	const DerivNodeList& GetBodyDerivs() const{return bodyDerivs;}
 
 	void PrintHead() const;
+
+	void PrintCumuCons() const;
 
 	//Just print the current DerivNode
 	virtual void PrintDerivNode() const;
