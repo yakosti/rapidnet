@@ -422,6 +422,7 @@ def create_ns3_program(bld, name, dependencies=('simulator',)):
     program.uselib_local = 'ns3'
     program.ns3_module_dependencies = ['ns3-'+dep for dep in dependencies]
     program.env.append_value('LINKFLAGS', '-lgmp')
+    program.env.append_value('LINKFLAGS', '-lcvc4')
     if program.env['ENABLE_STATIC_NS3']:
         if sys.platform == 'darwin':
             program.env.append_value('LINKFLAGS', '-Wl,-all_load')
