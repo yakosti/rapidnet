@@ -147,3 +147,4 @@ In the command line, cd into the rapidnet folder. Get the entire path the the ND
 -----------
 * [SMT-LIB Official Website](http://smtlib.cs.uiowa.edu/)
 * [String Declaration](http://cvc4.cs.nyu.edu/wiki/Strings)
+* [Installin Z3 on MacOS](http://z3.codeplex.com/wikipage?title=Building%20the%20unstable%20%28working-in-progress%29%20branch&referringTitle=Documentation)
