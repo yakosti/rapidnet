@@ -264,6 +264,11 @@ PredicateInstance::Print() const
 PredicateInstance::~PredicateInstance()
 {
 	delete schema;
+	vector<Term*>::iterator itv;
+	for (itv = args.begin();itv != args.end();itv++)
+	{
+		delete (*itv);
+	}
 }
 
 /* ************************* PredicateInstance ******************************** */
