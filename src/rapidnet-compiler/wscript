@@ -22,6 +22,7 @@ def build(bld):
         'sdn-derivation.cc',
         'sdn-formula.cc',
         'auxiliary.cc',
+        'sdn-property.cc',
         ]
 
     headers = bld.new_task_gen('ns3header')
@@ -40,6 +41,7 @@ def build(bld):
         'sdn-graph.h',
         'sdn-formula.h',
         'auxiliary.h',
+        'sdn-property.h',
         ]
 
     obj = bld.create_ns3_program('rapidnet-compiler')

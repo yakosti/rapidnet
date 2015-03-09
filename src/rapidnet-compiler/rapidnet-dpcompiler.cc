@@ -42,6 +42,7 @@
 #include "sdn-graph.h"
 #include "sdn-derivation.h"
 #include "sdn-parse-smtlib.h"
+#include "sdn-property.h"
 
 using namespace std;
 using namespace ns3;
@@ -190,25 +191,13 @@ void compile (string overlogFile, bool provenanceEnabled)
   //dpool->PrintDeriv("advertisements");
 
   const DerivNodeList& dlist = dpool->GetDerivList("advertisements");
-  
   writeToFile("testing_constraints", dlist); //laykuan testing
-
+  //const DerivNodeList& dlist = dpool->GetDerivList("advertisements");
   //Use DerivNode::GetAllObligs() to get all proof obligations
 
-//  pair<RuleListC, RuleListC> p = miniGraph->TopoSort(testMap);
-//  RuleListC::const_iterator it;
-//  cout << "Rules:" << endl;
-//  for (it = p.first.begin();it != p.first.end();it++)
-//  {
-//	  (*it)->PrintName();
-//	  cout << ",";
-//  }
-//  cout << endl;
-//  for (it = p.second.begin();it != p.second.end();it++)
-//  {
-//	  (*it)->PrintName();
-//	  cout << ",";
-//  }
+  //User-defined property
+  Property p = Property();
+  p.Print();
 }
 
 
@@ -635,9 +624,11 @@ int main (int argc, char** argv)
 //  LogComponentEnable ("DPGraph", LOG_LEVEL_INFO);
 //  LogComponentEnable ("Formula", LOG_LEVEL_INFO);
 //  LogComponentEnable ("Dpool", LOG_LEVEL_INFO);
+  LogComponentEnable ("Property", LOG_LEVEL_INFO);
   LogComponentEnable ("Dpool", LOG_INFO);
 //  LogComponentEnable ("DPGraph", LOG_INFO);
 //  LogComponentEnable ("Formula", LOG_INFO);
+//  LogComponentEnable ("Property", LOG_INFO);
 
   test_parsing();
 
