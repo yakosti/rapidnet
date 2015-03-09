@@ -43,12 +43,11 @@
 #include "sdn-derivation.h"
 #include "sdn-parse-smtlib.h"
 #include "sdn-property.h"
-//#include "z3++.h"
+#include "z3++.h"
 
 using namespace std;
 using namespace ns3;
 using namespace ns3::rapidnet_compiler;
-//using namespace z3;
 
 NS_LOG_COMPONENT_DEFINE ("RapidNetDPGraph");
 
@@ -192,8 +191,11 @@ void compile (string overlogFile, bool provenanceEnabled)
   //dpool->PrintAllDeriv();
   //dpool->PrintDeriv("advertisements");
 
+  /* adding smt solver part */
   const DerivNodeList& dlist = dpool->GetDerivList("advertisements");
-  writeToFile("testing_constraints", dlist); //laykuan testing
+  //writeToFile("testing_constraints", dlist); //laykuan testing
+  write_to_z3(dlist);
+
   //const DerivNodeList& dlist = dpool->GetDerivList("advertisements");
   //Use DerivNode::GetAllObligs() to get all proof obligations
 

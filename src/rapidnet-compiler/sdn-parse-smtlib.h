@@ -11,8 +11,9 @@
 #include <stdlib.h>
 #include <cstring>
 #include <memory>
-//#include "z3++.h"
+#include "z3++.h"
 
+using namespace z3;
 using namespace std;
 
 string parseArithmetic(Arithmetic* a);
@@ -89,36 +90,96 @@ string get_console_output(const char* filename) {
  * *******************************************************************************
  */
 
-/* WARNING: BUGGY */
+string variables_declaration_to_str(std::map<string,string> mymap) {
+	string str = "";
+	for (std::map<string,string>::const_iterator it = mymap.begin(); it != mymap.end(); it++) {
+		str += it->second;
+	}
+	return str;
+}
 
-// SMTLIB parse_to_z3(const ConstraintTemplate* contemp) {
-// 	const ConstraintList& clist = contemp->GetConstraints();
+void checking_with_z3(string str_to_check) {
+	context c;
+	solver s(c);
 
-// 	ConstraintList::const_iterator itc;
-// 	string all_constraints = "(set-logic AUFIRA)\n";
+	Z3_ast parsed = Z3_parse_smtlib2_string(c, str_to_check.c_str(), 0, 0, 0, 0, 0, 0);
+    expr e(c, parsed);
+    s.add(e); // <--- Add to solver here
 
-// 	for (itc = clist.begin(); itc != clist.end(); itc++) {
-// 	    Constraint* newCons = new Constraint((**itc));
-// 	    string constr = parseFormula(newCons);
-// 	    all_constraints = all_constraints + "(assert" + constr + ")\n";
-// 	}
+    if (s.check() == sat) {
+        std::cout << "SAT\n";
+        model m = s.get_model();
+    	std::cout << m << "\n";
+    } else {
+        std::cout << "UNSAT\n";
+    }
+}
 
-// 	all_constraints += "(check-sat)\n";
-// 	all_constraints += "(get-model)\n";
+void parse_one_derivation_to_z3(const DerivNode* deriv) {
+	const ConstraintsTemplate* contemp = deriv->GetConstraints();
+	const ConstraintList& clist = contemp->GetConstraints();
 
-// 	return z3.parseSMTLIB2String(all_constraints);
-// }
+	ConstraintList::const_iterator itc;
+	string str_to_check = "(set-option :produce-models true)";
+	for (itc = clist.begin(); itc != clist.end(); itc++) {
+	    Constraint* newCons = new Constraint((**itc));
+	    string constr = parseFormula(newCons);
+	    str_to_check += "(assert" + constr + ")";
+	}	
+
+	string fvstr = variables_declaration_to_str(all_free_variables);
+	string cstr = variables_declaration_to_str(all_constants);
+	string bvstr = variables_declaration_to_str(all_bound_variables);
+	string pstr = variables_declaration_to_str(all_predicate_schemas);
+	string fstr = variables_declaration_to_str(all_function_schemas);
+	
+	checking_with_z3(fvstr + cstr + bvstr + pstr + fstr + str_to_check);
+}
+
 
 /* Call only at the end 
  */
-// void writeToZ3(const DerivNodeList& dlist) {
-// 	DerivNodeList::const_iterator itd;
+void write_to_z3(const DerivNodeList& dlist) {
+	DerivNodeList::const_iterator itd;
+	for (itd = dlist.begin(); itd != dlist.end(); itd++) { 
+		parse_one_derivation_to_z3(*itd);
+	}
+}
 
-// 	for (itd = dlist.begin(); itd != dlist.end(); itd++) { 
 
-// 		vector<string> all_constraints = parse_one_derivation(*itd);
-// 	}
-// }
+/* To be removed when everything is build out
+ */
+void z3_model_test() {
+    std::cout << "z3_parsing_get_model_example\n";
+
+    context c;
+    string testing = "(set-option :produce-models true)(set-logic AUFLIA)(declare-fun x () Int)(declare-fun y () Int)(declare-fun z () Int)(declare-fun w () Int)(assert (= x y))(assert (= z w))(assert (distinct x w))";
+
+    Z3_ast parsed = Z3_parse_smtlib2_string(c, testing.c_str(), 0,0,0,0,0,0);
+    expr e(c, parsed);
+
+    solver s(c);
+
+    s.add(e); // <--- Add constraints to solver here
+
+    if (s.check() == sat) {
+        std::cout << "SAT\n";
+    } else {
+        std::cout << "UNSAT\n";
+    }
+
+    model m = s.get_model();
+    std::cout << m << "\n";
+
+    // traversing the model
+    for (unsigned i = 0; i < m.size(); i++) {
+        func_decl v = m[i];
+        // this problem contains only constants
+        assert(v.arity() == 0); 
+        std::cout << v.name() << " = " << m.get_const_interp(v) << "\n";
+    }
+}
+
 
 /* 
  * *******************************************************************************
@@ -140,7 +201,7 @@ string get_console_output(const char* filename) {
  * *******************************************************************************
  */
 
- void writeDeclaration(std::map<string,string> mymap, ofstream& myfile) {
+void writeDeclaration(std::map<string,string> mymap, ofstream& myfile) {
 	if (myfile.is_open()) {
 		for (std::map<string,string>::const_iterator it = mymap.begin(); it != mymap.end(); it++) {
 			myfile << it->second + "\n";
