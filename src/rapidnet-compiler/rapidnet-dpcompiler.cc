@@ -43,10 +43,12 @@
 #include "sdn-derivation.h"
 #include "sdn-parse-smtlib.h"
 #include "sdn-property.h"
+//#include "z3++.h"
 
 using namespace std;
 using namespace ns3;
 using namespace ns3::rapidnet_compiler;
+//using namespace z3;
 
 NS_LOG_COMPONENT_DEFINE ("RapidNetDPGraph");
 
@@ -196,8 +198,8 @@ void compile (string overlogFile, bool provenanceEnabled)
   //Use DerivNode::GetAllObligs() to get all proof obligations
 
   //User-defined property
-  Property p = Property();
-  p.Print();
+  //Property p = Property();
+  //p.Print();
 }
 
 

@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <cstring>
 #include <memory>
+//#include "z3++.h"
 
 using namespace std;
 
@@ -90,34 +91,34 @@ string get_console_output(const char* filename) {
 
 /* WARNING: BUGGY */
 
-SMTLIB parse_to_z3(const ConstraintTemplate* contemp) {
-	const ConstraintList& clist = contemp->GetConstraints();
+// SMTLIB parse_to_z3(const ConstraintTemplate* contemp) {
+// 	const ConstraintList& clist = contemp->GetConstraints();
 
-	ConstraintList::const_iterator itc;
-	string all_constraints = "(set-logic AUFIRA)\n";
+// 	ConstraintList::const_iterator itc;
+// 	string all_constraints = "(set-logic AUFIRA)\n";
 
-	for (itc = clist.begin(); itc != clist.end(); itc++) {
-	    Constraint* newCons = new Constraint((**itc));
-	    string constr = parseFormula(newCons);
-	    all_constraints = all_constraints + "(assert" + constr + ")\n";
-	}
+// 	for (itc = clist.begin(); itc != clist.end(); itc++) {
+// 	    Constraint* newCons = new Constraint((**itc));
+// 	    string constr = parseFormula(newCons);
+// 	    all_constraints = all_constraints + "(assert" + constr + ")\n";
+// 	}
 
-	all_constraints += "(check-sat)\n";
-	all_constraints += "(get-model)\n";
+// 	all_constraints += "(check-sat)\n";
+// 	all_constraints += "(get-model)\n";
 
-	return z3.parseSMTLIB2String(all_constraints);
-}
+// 	return z3.parseSMTLIB2String(all_constraints);
+// }
 
 /* Call only at the end 
  */
-void writeToZ3(const DerivNodeList& dlist) {
-	DerivNodeList::const_iterator itd;
+// void writeToZ3(const DerivNodeList& dlist) {
+// 	DerivNodeList::const_iterator itd;
 
-	for (itd = dlist.begin(); itd != dlist.end(); itd++) { 
+// 	for (itd = dlist.begin(); itd != dlist.end(); itd++) { 
 
-		vector<string> all_constraints = parse_one_derivation(*itd);
-	}
-}
+// 		vector<string> all_constraints = parse_one_derivation(*itd);
+// 	}
+// }
 
 /* 
  * *******************************************************************************
