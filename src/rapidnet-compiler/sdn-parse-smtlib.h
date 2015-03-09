@@ -29,6 +29,14 @@ std::map<string, string> all_constants;
 std::map<string, string> all_predicate_schemas;
 std::map<string, string> all_function_schemas;
 
+/* 
+ * *******************************************************************************
+ *                                                                               *
+ *                              HELPER FUNCTIONS                                 *
+ *                                                                               *
+ * *******************************************************************************
+ */
+
 void clearAllVariables() {
 	all_free_variables.clear();
 	all_bound_variables.clear();
@@ -43,6 +51,85 @@ string IntegerToString(int number) {
 	std::string theNumberString = ostr.str(); //the str() function of the stream 
 	return theNumberString;
 }
+
+string get_console_output(const char* filename) {
+	char* result = (char*) malloc(100);
+	strcpy(result, "cvc4 "); // copy string one into the result.
+	strcat(result, filename); // append string two to the result.
+	
+	FILE* fp = popen(result, "r");
+    if (fp == NULL) { 
+        throw std::invalid_argument("Reading file failed");
+    } 
+    char buffer[1028];
+    string str = ""; 
+    while (fgets(buffer, 1028, fp) != NULL) { 
+        str = str + buffer;
+    } 
+    pclose(fp);
+    return str;
+}
+
+/* 
+ * *******************************************************************************
+ *                                                                               *
+ *                              HELPER FUNCTIONS                                 *
+ *                                                                               *
+ * *******************************************************************************
+ */
+
+
+
+/* 
+ * *******************************************************************************
+ *                                                                               *
+ *                                WRITE TO Z3	                                 *
+ *                                                                               *
+ * *******************************************************************************
+ */
+
+/* WARNING: BUGGY */
+
+SMTLIB parse_to_z3(const ConstraintTemplate* contemp) {
+	const ConstraintList& clist = contemp->GetConstraints();
+
+	ConstraintList::const_iterator itc;
+	string all_constraints = "(set-logic AUFIRA)\n";
+
+	for (itc = clist.begin(); itc != clist.end(); itc++) {
+	    Constraint* newCons = new Constraint((**itc));
+	    string constr = parseFormula(newCons);
+	    all_constraints = all_constraints + "(assert" + constr + ")\n";
+	}
+
+	all_constraints += "(check-sat)\n";
+	all_constraints += "(get-model)\n";
+
+	return z3.parseSMTLIB2String(all_constraints);
+}
+
+/* Call only at the end 
+ */
+void writeToZ3(const DerivNodeList& dlist) {
+	DerivNodeList::const_iterator itd;
+
+	for (itd = dlist.begin(); itd != dlist.end(); itd++) { 
+
+		vector<string> all_constraints = parse_one_derivation(*itd);
+	}
+}
+
+/* 
+ * *******************************************************************************
+ *                                                                               *
+ *                                WRITE TO Z3	                                 *
+ *                                                                               *
+ * *******************************************************************************
+ */
+
+
+
+
 
 /* 
  * *******************************************************************************
@@ -83,24 +170,6 @@ void printDeclaration(std::map<string,string> mymap) {
 	}
 }
 
-
-string get_console_output(const char* filename) {
-	char* result = (char*) malloc(100);
-	strcpy(result, "cvc4 "); // copy string one into the result.
-	strcat(result, filename); // append string two to the result.
-	
-	FILE* fp = popen(result, "r");
-    if (fp == NULL) { 
-        throw std::invalid_argument("Reading file failed");
-    } 
-    char buffer[1028];
-    string str = ""; 
-    while (fgets(buffer, 1028, fp) != NULL) { 
-        str = str + buffer;
-    } 
-    pclose(fp);
-    return str;
-}
 
 const char* dlist_filename(const char* dlist_name, int counter) {
 	stringstream temp_str;
