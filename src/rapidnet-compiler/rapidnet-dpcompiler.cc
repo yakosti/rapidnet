@@ -42,10 +42,12 @@
 #include "sdn-graph.h"
 #include "sdn-derivation.h"
 #include "sdn-property.h"
+#include "z3++.h"
 
 using namespace std;
 using namespace ns3;
 using namespace ns3::rapidnet_compiler;
+using namespace z3;
 
 NS_LOG_COMPONENT_DEFINE ("RapidNetDPGraph");
 
@@ -193,8 +195,8 @@ void compile (string overlogFile, bool provenanceEnabled)
   //Use DerivNode::GetAllObligs() to get all proof obligations
 
   //User-defined property
-  Property p = Property();
-  p.Print();
+  //Property p = Property();
+  //p.Print();
 }
 
 //NDLog program should be free of recursion
@@ -211,6 +213,12 @@ int main (int argc, char** argv)
 //  LogComponentEnable ("Formula", LOG_INFO);
 //  LogComponentEnable ("Property", LOG_INFO);
 
+  // Test z3
+  context c;
+  expr x = c.int_const("x");
+  std::cout << x + 1 << "\n";
+
+  //Process the NDLog program
   string overlogFile;
   string baseoverlogFile = DEFAULT_RN_APP_BASE;
   bool provenance = 0;
