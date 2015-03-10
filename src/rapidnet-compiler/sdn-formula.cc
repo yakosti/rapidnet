@@ -178,7 +178,7 @@ PredicateSchema::PredicateSchema(const PredicateSchema& predSch)
 	types = predSch.types;
 }
 
-string PredicateSchema::GetName() {
+string PredicateSchema::GetName() const{
   return name;
 }
 
@@ -225,6 +225,12 @@ PredicateInstance::Clone()
 	return (new PredicateInstance(*this));
 }
 
+string
+PredicateInstance::GetName() const
+{
+	return schema->GetName();
+}
+
 void
 PredicateInstance::VarReplace(const VarMap& vmap)
 {
@@ -235,11 +241,11 @@ PredicateInstance::VarReplace(const VarMap& vmap)
 	}
 }
 
-PredicateSchema* PredicateInstance::GetSchema() {
+const PredicateSchema* PredicateInstance::GetSchema() const{
   return schema;
 }
 
-vector<Term*>& PredicateInstance::GetArgs() {
+const vector<Term*>& PredicateInstance::GetArgs() const{
   return args;
 }
 
@@ -320,6 +326,23 @@ Constraint::Operator Constraint::GetOperator() {
 
 Term* Constraint::GetLeftE() {
   return leftE;
+}
+
+Constraint*
+Constraint::Revert() const
+{
+	Operator newOp;
+	switch (op)
+	{
+	case Constraint::EQ: newOp = Constraint::NEQ; break;
+	case Constraint::NEQ: newOp = Constraint::EQ; break;
+	case Constraint::GT: newOp = Constraint::LT; break;
+	case Constraint::LT: newOp = Constraint::GT; break;
+	}
+
+	Term* newLeftE = leftE->Clone();
+	Term* newRightE = rightE->Clone();
+	return (new Constraint(newOp, newLeftE, newRightE));
 }
 
 Term* Constraint::GetRightE() {
@@ -999,6 +1022,21 @@ ConstraintsTemplate::ReplaceVar(VarMap& vmap)
 	{
 		(*it)->VarReplace(vmap);
 	}
+}
+
+ConstraintsTemplate*
+ConstraintsTemplate::Revert() const
+{
+	ConstraintsTemplate* newTemp = new ConstraintsTemplate();
+	ConstraintList::const_iterator itc;
+	Constraint* newCons;
+	for (itc = constraints.begin();itc != constraints.end();itc++)
+	{
+		newCons = (*itc)->Revert();
+		newTemp->AddConstraint(newCons);
+	}
+
+	return newTemp;
 }
 
 ConstraintsTemplate::~ConstraintsTemplate()

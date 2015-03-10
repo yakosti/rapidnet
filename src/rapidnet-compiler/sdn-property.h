@@ -16,6 +16,7 @@
 
 using namespace std;
 
+//TODO: Current Property does not support quantifiers in constraints
 class Property
 {
 public:
@@ -36,6 +37,14 @@ public:
 	PredicateInstance* ParsePred(const string, map<string, Variable*>&);
 
 	void ParseExistVars(string, map<string, Variable*>);
+
+	const list<PredicateInstance*>& GetUniPred() const{return univPredList;}
+
+	const list<PredicateInstance*>& GetExistPred() const{return existPredList;}
+
+	const ConstraintsTemplate* GetUniCons() const{return univConsList;}
+
+	const ConstraintsTemplate* GetExistCons() const{return existConsList;}
 
 	void Print() const;
 

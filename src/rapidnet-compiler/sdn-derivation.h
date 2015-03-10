@@ -14,6 +14,7 @@
 #include <vector>
 #include "sdn-formula.h"
 #include "sdn-graph.h"
+#include "sdn-property.h"
 //#include "parser-util.h"
 
 using namespace std;
@@ -57,6 +58,8 @@ public:
 
 	const ConsList& GetCumuConsts() const{return allConstraints;}
 
+	const FormList& GetInvariants() const{return allInvs;}
+
 	//Obtain all constraints and invariants that should be satisfied
 	//to make execution possible
 	Obligation GetAllObligs() const;
@@ -64,6 +67,9 @@ public:
 	const ConstraintsTemplate* GetConstraints() const{return ruleConstraints;}
 
 	const DerivNodeList& GetBodyDerivs() const{return bodyDerivs;}
+
+	void FindSubTuple(const list<PredicateInstance*>&,
+					  map<string, list<const Tuple*> >&) const;
 
 	void PrintHead() const;
 
@@ -140,6 +146,30 @@ public:
 						const ConstraintsTemplate*) const;
 
 	const DerivNodeList& GetDerivList(string tpName) const;
+
+	//TODO: We assume now that universally quantified tuples
+	//and existentially quantified tuples in Property do not
+	//have duplicates
+	bool CheckProperty(const Property&);
+
+	bool CheckRecurUniv(const Property&,
+						const list<PredicateInstance*>&,
+						list<PredicateInstance*>::const_iterator,
+						DerivNodeList);
+
+	bool CheckExistProp(const Property&, const DerivNodeList&);
+
+	bool CheckRecurExist(const Property&,
+						 map<string, list<const Tuple*> >&,
+						 map<string, list<const Tuple*> >::const_iterator,
+						 const list<const Tuple*>,
+						 ConsList&,
+						 const FormList&);
+
+	bool CheckWholeProp(const Property&,
+						list<const Tuple*>,
+			 	 	 	ConsList&,
+						const FormList&);
 
 	void PrintDpool() const;
 
