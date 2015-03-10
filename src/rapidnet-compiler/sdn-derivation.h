@@ -73,13 +73,20 @@ public:
 
 	void PrintHead() const;
 
+	void PrintHeadInst(const map<Variable*, int>&) const;
+
 	void PrintCumuCons() const;
 
 	//Just print the current DerivNode
 	virtual void PrintDerivNode() const;
 
+	virtual void PrintInstance(const map<Variable*, int>&) const;
+
 	//Print the whole derivation represented by the DerivNode
 	void PrintDerivation() const;
+
+	//Print a real execution corresponding to the derivation
+	void PrintExecution(map<Variable*, int>) const;
 
 	virtual ~DerivNode();
 
@@ -104,6 +111,8 @@ public:
 	const Formula* GetInv() const {return invariant;}
 
 	void PrintDerivNode() const;
+
+	void PrintInstance(const map<Variable*, int>&) const;
 
 	~RecurNode();
 private:
