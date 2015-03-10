@@ -3,6 +3,9 @@
  *
  *  Created on: Nov 18, 2014
  *      Author: Chen
+ * 
+ * TODO: CHANGE THESE TO CONST FUNCTIONS, SAFER AS OTHER PEOPLE CANNOT CHANGE THE CODE
+ * CHEN CHEN AND LAY KUAN, MARCH 10, 2015
  */
 
 #ifndef SDN_FORMULA_H_
@@ -355,7 +358,8 @@ public:
 	{
 		IMPLY,
 		OR,
-		AND
+		AND,
+		NEG
 	};
 
 	Connective(ConnType ct, Formula* formL, Formula* formR);
