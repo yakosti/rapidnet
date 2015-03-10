@@ -97,9 +97,11 @@ string get_console_output(const char* filename) {
 
 
 void print_rapidnet_names_and_values(std::map<Variable*, int> mymap) {
+	std::cout << "\n******** Printing Rapidnet -> Int Subst map **********" << endl;
 	for (std::map<Variable*, int>::const_iterator it = mymap.begin(); it != mymap.end(); it++) {
 	    cout << (it->first)->GetVariableName() << " = " << it->second << endl;
 	}
+	std::cout << "******** Printing Rapidnet -> Int Subst map **********\n" << endl;
 }
 
 
@@ -110,10 +112,11 @@ map<Variable*, int> map_substititions(context & c, model m) {
         symbol name = v.name();
         string namestr = Z3_get_symbol_string(c, name);
         if (v.arity() == 0) { // is a constant 
-        	int value = m.get_const_interp(v);
+        	expr value = m.get_const_interp(v);
         	Variable* rapidnet_var = name_to_rapidnet_free_variable[namestr];
-        	variable_map[rapidnet_var] = value;
-        	//std::cout << name << "= " << m.get_const_interp(v) << "\n";
+        	int myint = -1; //default value
+        	Z3_get_numeral_int(c, value, &myint);
+        	variable_map[rapidnet_var] = myint;
         }
     }
     return variable_map;
@@ -136,8 +139,8 @@ void checking_with_z3(string str_to_check) {
     s.add(e); // <--- Add to solver here
 
     if (s.check() == sat) {
-        std::cout << "============== SAT ===============\n";
         model m = s.get_model();
+        std::cout << "============== SAT MODEL ===============\n" << m << endl;
         map<Variable*, int> mapsubst = map_substititions(c, m);
         print_rapidnet_names_and_values(mapsubst);
     } else {
@@ -158,22 +161,25 @@ void check_sat(const ConstraintsTemplate* contemp, FormList flist) {
 	}	
 
 	/* formula */
-	// FormList::const_iterator itf;
-	// string formula_str = "(set-option :produce-models true)";
-	// for (itf = flist.begin(); itf != flist.end(); itf++) {
-	//     Formula* nform = (Formula*)*itf;
-	//     string formstr = parseFormula(nform);
-	//     formula_str += "(assert" + formstr + ")";
-	// }	
+	FormList::const_iterator itf;
+	string formula_str = "";
+	for (itf = flist.begin(); itf != flist.end(); itf++) {
+	    Formula* nform = (Formula*)*itf;
+	    string formstr = parseFormula(nform);
+	    cout << formstr << endl;
+	    formula_str += "\n(assert" + formstr + ")";
+	}	
 
 	string fvstr = variables_declaration_to_str(all_free_variables);
-	string cstr = variables_declaration_to_str(all_constants);
-	string bvstr = variables_declaration_to_str(all_bound_variables);
 	string pstr = variables_declaration_to_str(all_predicate_schemas);
 	string fstr = variables_declaration_to_str(all_function_schemas);
 	
-	string to_check = fvstr + cstr + bvstr + pstr + fstr + constraint_str;
+	string to_check = "(set-option :produce-models true)" + fvstr + pstr + fstr + formula_str;
+	cout << "\n TESTING IF SAT NOW: \n" << to_check << endl;
+
 	checking_with_z3(to_check);
+
+	clearAllVariables();
 }
 
 
@@ -621,7 +627,7 @@ string parseTerm(Term* t) {
 		int value = ((IntVal*)t)->GetIntValue();
 		string strvalue = IntegerToString(value);
 		if (all_constants.find(strvalue) == all_constants.end()) //not declared, declare and store
-			all_constants[strvalue] = "(declare-const " + strvalue + " Int";
+			all_constants[strvalue] = "(declare-const " + strvalue + " Int)";
 	 	return strvalue;
 	} else if (dynamic_cast<BoolVal*>(t)) {
 		bool value = ((BoolVal*)t)->GetBoolValue();

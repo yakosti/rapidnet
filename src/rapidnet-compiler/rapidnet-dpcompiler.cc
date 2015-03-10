@@ -194,8 +194,15 @@ void compile (string overlogFile, bool provenanceEnabled)
   /* adding smt solver part */
   const DerivNodeList& dlist = dpool->GetDerivList("advertisements");
   //writeToFile("testing_constraints", dlist); //laykuan testing
+  
+  /* this is sat*/
+  Variable* x_rapidnet = new Variable(Variable::INT, false);
+  IntVal* four_rapidnet = new IntVal(4);
+  Constraint* x_equals_4_rapidnet = new Constraint(Constraint::GT, x_rapidnet, four_rapidnet);
+
   FormList flist;
-  flist.push_back(&qtf);
+  flist.push_back(x_equals_4_rapidnet);
+  //flist.push_back(&qtf);
   write_to_z3(dlist, flist);
 
   //const DerivNodeList& dlist = dpool->GetDerivList("advertisements");
