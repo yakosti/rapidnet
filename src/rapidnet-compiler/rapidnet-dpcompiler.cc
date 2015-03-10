@@ -160,6 +160,42 @@ void parseOverlog (string overlogFile, Ptr<OlContext> ctxt,
     }
 }
 
+/* 
+  forall x ( 
+    (0 < x AND x < 5) => exists y (y > x) 
+  ) 
+ */
+Quantifier* forall_rapidnet_example() {
+  // 0 < x AND x < 5 
+  IntVal* zero = new IntVal(0);
+  IntVal* five = new IntVal(5);
+
+  Variable* x = new Variable(Variable::INT, true);
+  vector<Variable*> boundVarList_x;
+  boundVarList_x.push_back(x);
+
+  Constraint* x_gt_0 = new Constraint(Constraint::GT, x, zero);
+  Constraint* x_lt_5 = new Constraint(Constraint::LT, x, five);
+
+  Connective* x_gt_0__and__x_lt_5 = new Connective(Connective::AND, x_gt_0, x_lt_5);
+
+  // exists y (y > x)
+  Variable* y = new Variable(Variable::INT, true);
+  vector<Variable*> boundVarList_y;
+  boundVarList_y.push_back(y);
+
+  Constraint* y_gt_x = new Constraint(Constraint::GT, y, x);
+  Quantifier* exists_y__y_gt_x = new Quantifier(Quantifier::EXISTS, boundVarList_y, y_gt_x);
+
+  // (0 < x AND x < 5) => exists y (y > x) 
+  Connective* x_gt_0__and__x_lt_5__implies__exists_y__y_gt_x = new Connective(Connective::IMPLY, x_gt_0__and__x_lt_5, exists_y__y_gt_x);
+
+  // exists x ((0 < x AND x < 5) => exists y (y > x) )
+  Quantifier* forall_x__x_gt_0__and__x_lt_5__implies__exists_y__y_gt_x = new Quantifier(Quantifier::FORALL, boundVarList_x, x_gt_0__and__x_lt_5__implies__exists_y__y_gt_x);
+
+  return forall_x__x_gt_0__and__x_lt_5__implies__exists_y__y_gt_x;
+}
+
 /**
  * Compiles the application to generate depndency graph
  */
@@ -196,14 +232,18 @@ void compile (string overlogFile, bool provenanceEnabled)
   const DerivNodeList& dlist = dpool->GetDerivList("advertisements");
   //writeToFile("testing_constraints", dlist); //laykuan testing
   
-  /* this is sat*/
+  /* expression x > 4 */
   Variable* x_rapidnet = new Variable(Variable::INT, false);
   IntVal* four_rapidnet = new IntVal(4);
   Constraint* x_equals_4_rapidnet = new Constraint(Constraint::GT, x_rapidnet, four_rapidnet);
 
+  /* exists y, forall x ((0 < x AND x < 5) => (y > x)) */
+  Quantifier* forallq = forall_rapidnet_example();
+
   FormList flist;
   //flist.push_back(x_equals_4_rapidnet);
   flist.push_back(&qtf);
+  flist.push_back(forallq);
   write_to_z3(dlist, flist);
 
   //const DerivNodeList& dlist = dpool->GetDerivList("advertisements");

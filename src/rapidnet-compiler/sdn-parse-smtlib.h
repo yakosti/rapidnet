@@ -126,13 +126,21 @@ map<Variable*, int> map_substititions(context & c, model m) {
         symbol name = v.name();
         string namestr = Z3_get_symbol_string(c, name);
         string cnamestr = truncate_string_at_exclamation(namestr);
+
         if (v.arity() == 0) { // is a constant 
         	expr value = m.get_const_interp(v);
         	Variable* rapidnet_var = name_to_rapidnet_free_variable[cnamestr];
         	int myint = -1; //default value
         	Z3_get_numeral_int(c, value, &myint);
         	if (rapidnet_var) variable_map[rapidnet_var] = myint; //only add to map if var exists
-        } 
+        } else { //not constant
+        	func_interp fi = m.get_func_interp(v);
+        	expr value = fi.else_value();
+        	int myint = -1; //default value
+        	Z3_get_numeral_int(c, value, &myint);
+        	Variable* rapidnet_var = name_to_rapidnet_bound_variable[cnamestr];
+        	if (rapidnet_var) variable_map[rapidnet_var] = myint; 
+        }
     }
     return variable_map;
 }
@@ -158,7 +166,6 @@ map<Variable*, int> checking_with_z3(string str_to_check) {
     if (s.check() == sat) {
         model m = s.get_model();
         std::cout << "============== SAT MODEL ===============\n" << m << endl;
-        cout << m << endl;
         mapsubst = map_substititions(c, m);
         print_rapidnet_names_and_values(mapsubst);
     } else {
@@ -561,7 +568,7 @@ string parseConstraint(Constraint* c) {
 		case Constraint::GT:
 			return "(> " + leftE + " " + rightE + ")";
 		case Constraint::LT:
-			return "(<" + leftE + " " + rightE + ")";
+			return "(< " + leftE + " " + rightE + ")";
 		default:
 			throw std::invalid_argument("Invalid Constraint format");
 	}
