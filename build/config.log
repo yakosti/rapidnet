@@ -1,6 +1,6 @@
-# project ns (3.5) configured on Mon Mar  9 16:20:30 2015 by
+# project ns (3.5) configured on Mon Mar  9 22:45:51 2015 by
 # waf 1.5.8 (abi 7, python 20709f0 on darwin)
-# using ./waf configure
+# using ./waf
 #
 Checking for program cpp
 

@@ -148,13 +148,23 @@ void checking_with_z3(string str_to_check) {
 void check_sat(const ConstraintsTemplate* contemp, FormList flist) {
 	const ConstraintList& clist = contemp->GetConstraints();
 
+	/* constraint */
 	ConstraintList::const_iterator itc;
-	string str_to_check = "(set-option :produce-models true)";
+	string constraint_str = "(set-option :produce-models true)";
 	for (itc = clist.begin(); itc != clist.end(); itc++) {
 	    Constraint* newCons = new Constraint((**itc));
 	    string constr = parseFormula(newCons);
-	    str_to_check += "(assert" + constr + ")";
+	    constraint_str += "(assert" + constr + ")";
 	}	
+
+	/* formula */
+	// FormList::const_iterator itf;
+	// string formula_str = "(set-option :produce-models true)";
+	// for (itf = flist.begin(); itf != flist.end(); itf++) {
+	//     Formula* nform = (Formula*)*itf;
+	//     string formstr = parseFormula(nform);
+	//     formula_str += "(assert" + formstr + ")";
+	// }	
 
 	string fvstr = variables_declaration_to_str(all_free_variables);
 	string cstr = variables_declaration_to_str(all_constants);
@@ -162,7 +172,8 @@ void check_sat(const ConstraintsTemplate* contemp, FormList flist) {
 	string pstr = variables_declaration_to_str(all_predicate_schemas);
 	string fstr = variables_declaration_to_str(all_function_schemas);
 	
-	checking_with_z3(fvstr + cstr + bvstr + pstr + fstr + str_to_check);
+	string to_check = fvstr + cstr + bvstr + pstr + fstr + constraint_str;
+	checking_with_z3(to_check);
 }
 
 
