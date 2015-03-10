@@ -95,9 +95,12 @@ string get_console_output(const char* filename) {
  * *******************************************************************************
  */
 
-//Variable::TypeCode match_name_to_free_variable(string name) {
 
-//}
+void print_rapidnet_names_and_values(std::map<Variable*, int> mymap) {
+	for (std::map<Variable*, int>::const_iterator it = mymap.begin(); it != mymap.end(); it++) {
+	    cout << (it->first)->GetVariableName() << " = " << it->second << endl;
+	}
+}
 
 
 map<Variable*, int> map_substititions(context & c, model m) {
@@ -133,16 +136,16 @@ void checking_with_z3(string str_to_check) {
     s.add(e); // <--- Add to solver here
 
     if (s.check() == sat) {
-        std::cout << "SAT\n";
+        std::cout << "============== SAT ===============\n";
         model m = s.get_model();
         map<Variable*, int> mapsubst = map_substititions(c, m);
+        print_rapidnet_names_and_values(mapsubst);
     } else {
         std::cout << "UNSAT\n";
     }
 }
 
-void parse_one_derivation_to_z3(const DerivNode* deriv) {
-	const ConstraintsTemplate* contemp = deriv->GetConstraints();
+void check_sat(const ConstraintsTemplate* contemp) {
 	const ConstraintList& clist = contemp->GetConstraints();
 
 	ConstraintList::const_iterator itc;
@@ -166,10 +169,9 @@ void parse_one_derivation_to_z3(const DerivNode* deriv) {
 /* Call only at the end 
  */
 void write_to_z3(const DerivNodeList& dlist) {
-	DerivNodeList::const_iterator itd;
-	for (itd = dlist.begin(); itd != dlist.end(); itd++) { 
-		parse_one_derivation_to_z3(*itd);
-	}
+	const DerivNode* deriv = dlist.front();
+	const ConstraintsTemplate* contemp = deriv->GetConstraints();
+	check_sat(contemp);
 }
 
 
