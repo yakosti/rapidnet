@@ -54,6 +54,7 @@ string IntegerToString(int number) {
 	return theNumberString;
 }
 
+/* likely will delete */
 string get_console_output(const char* filename) {
 	char* result = (char*) malloc(100);
 	strcpy(result, "cvc4 "); // copy string one into the result.
@@ -90,9 +91,22 @@ string get_console_output(const char* filename) {
  * *******************************************************************************
  */
 
+map<string, string> map_substititions(context & c, model m) {
+	map<string, string> variable_map;
+    for (int i = 0; i < m.size(); i++) {
+        func_decl v = m[i];
+        symbol name = v.name();
+        string namestr = Z3_get_symbol_string(c, name);
+        if (v.arity() == 0) { // is a constant 
+        	std::cout << name << "= " << m.get_const_interp(v) << "\n";
+        }
+    }
+    return variable_map;
+}
+
 string variables_declaration_to_str(std::map<string,string> mymap) {
 	string str = "";
-	for (std::map<string,string>::const_iterator it = mymap.begin(); it != mymap.end(); it++) {
+	for (std::map<string, string>::const_iterator it = mymap.begin(); it != mymap.end(); it++) {
 		str += it->second;
 	}
 	return str;
@@ -109,7 +123,7 @@ void checking_with_z3(string str_to_check) {
     if (s.check() == sat) {
         std::cout << "SAT\n";
         model m = s.get_model();
-    	std::cout << m << "\n";
+        map<string, string> mapsubst = map_substititions(c, m);
     } else {
         std::cout << "UNSAT\n";
     }
@@ -147,8 +161,7 @@ void write_to_z3(const DerivNodeList& dlist) {
 }
 
 
-/* To be removed when everything is build out
- */
+/* To be removed when everything is build out */
 void z3_model_test() {
     std::cout << "z3_parsing_get_model_example\n";
 
@@ -317,7 +330,7 @@ string parseVariableType(Variable::TypeCode v) {
 		case Variable::DOUBLE:
 			return "Real";
 		case Variable::STRING:
-			return "String";
+			return "Int";
 		default:
 			throw std::invalid_argument("Not a valid type, must be INT/BOOL/DOUBLE/STRING");
 	}
@@ -345,7 +358,7 @@ string parseFreeVariable(Variable* v) {
 			all_free_variables[varname] = declare;
 			return varname;
 		} case Variable::STRING: {
-			string declare = "(declare-fun " + varname + " () String)";
+			string declare = "(declare-fun " + varname + " () Int)";
 			all_free_variables[varname] = declare;
 			return varname;
 		} default: {
@@ -377,8 +390,7 @@ string parseBoundVariable(Variable* v, string qt) {
 			all_bound_variables[varname] = declare;
 			return varname;
 		} case Variable::STRING: {
-			//cout << "&&&&&" << varname << endl;
-			string declare = qt + " ((" + varname + " String))";
+			string declare = qt + " ((" + varname + " Int))";
 			all_bound_variables[varname] = declare;
 			return varname;
 		} default: {
@@ -556,7 +568,6 @@ string parseUserFunction(UserFunction* uf) {
 	vector<Term*> user_function_args_rapidnet = uf->GetArgs();
 	string user_function_args_smtlib = "";
 	for (int i=0; i<user_function_args_rapidnet.size(); i++) {
-		//cout << "***** " << ((Variable*)user_function_args_rapidnet[i])->GetVariableName() << endl;
 		string current_term_cvc4 = parseTerm(user_function_args_rapidnet[i]);
 		user_function_args_smtlib = user_function_args_smtlib + current_term_cvc4 + " ";
 	}
@@ -575,7 +586,7 @@ string parseTerm(Term* t) {
 		int value = ((IntVal*)t)->GetIntValue();
 		string strvalue = IntegerToString(value);
 		if (all_constants.find(strvalue) == all_constants.end()) //not declared, declare and store
-			all_constants[strvalue] = "(declare-const " + strvalue + " String)";
+			all_constants[strvalue] = "(declare-const " + strvalue + " Int";
 	 	return strvalue;
 	} else if (dynamic_cast<BoolVal*>(t)) {
 		bool value = ((BoolVal*)t)->GetBoolValue();
@@ -584,16 +595,12 @@ string parseTerm(Term* t) {
 	} else if (dynamic_cast<StringVal*>(t)) {
 		string value = ((StringVal*)t)->GetStringValue();
 		if (all_constants.find(value) == all_constants.end()) //not declared, declare and store
-			all_constants[value] = "(declare-const " + value + " String)";
+			all_constants[value] = "(declare-const " + value + " Int)";
 		return value;
 	} else if (dynamic_cast<Variable*>(t)) {
 		Variable* v = (Variable*)t;
 		bool isbound = v->GetFreeOrBound();
-		if (isbound) {
-			//cout << "******** " << v->GetVariableName() << endl;
-			return v->GetVariableName();
-			//return parseBoundVariable(v);
-		}
+		if (isbound) return v->GetVariableName();
 		return parseFreeVariable(v);
 	} else if (dynamic_cast<UserFunction*>(t)) {
 		return parseUserFunction((UserFunction*)t);
