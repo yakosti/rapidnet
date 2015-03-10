@@ -145,6 +145,14 @@ map<Variable*, int> checking_with_z3(string str_to_check) {
         std::cout << "============== SAT MODEL ===============\n" << m << endl;
         mapsubst = map_substititions(c, m);
         print_rapidnet_names_and_values(mapsubst);
+    } else {
+    	std::cout << "============== UNSAT MODEL ===============\n"  << endl;
+    	expr_vector core = s.unsat_core();
+	    std::cout << core << "\n";
+	    std::cout << "size: " << core.size() << "\n";
+	    for (unsigned i = 0; i < core.size(); i++) {
+	        std::cout << core[i] << "\n";
+	    }
     }
     return mapsubst;
 }
@@ -154,7 +162,7 @@ map<Variable*, int> check_sat(const ConstraintsTemplate* contemp, FormList flist
 
 	/* constraint */
 	ConstraintList::const_iterator itc;
-	string constraint_str = "(set-option :produce-models true)";
+	string constraint_str = "";
 	for (itc = clist.begin(); itc != clist.end(); itc++) {
 	    Constraint* newCons = new Constraint((**itc));
 	    string constr = parseFormula(newCons);
@@ -175,8 +183,8 @@ map<Variable*, int> check_sat(const ConstraintsTemplate* contemp, FormList flist
 	string pstr = variables_declaration_to_str(all_predicate_schemas);
 	string fstr = variables_declaration_to_str(all_function_schemas);
 	
-	string to_check = "(set-option :produce-models true)" + fvstr + pstr + fstr + formula_str;
-	cout << "\n TESTING IF SAT NOW: \n" << to_check << endl;
+	string to_check = "(set-option :produce-models true)" + fvstr + pstr + fstr + constraint_str + formula_str;
+	cout << "\n Testing if this is satisfiable: \n" << to_check << endl;
 
 	map<Variable*, int> mapsubst = checking_with_z3(to_check);
 

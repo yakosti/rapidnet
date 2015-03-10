@@ -201,8 +201,8 @@ void compile (string overlogFile, bool provenanceEnabled)
   Constraint* x_equals_4_rapidnet = new Constraint(Constraint::GT, x_rapidnet, four_rapidnet);
 
   FormList flist;
-  flist.push_back(x_equals_4_rapidnet);
-  //flist.push_back(&qtf);
+  //flist.push_back(x_equals_4_rapidnet);
+  flist.push_back(&qtf);
   write_to_z3(dlist, flist);
 
   //const DerivNodeList& dlist = dpool->GetDerivList("advertisements");
