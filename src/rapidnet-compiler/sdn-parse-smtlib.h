@@ -125,7 +125,7 @@ map<Variable*, int> map_substititions(context & c, model m) {
 string variables_declaration_to_str(std::map<string,string> mymap) {
 	string str = "";
 	for (std::map<string, string>::const_iterator it = mymap.begin(); it != mymap.end(); it++) {
-		str += it->second;
+		str += it->second + "\n";
 	}
 	return str;
 }
@@ -163,27 +163,36 @@ map<Variable*, int> check_sat(const ConstraintsTemplate* contemp, FormList flist
 	/* constraint */
 	ConstraintList::const_iterator itc;
 	string constraint_str = "";
+	int ccount = 0;
 	for (itc = clist.begin(); itc != clist.end(); itc++) {
 	    Constraint* newCons = new Constraint((**itc));
 	    string constr = parseFormula(newCons);
-	    constraint_str += "(assert" + constr + ")";
+
+	    ccount += 1;
+	    string counterstr = "c" + IntegerToString(ccount);
+
+	    constraint_str += "(assert (! " + constr + " :named " + counterstr + "))\n";
 	}	
 
 	/* formula */
 	FormList::const_iterator itf;
 	string formula_str = "";
+	int fcount = 0;
 	for (itf = flist.begin(); itf != flist.end(); itf++) {
 	    Formula* nform = (Formula*)*itf;
 	    string formstr = parseFormula(nform);
-	    cout << formstr << endl;
-	    formula_str += "\n(assert" + formstr + ")";
+	   
+	   	fcount += 1;
+	    string fcountstr = "f" + IntegerToString(fcount);
+
+	    formula_str += "\n(assert (!" + formstr + " :named " + fcountstr + "))\n";
 	}	
 
 	string fvstr = variables_declaration_to_str(all_free_variables);
 	string pstr = variables_declaration_to_str(all_predicate_schemas);
 	string fstr = variables_declaration_to_str(all_function_schemas);
 	
-	string to_check = "(set-option :produce-models true)" + fvstr + pstr + fstr + constraint_str + formula_str;
+	string to_check = "(set-option :produce-models true) \n" + fvstr + pstr + fstr + constraint_str + formula_str;
 	cout << "\n Testing if this is satisfiable: \n" << to_check << endl;
 
 	map<Variable*, int> mapsubst = checking_with_z3(to_check);
