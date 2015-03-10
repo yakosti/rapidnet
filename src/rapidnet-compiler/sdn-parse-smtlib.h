@@ -31,6 +31,8 @@ std::map<string, string> all_constants;
 std::map<string, string> all_predicate_schemas;
 std::map<string, string> all_function_schemas;
 
+std::map<string, Variable*> name_to_rapidnet_free_variable;
+
 /* 
  * *******************************************************************************
  *                                                                               *
@@ -45,6 +47,8 @@ void clearAllVariables() {
 	all_constants.clear();
 	all_predicate_schemas.clear();
 	all_function_schemas.clear();
+
+	name_to_rapidnet_free_variable.clear();
 }
 
 string IntegerToString(int number) {
@@ -91,14 +95,22 @@ string get_console_output(const char* filename) {
  * *******************************************************************************
  */
 
-map<string, string> map_substititions(context & c, model m) {
-	map<string, string> variable_map;
+//Variable::TypeCode match_name_to_free_variable(string name) {
+
+//}
+
+
+map<Variable*, int> map_substititions(context & c, model m) {
+	map<Variable*, int> variable_map;
     for (int i = 0; i < m.size(); i++) {
         func_decl v = m[i];
         symbol name = v.name();
         string namestr = Z3_get_symbol_string(c, name);
         if (v.arity() == 0) { // is a constant 
-        	std::cout << name << "= " << m.get_const_interp(v) << "\n";
+        	int value = m.get_const_interp(v);
+        	Variable* rapidnet_var = name_to_rapidnet_free_variable[namestr];
+        	variable_map[rapidnet_var] = value;
+        	//std::cout << name << "= " << m.get_const_interp(v) << "\n";
         }
     }
     return variable_map;
@@ -123,7 +135,7 @@ void checking_with_z3(string str_to_check) {
     if (s.check() == sat) {
         std::cout << "SAT\n";
         model m = s.get_model();
-        map<string, string> mapsubst = map_substititions(c, m);
+        map<Variable*, int> mapsubst = map_substititions(c, m);
     } else {
         std::cout << "UNSAT\n";
     }
@@ -336,30 +348,40 @@ string parseVariableType(Variable::TypeCode v) {
 	}
 }
 
+/* need to store SMTLIB declaration
+ * need to store name->rapidnet variable also
+ */
 string parseFreeVariable(Variable* v) {
 	Variable::TypeCode vartype = v->GetVariableType();
 	string varname = v->GetVariableName();
 
 	//present, return stored variable
-	if (all_free_variables.find(varname) != all_free_variables.end()) return varname;
+	if (all_free_variables.find(varname) != all_free_variables.end()) 
+		return varname;
+	if (name_to_rapidnet_free_variable.find(varname) != name_to_rapidnet_free_variable.end()) 
+		return varname;
 
 	//absent, create and store in hash map
 	switch (vartype) {
 		case Variable::INT: {
 			string declare = "(declare-fun " + varname + " () Int)";
 			all_free_variables[varname] = declare;
+			name_to_rapidnet_free_variable[varname] = v;
 			return varname;
 		} case Variable::DOUBLE: {
 			string declare = "(declare-fun " + varname + " () Real)";
 			all_free_variables[varname] = declare;
+			name_to_rapidnet_free_variable[varname] = v;
 			return varname;
 		} case Variable::BOOL: {
 			string declare = "(declare-fun " + varname + " () Bool)";
 			all_free_variables[varname] = declare;
+			name_to_rapidnet_free_variable[varname] = v;
 			return varname;
 		} case Variable::STRING: {
 			string declare = "(declare-fun " + varname + " () Int)";
 			all_free_variables[varname] = declare;
+			name_to_rapidnet_free_variable[varname] = v;
 			return varname;
 		} default: {
 			throw std::invalid_argument("Not a valid variable type, must be INT/DOUBLE/BOOL/STRING");
