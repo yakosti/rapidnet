@@ -31,7 +31,9 @@ std::map<string, string> all_constants;
 std::map<string, string> all_predicate_schemas;
 std::map<string, string> all_function_schemas;
 
+// name of var, variable
 std::map<string, Variable*> name_to_rapidnet_free_variable;
+std::map<string, Variable*> name_to_rapidnet_bound_variable;
 
 /* 
  * *******************************************************************************
@@ -99,25 +101,38 @@ string get_console_output(const char* filename) {
 void print_rapidnet_names_and_values(std::map<Variable*, int> mymap) {
 	std::cout << "\n******** Printing Rapidnet -> Int Subst map **********" << endl;
 	for (std::map<Variable*, int>::const_iterator it = mymap.begin(); it != mymap.end(); it++) {
-	    cout << (it->first)->GetVariableName() << " = " << it->second << endl;
+	    cout << "Variable is mapped to: "<< it->first->GetVariableName() << " = " << it->second << endl;
 	}
 	std::cout << "******** Printing Rapidnet -> Int Subst map **********\n" << endl;
 }
 
+string truncate_string_at_exclamation(string str) {
+	string nstr = "";
+	for (int n = 0; n<str.size(); n++) {
+    	if (str[n] == '!') {
+    		return nstr;
+    	} else {
+    		nstr += str[n];
+    	}
+	}
+	return nstr;
+}
 
+/* map from Z3 model to valu */
 map<Variable*, int> map_substititions(context & c, model m) {
 	map<Variable*, int> variable_map;
     for (int i = 0; i < m.size(); i++) {
         func_decl v = m[i];
         symbol name = v.name();
         string namestr = Z3_get_symbol_string(c, name);
+        string cnamestr = truncate_string_at_exclamation(namestr);
         if (v.arity() == 0) { // is a constant 
         	expr value = m.get_const_interp(v);
-        	Variable* rapidnet_var = name_to_rapidnet_free_variable[namestr];
+        	Variable* rapidnet_var = name_to_rapidnet_free_variable[cnamestr];
         	int myint = -1; //default value
         	Z3_get_numeral_int(c, value, &myint);
-        	variable_map[rapidnet_var] = myint;
-        }
+        	if (rapidnet_var) variable_map[rapidnet_var] = myint; //only add to map if var exists
+        } 
     }
     return variable_map;
 }
@@ -143,6 +158,7 @@ map<Variable*, int> checking_with_z3(string str_to_check) {
     if (s.check() == sat) {
         model m = s.get_model();
         std::cout << "============== SAT MODEL ===============\n" << m << endl;
+        cout << m << endl;
         mapsubst = map_substititions(c, m);
         print_rapidnet_names_and_values(mapsubst);
     } else {
@@ -394,32 +410,26 @@ string parseFreeVariable(Variable* v) {
 	string varname = v->GetVariableName();
 
 	//present, return stored variable
-	if (all_free_variables.find(varname) != all_free_variables.end()) 
-		return varname;
-	if (name_to_rapidnet_free_variable.find(varname) != name_to_rapidnet_free_variable.end()) 
-		return varname;
+	if (all_free_variables.find(varname) != all_free_variables.end()) return varname;
+	name_to_rapidnet_free_variable[varname] = v;
 
 	//absent, create and store in hash map
 	switch (vartype) {
 		case Variable::INT: {
 			string declare = "(declare-fun " + varname + " () Int)";
 			all_free_variables[varname] = declare;
-			name_to_rapidnet_free_variable[varname] = v;
 			return varname;
 		} case Variable::DOUBLE: {
 			string declare = "(declare-fun " + varname + " () Real)";
 			all_free_variables[varname] = declare;
-			name_to_rapidnet_free_variable[varname] = v;
 			return varname;
 		} case Variable::BOOL: {
 			string declare = "(declare-fun " + varname + " () Bool)";
 			all_free_variables[varname] = declare;
-			name_to_rapidnet_free_variable[varname] = v;
 			return varname;
 		} case Variable::STRING: {
 			string declare = "(declare-fun " + varname + " () Int)";
 			all_free_variables[varname] = declare;
-			name_to_rapidnet_free_variable[varname] = v;
 			return varname;
 		} default: {
 			throw std::invalid_argument("Not a valid variable type, must be INT/DOUBLE/BOOL/STRING");
@@ -434,6 +444,7 @@ string parseBoundVariable(Variable* v, string qt) {
 
 	//present, return stored variable
 	if (all_bound_variables.find(varname) != all_bound_variables.end()) return varname;
+	name_to_rapidnet_bound_variable[varname] = v; //store mapping 
 
 	//absent, create and store in hash map, but return variable name only
 	switch (vartype) {
