@@ -48,6 +48,12 @@ Tuple::Tuple(string name, list<Variable::TypeCode> schema):
 VarMap
 Tuple::CreateVarMap(const Tuple* tp) const
 {
+	if (tp->GetName() != tpName)
+	{
+		NS_LOG_ERROR("Tuples of different relations cannot be mapped!");
+		return VarMap();
+	}
+
 	if (tp->args.size() != args.size())
 	{
 		NS_LOG_ERROR("VarMap cannot be created due to unmatched argument size!");
@@ -62,6 +68,39 @@ Tuple::CreateVarMap(const Tuple* tp) const
 	{
 		//TODO: Type checking?
 		vmap.insert(VarMap::value_type((*itf),(*its)));
+	}
+	return vmap;
+}
+
+VarMap
+Tuple::CreateVarMap(const PredicateInstance* pred) const
+{
+	VarMap vmap = VarMap();
+	string predName = pred->GetName();
+	if (predName != tpName)
+	{
+		NS_LOG_ERROR("Variable match cannot be created for different predicates!");
+	}
+
+	const vector<Term*>& predArgs = pred->GetArgs();
+	if (args.size() != predArgs.size())
+	{
+		NS_LOG_ERROR("VarMap cannot be created due to unmatched argument size!");
+		return vmap;
+	}
+
+	vector<Variable*>::const_iterator itf = args.begin();
+	vector<Term*>::const_iterator its = predArgs.begin();
+	Variable* predArg;
+	for (;itf != args.end();itf++, its++)
+	{
+		predArg = dynamic_cast<Variable*>(*its);
+		if (predArg == NULL)
+		{
+			NS_LOG_ERROR("Non-variable argument in the predicate!");
+		}
+		//TODO: Type checking?
+		vmap.insert(VarMap::value_type(predArg,(*itf)));
 	}
 	return vmap;
 }

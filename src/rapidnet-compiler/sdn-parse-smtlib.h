@@ -488,7 +488,7 @@ string parseBoundVariable(Variable* v, string qt) {
 
 
 
-string parsePredicateSchema(PredicateSchema* s) {
+string parsePredicateSchema(const PredicateSchema* s) {
 	string schema_name = s->GetName();
 	if (all_predicate_schemas.find(schema_name) != all_predicate_schemas.end()) 
 		return all_predicate_schemas[schema_name];

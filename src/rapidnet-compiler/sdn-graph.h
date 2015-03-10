@@ -39,11 +39,16 @@ public:
 	Tuple(string name, vector<Variable*> vargs):
 		tpName(name),args(vargs){}
 
+	//Self mapped to argument tuple
 	VarMap CreateVarMap(const Tuple*) const;
+
+	//Predicate mapped to self
+	VarMap CreateVarMap(const PredicateInstance*) const;
 
 	int GetArgLength() const {return args.size();}
 
 	//TODO: Can GetArgs function be removed?
+	//TODO: Variable* in the vector is still changeble
 	const vector<Variable*>& GetArgs() const {return args;}
 
 	list<Variable::TypeCode> GetSchema() const;

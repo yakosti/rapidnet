@@ -40,8 +40,6 @@ typedef map<Variable*, Variable*> VarMap;
  * ******************************************************************************** *
  */
 
-
-
 /*
  * Term
  */
@@ -434,9 +432,9 @@ public:
 
 	PredicateSchema(const PredicateSchema&);
 
-	string GetName();
+	string GetName() const;
 
-	vector<Variable::TypeCode>& GetTypes();
+	const vector<Variable::TypeCode>& GetTypes() const;
 
 	void Print() const;
 
@@ -459,9 +457,11 @@ public:
 
 	PredicateInstance* Clone();
 
-	PredicateSchema* GetSchema();
+	string GetName() const;
 
-	vector<Term*>& GetArgs();
+	const PredicateSchema* GetSchema() const;
+
+	const vector<Term*>& GetArgs() const;
 
 	void Print() const;
 
@@ -497,6 +497,8 @@ public:
 	~Constraint();
 
 	Constraint* Clone();
+
+	Constraint* Revert() const;
 
 	Operator GetOperator();
 
@@ -543,6 +545,8 @@ public:
 
 	void ReplaceVar(VarMap&);
 
+	ConstraintsTemplate* Revert() const;
+
 	const ConstraintList& GetConstraints() const {return constraints;}
 
 	void PrintTemplate() const;
@@ -563,6 +567,8 @@ public:
 	SimpConstraints(const ConsList&);
 
 	map<int, list<Variable*> > GetEqualClass();
+
+	const ConstraintsTemplate& GetConstraints() const{return cts;}
 
 	void Print();
 
