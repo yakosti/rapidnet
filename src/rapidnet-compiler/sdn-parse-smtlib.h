@@ -130,7 +130,7 @@ string variables_declaration_to_str(std::map<string,string> mymap) {
 	return str;
 }
 
-void checking_with_z3(string str_to_check) {
+map<Variable*, int> checking_with_z3(string str_to_check) {
 	context c;
 	solver s(c);
 
@@ -138,17 +138,18 @@ void checking_with_z3(string str_to_check) {
     expr e(c, parsed);
     s.add(e); // <--- Add to solver here
 
+    map<Variable*, int> mapsubst;
+
     if (s.check() == sat) {
         model m = s.get_model();
         std::cout << "============== SAT MODEL ===============\n" << m << endl;
-        map<Variable*, int> mapsubst = map_substititions(c, m);
+        mapsubst = map_substititions(c, m);
         print_rapidnet_names_and_values(mapsubst);
-    } else {
-        std::cout << "UNSAT\n";
     }
+    return mapsubst;
 }
 
-void check_sat(const ConstraintsTemplate* contemp, FormList flist) {
+map<Variable*, int> check_sat(const ConstraintsTemplate* contemp, FormList flist) {
 	const ConstraintList& clist = contemp->GetConstraints();
 
 	/* constraint */
@@ -177,9 +178,10 @@ void check_sat(const ConstraintsTemplate* contemp, FormList flist) {
 	string to_check = "(set-option :produce-models true)" + fvstr + pstr + fstr + formula_str;
 	cout << "\n TESTING IF SAT NOW: \n" << to_check << endl;
 
-	checking_with_z3(to_check);
+	map<Variable*, int> mapsubst = checking_with_z3(to_check);
 
 	clearAllVariables();
+	return mapsubst;
 }
 
 
@@ -188,7 +190,7 @@ void check_sat(const ConstraintsTemplate* contemp, FormList flist) {
 void write_to_z3(const DerivNodeList& dlist, FormList flist) {
 	const DerivNode* deriv = dlist.front();
 	const ConstraintsTemplate* contemp = deriv->GetConstraints();
-	check_sat(contemp, flist);
+	map<Variable*, int> mapsubst = check_sat(contemp, flist);
 }
 
 
