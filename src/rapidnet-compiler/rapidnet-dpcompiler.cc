@@ -194,7 +194,9 @@ void compile (string overlogFile, bool provenanceEnabled)
   /* adding smt solver part */
   const DerivNodeList& dlist = dpool->GetDerivList("advertisements");
   //writeToFile("testing_constraints", dlist); //laykuan testing
-  write_to_z3(dlist);
+  FormList flist;
+  flist.push_back(&qtf);
+  write_to_z3(dlist, flist);
 
   //const DerivNodeList& dlist = dpool->GetDerivList("advertisements");
   //Use DerivNode::GetAllObligs() to get all proof obligations

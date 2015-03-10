@@ -145,7 +145,7 @@ void checking_with_z3(string str_to_check) {
     }
 }
 
-void check_sat(const ConstraintsTemplate* contemp) {
+void check_sat(const ConstraintsTemplate* contemp, FormList flist) {
 	const ConstraintList& clist = contemp->GetConstraints();
 
 	ConstraintList::const_iterator itc;
@@ -168,10 +168,10 @@ void check_sat(const ConstraintsTemplate* contemp) {
 
 /* Call only at the end 
  */
-void write_to_z3(const DerivNodeList& dlist) {
+void write_to_z3(const DerivNodeList& dlist, FormList flist) {
 	const DerivNode* deriv = dlist.front();
 	const ConstraintsTemplate* contemp = deriv->GetConstraints();
-	check_sat(contemp);
+	check_sat(contemp, flist);
 }
 
 
