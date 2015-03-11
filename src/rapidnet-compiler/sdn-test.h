@@ -8,6 +8,13 @@
 #ifndef SDN_TEST_H_
 #define SDN_TEST_H_
 
+/*
+ * *******************************************************************************
+ *                                                                               *
+ *                         Create Rapidnet Examples                              *
+ *                                                                               *
+ * *******************************************************************************
+ */
 
 /*
   forall x (
@@ -46,6 +53,70 @@ Quantifier* forall_rapidnet_example() {
 }
 
 
+FormList create_formula_list_one() {
+  /* expression x > 4 */
+  Variable* x_rapidnet = new Variable(Variable::INT, false);
+  IntVal* four_rapidnet = new IntVal(4);
+  Constraint* x_equals_4_rapidnet = new Constraint(Constraint::GT, x_rapidnet, four_rapidnet);
+
+  /* exists y, forall x ((0 < x AND x < 5) => (y > x)) */
+  Quantifier* forallq = forall_rapidnet_example();
+
+  FormList flist;
+  flist.push_back(x_equals_4_rapidnet);
+  flist.push_back(forallq);
+
+  return flist;
+}
+
+/* 
+ * 
+ */
+ConsList create_constraint_list_one() {
+  /* RAPIDNET */
+  Variable* x = new Variable(Variable::INT, false);
+  Variable* y = new Variable(Variable::INT, false);
+
+  IntVal* one = new IntVal(1);
+  IntVal* four = new IntVal(4);
+  IntVal* six = new IntVal(6);
+
+  Constraint* y_equals_one = new Constraint(Constraint::EQ, y, one);
+  Constraint* x_gt_four = new Constraint(Constraint::GT, x, four);
+  Constraint* x_gt_six = new Constraint(Constraint::GT, x, six);
+
+  ConstraintsTemplate* ctemp = new ConstraintsTemplate();
+  ctemp->AddConstraint(y_equals_one);
+  ctemp->AddConstraint(x_gt_four);
+  ctemp->AddConstraint(x_gt_six);
+
+  ConsList clist;
+  clist.push_back(ctemp);
+  return clist;
+}
+
+void test_check_sat() {
+  cout << "\n================= Testing Check Sat - should be SAT =======================\n";
+  ConsList clist = create_constraint_list_one();
+  FormList flist = create_formula_list_one();
+  map<Variable*, int> mymap = check_sat(clist, flist);
+  cout << "\n================= Testing Check Sat - should be SAT =======================\n";
+}
+
+/*
+ * *******************************************************************************
+ *                                                                               *
+ *                         Create Rapidnet Examples                              *
+ *                                                                               *
+ * *******************************************************************************
+ */
+
+
+
+
+
+
+
 /*
  * *******************************************************************************
  *                                                                               *
@@ -53,6 +124,8 @@ Quantifier* forall_rapidnet_example() {
  *                                                                               *
  * *******************************************************************************
  */
+
+
 
 /* PROGRAM
    ------------------------

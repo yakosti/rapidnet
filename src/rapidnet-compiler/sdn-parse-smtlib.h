@@ -187,20 +187,18 @@ map<Variable*, int> check_sat(const ConsList& clist, const FormList& flist) {
 	ConsList::const_iterator itl;
 	ConstraintList::const_iterator itc;
 	string constraint_str = "";
-	for (itl = clist.begin();itl != clist.end();itl++)
-	{
-		const ConstraintList& clist = (*itl)->GetConstraints();
-
-		/* constraint */
-		int ccount = 0;
-		for (itc = clist.begin(); itc != clist.end(); itc++) {
-			Constraint* newCons = new Constraint((**itc));
-			string constr = parseFormula(newCons);
-
-			ccount += 1;
-			string counterstr = "c" + IntegerToString(ccount);
-
-			constraint_str += "(assert (! " + constr + " :named " + counterstr + "))\n";
+	int ccount = 0;
+	for (itl = clist.begin(); itl != clist.end(); itl++) {
+		const ConstraintList& cl = (*itl)->GetConstraints();
+		for (itc = cl.begin(); itc != cl.end(); itc++) {
+			Constraint* newCons = (Constraint*)*itc;
+			if (dynamic_cast<Constraint*>(newCons)) {
+				newCons->Print();
+				string constr = parseConstraint(newCons);
+				ccount += 1;
+				string counterstr = "c" + IntegerToString(ccount);
+				constraint_str += "(assert " + constr + ")\n";
+			} 
 		}
 	}
 
@@ -215,14 +213,14 @@ map<Variable*, int> check_sat(const ConsList& clist, const FormList& flist) {
 	   	fcount += 1;
 	    string fcountstr = "f" + IntegerToString(fcount);
 
-	    formula_str += "\n(assert (!" + formstr + " :named " + fcountstr + "))\n";
+	    formula_str += "(assert " + formstr + ")\n";
 	}	
 
 	string fvstr = variables_declaration_to_str(all_free_variables);
 	string pstr = variables_declaration_to_str(all_predicate_schemas);
 	string fstr = variables_declaration_to_str(all_function_schemas);
 	
-	string to_check = "(set-option :produce-models true) \n" + fvstr + pstr + fstr + constraint_str + formula_str;
+	string to_check = fvstr + pstr + fstr + constraint_str + formula_str;
 	cout << "\n Testing if this is satisfiable: \n" << to_check << endl;
 
 	map<Variable*, int> mapsubst = checking_with_z3(to_check);
@@ -234,12 +232,12 @@ map<Variable*, int> check_sat(const ConsList& clist, const FormList& flist) {
 
 /* Call only at the end 
  */
-void write_to_z3(const DerivNodeList& dlist, FormList flist) {
-	const DerivNode* deriv = dlist.front();
-	const ConstraintsTemplate* contemp = deriv->GetConstraints();
-	ConsList clist(1, contemp);
-	map<Variable*, int> mapsubst = check_sat(clist, flist);
-}
+// void write_to_z3(const DerivNodeList& dlist, FormList flist) {
+// 	const DerivNode* deriv = dlist.front();
+// 	const ConstraintsTemplate* contemp = deriv->GetConstraints();
+// 	ConsList clist(1, contemp);
+// 	map<Variable*, int> mapsubst = check_sat(clist, flist);
+// }
 
 
 /* To be removed when everything is build out */
@@ -355,8 +353,6 @@ void writeToFile(const char* filename, const DerivNodeList& dlist) {
 		const char* dfname = dlist_filename(filename, counter);
 		myfile.open(dfname);
 
-		myfile << "(set-logic S)\n"; // type of logic has strings
-
 		vector<string> all_constraints = parse_one_derivation(*itd);
 
 		// print all the variables declarations
@@ -371,8 +367,6 @@ void writeToFile(const char* filename, const DerivNodeList& dlist) {
 			string constrd = all_constraints[i];
 			myfile << constrd;
 		}
-		
-		myfile << "(check-sat)\n"; // type of logic has strings
 
 		myfile.close();
 
@@ -690,8 +684,10 @@ string parseTerm(Term* t) {
 		return parseFreeVariable(v);
 	} else if (dynamic_cast<UserFunction*>(t)) {
 		return parseUserFunction((UserFunction*)t);
-	} else { 
+	} else if (dynamic_cast<Arithmetic*>(t)){ 
 		return parseArithmetic((Arithmetic*)t);
+	} else {
+		throw std::invalid_argument("invalid term");
 	}
 }
 
