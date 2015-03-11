@@ -169,17 +169,11 @@ map<Variable*, int> checking_with_z3(string str_to_check) {
 
     if (s.check() == sat) {
         model m = s.get_model();
-        std::cout << "============== SAT MODEL ===============\n" << m << endl;
+        std::cout << "@@@@@@@ SAT MODEL @@@@@@@@\n" << m << endl;
         mapsubst = map_substititions(c, m);
         print_rapidnet_names_and_values(mapsubst);
     } else {
-    	std::cout << "============== UNSAT MODEL ===============\n"  << endl;
-    	expr_vector core = s.unsat_core();
-	    std::cout << core << "\n";
-	    std::cout << "size: " << core.size() << "\n";
-	    for (unsigned i = 0; i < core.size(); i++) {
-	        std::cout << core[i] << "\n";
-	    }
+    	std::cout << "@@@@@@@ UNSAT MODEL @@@@@@@@\n"  << endl;
     }
     return mapsubst;
 }

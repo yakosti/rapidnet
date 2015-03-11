@@ -160,14 +160,31 @@ ConsList create_constraint_list_two() {
   return clist;
 }
 
+FormList create_formula_list_two() {
+  FormList flist;
+  Quantifier* q = create_forall_x__x_equals_3_rapidnet();
+  flist.push_back(q);
+  return flist;
+}
+
 
 void test_check_sat() {
   cout << "\n================= Testing Check Sat - should be SAT =======================\n";
-  ConsList clist = create_constraint_list_one();
-  FormList flist = create_formula_list_one();
-  map<Variable*, int> mymap = check_sat(clist, flist);
+  ConsList clist1 = create_constraint_list_one();
+  FormList flist1;
+  map<Variable*, int> mymap1 = check_sat(clist1, flist1);
 
   cout << "\n================= Testing Check Sat - should be SAT =======================\n";
+  ConsList clist2;
+  FormList flist2 = create_formula_list_one();
+  map<Variable*, int> mymap2 = check_sat(clist2, flist2);
+
+  cout << "\n================= Testing Check Sat - should be SAT =======================\n";
+  ConsList clist3;
+  FormList flist3 = create_formula_list_two();
+  map<Variable*, int> mymap3 = check_sat(clist3, flist3);
+
+  
 }
 
 /*
