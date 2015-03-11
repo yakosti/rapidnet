@@ -590,7 +590,9 @@ public:
 
 	SimpConstraints(const ConsList&);
 
-	map<int, list<Variable*> > GetEqualClass();
+	void CreateEquiClass();
+
+	const map<Variable*, list<Variable*> >& GetEquiClass() {return equiClass;}
 
 	const ConstraintsTemplate& GetConstraints() const{return cts;}
 
@@ -607,6 +609,8 @@ private:
 	map<Variable*, int> varTable;
 	map<int, Variable*> varRevTable;
 	UnionFindSet varSet;
+
+	map<Variable*, list<Variable*> > equiClass;
 };
 
 /* 

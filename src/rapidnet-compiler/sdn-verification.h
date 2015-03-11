@@ -23,8 +23,49 @@ NS_LOG_COMPONENT_DEFINE ("RapidNetDPGraph");
 //and existentially quantified tuples in Property do not
 //have duplicates
 
+//Propagate assignment from representative variables
+//to all variables in the equivalent class
+map<Variable*, int>
+PropAssignment(SimpConstraints& simpCons, map<Variable*, int> assignment)
+{
+	map<Variable*, int> fullAssign;
+	const map<Variable*, list<Variable*> >& equiClass = simpCons.GetEquiClass();
+	map<Variable*, list<Variable*> >::const_iterator ite;
+	for (ite = equiClass.begin();ite != equiClass.end();ite++)
+	{
+		Variable* repre = ite->first;
+		int value = assignment.at(repre);
+		list<Variable*>::const_iterator itv;
+		for (itv = ite->second.begin();itv != ite->second.end();itv++)
+		{
+			fullAssign.insert(map<Variable*,int>::value_type(repre, value));
+		}
+	}
+
+	return fullAssign;
+}
+
+//Counter-example generation
+void GenCounterExp(map<Variable*, int> assignment,
+				   list<pair<const DerivNode&, SimpConstraints&> >& dlist)
+{
+	//Print execution of all DerivNodes
+	list<pair<const DerivNode&, SimpConstraints&> >::iterator itd;
+	for (itd = dlist.begin();itd != dlist.end();itd++)
+	{
+		const DerivNode& dnode = (*itd).first;
+		string headName = dnode.GetHeadTuple()->GetName();
+		SimpConstraints& simpCons = (*itd).second;
+		map<Variable*, int> valueMap = PropAssignment(simpCons, assignment);
+		cout << "************* Execution Trace of " << headName;
+		cout << " *************" << endl;
+		dnode.PrintExecution(valueMap);
+		cout << "*******************************" << endl;
+	}
+}
+
 //TODO: documentation
-//assignment: counter-exmaple instances
+//assignment: counter-example instances
 //return value: [true: constraints sat|false: constraints unsat]
 bool CheckWholeProp(const Property& prop,
 					list<const Tuple*> tplist,
