@@ -30,7 +30,8 @@ bool CheckWholeProp(const Property& prop,
 					list<const Tuple*> tplist,
 				    ConsList& clist,
 					const FormList& flist,
-					map<Variable*, int>& assignment)
+					map<Variable*, int>& assignment,
+					list<SimpConstraints*> slist)
 {
 	NS_LOG_FUNCTION("Check combined predicates...");
 	VarMap vmap;
@@ -57,6 +58,12 @@ bool CheckWholeProp(const Property& prop,
 	const ConstraintsTemplate* csTemp = prop.GetExistCons();
 	ConstraintsTemplate* newTemp = csTemp->Revert();
 	newTemp->ReplaceVar(vmap);
+	list<SimpConstraints*>::iterator its;
+	for (its = slist.begin();its != slist.end();its++)
+	{
+		newTemp->ReplaceVar(**its);
+	}
+
 	clist.push_back(newTemp);
 
 	//Check clist + flist is sat?
@@ -80,12 +87,13 @@ bool CheckRecurExist(const Property& prop,
 					 list<const Tuple*> tplist,
 					 ConsList& clist,
 					 const FormList& flist,
-					 map<Variable*, int>& assignment)
+					 map<Variable*, int>& assignment,
+					 list<SimpConstraints*> slist)
 {
 	NS_LOG_FUNCTION("Check existentially quantified predicates...");
 	if (itm == tlist.end())
 	{
-		return CheckWholeProp(prop, tplist, clist, flist, assignment);
+		return CheckWholeProp(prop, tplist, clist, flist, assignment, slist);
 	}
 
 	const list<const Tuple*>& headList = itm->second;
@@ -95,7 +103,7 @@ bool CheckRecurExist(const Property& prop,
 	{
 		tplist.push_back(*itp);
 		bool res = CheckRecurExist(prop, tlist, itm, tplist,
-								   clist, flist, assignment);
+								   clist, flist, assignment, slist);
 		if (res == false)
 		{
 			//TODO:Generate a counter-example
@@ -135,9 +143,11 @@ bool CheckExistProp(const Property& prop,
 		//Record simplified constraints
 		const ConsList& clist = (*itd)->GetCumuConsts();
 		SimpConstraints* newSimp = new SimpConstraints(clist);
+		NS_LOG_DEBUG("Test SimpConstraints:");
+		newSimp->Print();
 		slist.push_back(newSimp);
 
-		//Collect constraints
+		//Collect simplified constraints
 		const ConstraintsTemplate& newCtemp = newSimp->GetConstraints();
 		//newCtemp.PrintTemplate();
 		cslist.push_back(&newCtemp);
@@ -146,15 +156,20 @@ bool CheckExistProp(const Property& prop,
 		const FormList& tupleFlist = (*itd)->GetInvariants();
 		flist.insert(flist.end(), tupleFlist.begin(), tupleFlist.end());
 	}
+	//Collect universally quantified constraints
 	const ConstraintsTemplate* cTemp = prop.GetUniCons();
 	ConstraintsTemplate uniCons(*cTemp);
 	uniCons.ReplaceVar(vmap);
+	NS_LOG_DEBUG("Before Simplified:");
+	uniCons.PrintTemplate();
 	//Replace variables with representative ones of the equivalent class
 	list<SimpConstraints*>::iterator its;
 	for (its = slist.begin();its != slist.end();its++)
 	{
 		uniCons.ReplaceVar(**its);
 	}
+	NS_LOG_DEBUG("After Simplified:");
+	uniCons.PrintTemplate();
 	cslist.push_back(&uniCons);
 
 	cout << "cslist contents:" << endl;
@@ -197,7 +212,7 @@ bool CheckExistProp(const Property& prop,
 	map<string, list<const Tuple*> >::const_iterator itmc = tlist.begin();
 	list<const Tuple*> tplist;
 	bool res = CheckRecurExist(prop, tlist, itmc, tplist,
-							   cslist, flist, assignment);
+							   cslist, flist, assignment, slist);
 
 	//If the set of tuples are the instances in existential
 	//quantification, then they provide instantiation of
@@ -253,7 +268,7 @@ bool CheckProperty(const Dpool& dpool,
 				   const Property& prop,
 				   map<Variable*, int>& assignment)
 {
-	NS_LOG_FUNCTION("Check property...");
+	cout << "----------------- Check property ----------------" << endl;
 	//Process universally quantified predicates
 	assignment = map<Variable*, int>();
 	const list<PredicateInstance*>& plist = prop.GetUniPred();

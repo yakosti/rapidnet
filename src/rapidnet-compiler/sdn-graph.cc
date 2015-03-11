@@ -195,11 +195,10 @@ RuleNode::PrintNode() const
 	NS_LOG_DEBUG("To print template");
 	cTemp->PrintTemplate();
 	cout << endl;
-	cout << "###### Simplified constraints ######" << endl;
+
 	ConsList clist(1, cTemp);
 	SimpConstraints simpCons(clist);
 	simpCons.Print();
-	cout << "####################################" << endl;
 	NS_LOG_DEBUG("Template printed");
 }
 

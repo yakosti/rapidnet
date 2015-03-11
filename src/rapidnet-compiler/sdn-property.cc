@@ -45,7 +45,7 @@ Property::ProcessUniCons(const map<string, Variable*>& varMap)
 	string var1 = "a";
 	Variable* varPtr = varMap.find(var1)->second;
 
-	Constraint* newCons = new Constraint(Constraint::LT, varPtr, new IntVal(5));
+	Constraint* newCons = new Constraint(Constraint::GT, varPtr, new IntVal(6));
 
 	univConsList->AddConstraint(newCons);
 }

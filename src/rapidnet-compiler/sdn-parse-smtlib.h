@@ -184,7 +184,7 @@ map<Variable*, int> checking_with_z3(string str_to_check) {
 }
 
 map<Variable*, int> check_sat(const ConsList& clist, const FormList& flist) {
-	ConsList::const_iterator itl = clist.begin();
+	ConsList::const_iterator itl;
 	ConstraintList::const_iterator itc;
 	string constraint_str = "";
 	for (itl = clist.begin();itl != clist.end();itl++)
@@ -192,7 +192,6 @@ map<Variable*, int> check_sat(const ConsList& clist, const FormList& flist) {
 		const ConstraintList& clist = (*itl)->GetConstraints();
 
 		/* constraint */
-		constraint_str = "";
 		int ccount = 0;
 		for (itc = clist.begin(); itc != clist.end(); itc++) {
 			Constraint* newCons = new Constraint((**itc));

@@ -230,7 +230,7 @@ int main (int argc, char** argv)
 {
   LogComponentEnable ("RapidNetDPGraph", LOG_LEVEL_FUNCTION);
 //  LogComponentEnable ("DPGraph", LOG_LEVEL_FUNCTION);
-//  LogComponentEnable ("Formula", LOG_LEVEL_FUNCTION);
+  LogComponentEnable ("Formula", LOG_LEVEL_FUNCTION);
 //  LogComponentEnable ("Dpool", LOG_LEVEL_FUNCTION);
   LogComponentEnable ("Property", LOG_LEVEL_FUNCTION);
   LogComponentEnable ("Dpool", LOG_INFO);

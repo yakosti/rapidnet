@@ -353,10 +353,8 @@ Term* Constraint::GetRightE() {
 void
 Constraint::Print() const
 {
-	NS_LOG_DEBUG("Printing a constraint");
 	leftE->PrintTerm();
 	PrintOp();
-	NS_LOG_DEBUG("Printing the right term");
 	rightE->PrintTerm();
 }
 
@@ -471,6 +469,11 @@ Constraint::VarReplace(UnionFindSet ufs,
 			varId = itm->second;
 			newId = ufs.Root(varId);
 			Variable* newVar = varRevTable.at(newId);
+			leftE = newVar;
+		}
+		else
+		{
+			NS_LOG_ERROR("Variable not found in Union Find Set!");
 		}
 	}
 	else
@@ -487,6 +490,11 @@ Constraint::VarReplace(UnionFindSet ufs,
 			varId = itm->second;
 			newId = ufs.Root(varId);
 			Variable* newVar = varRevTable.at(newId);
+			rightE = newVar;
+		}
+		else
+		{
+			NS_LOG_ERROR("Variable not found in Union Find Set!");
 		}
 	}
 	else
@@ -753,7 +761,6 @@ UserFunction::Clone()
 }
 
 void UserFunction::PrintTerm() {
-  NS_LOG_DEBUG("Printing function...");
   schema->PrintName();
   cout << "(";
   vector<Term*>::iterator it;
@@ -1250,8 +1257,6 @@ SimpConstraints::SimpConstraints(const ConsList& ctempList)
 		}
 	}
 
-	NS_LOG_DEBUG("Reach here???");
-
 	varSet = UnionFindSet(count);
 
 	//Second iteration: Build equivalent classes
@@ -1273,8 +1278,6 @@ SimpConstraints::SimpConstraints(const ConsList& ctempList)
 			}
 		}
 	}
-
-	NS_LOG_DEBUG("Reach here?");
 
 	Constraint* newCst;
 	//Third iteration: Build a new ConstraintsTemplate
@@ -1324,6 +1327,7 @@ SimpConstraints::GetEqualClass()
 void
 SimpConstraints::Print()
 {
+	cout << "###### Simplified constraints ######" << endl;
 	cts.PrintTemplate();
 	cout << endl;
 
@@ -1337,12 +1341,24 @@ SimpConstraints::Print()
 		cout << "Class " << count << ":";
 		for (itl = itm->second.begin();itl != itm->second.end();itl++)
 		{
+			if (itl == itm->second.begin())
+			{
+				//Print the representative element
+				//of each equivalent class
+				cout << "(";
+				int index = varTable.at(*itl);
+				int root = varSet.Root(index);
+				Variable* repre = varRevTable.at(root);
+				repre->PrintTerm();
+				cout << ")";
+			}
 			(*itl)->PrintTerm();
 			cout << ",";
 		}
 		count++;
 		cout << endl;
 	}
+	cout << "####################################" << endl;
 }
 
 
