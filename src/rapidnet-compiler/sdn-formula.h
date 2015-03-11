@@ -61,6 +61,8 @@ public:
 					const map<int, Variable*>){}
 
 	virtual void PrintTerm() =0;
+
+	virtual void PrintInstance(const map<Variable*, int>&) const =0;
 };
 
 
@@ -95,6 +97,9 @@ public:
 	Variable* Clone() {return this;}
 
 	void PrintTerm();
+
+	//TODO: PrintInstance does not work with non-const Variable*
+	virtual void PrintInstance(const map<Variable*, int>&) const{}
 
 private:
 	string name;
@@ -153,6 +158,8 @@ public:
 
 	void PrintTerm();
 
+	void PrintInstance(const map<Variable*, int>&) const;
+
 	~UserFunction();
 
 private:
@@ -176,6 +183,8 @@ public:
 	void GetVars(vector<const Variable*>&) const{}
 
     void PrintTerm(){}
+
+    virtual void PrintInstance(const map<Variable*, int>&) const{}
 };
 
 
@@ -194,6 +203,8 @@ public:
 	IntVal* Clone();
 
 	void PrintTerm();
+
+	void PrintInstance(const map<Variable*, int>&) const;
 
 private:
 	int value;
@@ -217,6 +228,8 @@ public:
 
 	void PrintTerm();	
 
+	void PrintInstance(const map<Variable*, int>&) const;
+
 private:
 	double value;
 };
@@ -237,6 +250,8 @@ public:
 
 	void PrintTerm();	
 
+	void PrintInstance(const map<Variable*, int>&) const;
+
 private:
 	string value;
 };
@@ -256,6 +271,8 @@ public:
 	BoolVal* Clone();
 
 	void PrintTerm();
+
+	void PrintInstance(const map<Variable*, int>&) const;
 
 private:
 	bool value;
@@ -298,7 +315,9 @@ public:
 
 	void PrintTerm();
 
-	void PrintOp();
+	void PrintInstance(const map<Variable*, int>&) const;
+
+	void PrintOp() const;
 
 	~Arithmetic();
 
@@ -473,11 +492,6 @@ private:
 };
 
 
-
-
-
-
-
 //TODO: variables in Constraint should be independent
 class Constraint: public Formula
 {
@@ -521,6 +535,8 @@ public:
 
 	void Print() const;
 
+	void PrintInstance(const map<Variable*, int>&) const;
+
 	void PrintOp() const;
 
 private:
@@ -550,6 +566,8 @@ public:
 	const ConstraintList& GetConstraints() const {return constraints;}
 
 	void PrintTemplate() const;
+
+	void PrintInstance(const map<Variable*, int>&) const;
 
 	~ConstraintsTemplate();
 

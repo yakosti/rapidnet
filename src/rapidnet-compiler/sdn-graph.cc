@@ -135,6 +135,22 @@ Tuple::PrintTuple() const
 	cout << ")";
 }
 
+void
+Tuple::PrintInstance(const map<Variable*, int>& valueMap) const
+{
+	cout << tpName << "(";
+	vector<Variable*>::const_iterator it;
+	for (it = args.begin(); it != args.end(); it++)
+	{
+		  if (it != args.begin())
+		  {
+			 cout << ",";
+		  }
+		  (*it)->PrintInstance(valueMap);
+	}
+	cout << ")";
+}
+
 Tuple::~Tuple()
 {
 	vector<Variable*>::iterator it;

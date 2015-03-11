@@ -353,11 +353,41 @@ Term* Constraint::GetRightE() {
 void
 Constraint::Print() const
 {
-  NS_LOG_DEBUG("Printing a constraint");
-  leftE->PrintTerm();
-  PrintOp();
-  NS_LOG_DEBUG("Printing the right term");
-  rightE->PrintTerm();
+	NS_LOG_DEBUG("Printing a constraint");
+	leftE->PrintTerm();
+	PrintOp();
+	NS_LOG_DEBUG("Printing the right term");
+	rightE->PrintTerm();
+}
+
+void
+Constraint::PrintInstance(const map<Variable*, int>& valueMap) const
+{
+	Variable* var = NULL;
+	int value = 0;
+	var = dynamic_cast<Variable*>(leftE);
+	if (var == NULL)
+	{
+		leftE->PrintInstance(valueMap);
+	}
+	else
+	{
+		value = valueMap.at(var);
+		cout << value;
+	}
+
+	PrintOp();
+
+	var = dynamic_cast<Variable*>(rightE);
+	if (var == NULL)
+	{
+		rightE->PrintInstance(valueMap);
+	}
+	else
+	{
+		value = valueMap.at(var);
+		cout << value;
+	}
 }
 
 bool
@@ -721,6 +751,33 @@ void UserFunction::PrintTerm() {
   cout << ")";
 }
 
+void
+UserFunction::PrintInstance(const map<Variable*, int>& valueMap) const
+{
+	schema->PrintName();
+	cout << "(";
+	Variable* var = NULL;
+	vector<Term*>::const_iterator it;
+	for (it = args.begin(); it != args.end(); it++)
+	{
+		if (it != args.begin())
+		{
+		  cout << ",";
+		}
+		var = dynamic_cast<Variable*>(*it);
+		if (var == NULL)
+		{
+			(*it)->PrintInstance(valueMap);
+		}
+		else
+		{
+			int value = valueMap.at(var);
+			cout << value;
+		}
+	}
+	cout << ")";
+}
+
 /* **************************** USER FUNCTION ********************************* */
 
 
@@ -748,6 +805,12 @@ IntVal::Clone()
 
 void IntVal::PrintTerm() {
   cout << value;
+}
+
+void
+IntVal::PrintInstance(const map<Variable*, int>& valueMap) const
+{
+	cout << value;
 }
 
 /* ********************************** IntVal ********************************** */
@@ -780,6 +843,12 @@ void DoubleVal::PrintTerm() {
   cout << value;
 }
 
+void
+DoubleVal::PrintInstance(const map<Variable*, int>& valueMap) const
+{
+	cout << value;
+}
+
 /* ****************************** DoubleVal ********************************** */
 
 
@@ -808,6 +877,12 @@ StringVal::Clone()
 
 void StringVal::PrintTerm() {
   cout << "\"" << value << "\"";
+}
+
+void
+StringVal::PrintInstance(const map<Variable*, int>& valueMap) const
+{
+	cout << value;
 }
 
 /* ****************************** StringVal ********************************* */
@@ -839,6 +914,12 @@ BoolVal::Clone()
 
 void BoolVal::PrintTerm() {
   cout << value;
+}
+
+void
+BoolVal::PrintInstance(const map<Variable*, int>& valueMap) const
+{
+	cout << value;
 }
 
 /* ****************************** BoolVal *********************************** */
@@ -958,7 +1039,37 @@ void Arithmetic::PrintTerm() {
   rightE->PrintTerm();
 }
 
-void Arithmetic::PrintOp() {
+void
+Arithmetic::PrintInstance(const map<Variable*, int>& valueMap) const
+{
+	Variable* var = NULL;
+	int value = 0;
+	var = dynamic_cast<Variable*>(leftE);
+	if (var == NULL)
+	{
+		leftE->PrintInstance(valueMap);
+	}
+	else
+	{
+		value = valueMap.at(var);
+		cout << value;
+	}
+
+	PrintOp();
+
+	var = dynamic_cast<Variable*>(rightE);
+	if (var == NULL)
+	{
+		rightE->PrintInstance(valueMap);
+	}
+	else
+	{
+		value = valueMap.at(var);
+		cout << value;
+	}
+}
+
+void Arithmetic::PrintOp() const{
   switch(op){
   case Arithmetic::PLUS:
     cout << "+";
@@ -1057,6 +1168,18 @@ ConstraintsTemplate::PrintTemplate() const
 	{
 	  cout << "\t";
 	  (*itc)->Print();
+	  cout << endl;
+	}
+}
+
+void
+ConstraintsTemplate::PrintInstance(const map<Variable*, int>& valueMap) const
+{
+	ConstraintList::const_iterator itc;
+	for (itc = constraints.begin(); itc != constraints.end(); itc++)
+	{
+	  cout << "\t";
+	  (*itc)->PrintInstance(valueMap);
 	  cout << endl;
 	}
 }

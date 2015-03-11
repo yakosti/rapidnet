@@ -57,6 +57,8 @@ public:
 
 	void PrintTuple() const;
 
+	void PrintInstance(const map<Variable*, int>&) const;
+
 	~Tuple();
 
 private:

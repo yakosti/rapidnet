@@ -89,6 +89,12 @@ DerivNode::PrintHead() const
 }
 
 void
+DerivNode::PrintHeadInst(const map<Variable*, int>& valueMap) const
+{
+	head->PrintInstance(valueMap);
+}
+
+void
 DerivNode::PrintCumuCons() const
 {
 	cout << endl;
@@ -137,10 +143,44 @@ DerivNode::PrintDerivNode() const
 }
 
 void
+DerivNode::PrintInstance(const map<Variable*, int>& valueMap) const
+{
+	cout << endl;
+	cout << "%%%%%%%%%%%%%% Derivation Instance %%%%%%%%%%%%%" << endl;
+	cout << "Head:";
+	head->PrintInstance(valueMap);
+	cout << endl;
+	cout << "Rule name:" << ruleName;
+	cout << endl;
+	cout << "Body tuples:" << endl;
+	NS_LOG_DEBUG("Number of bodies: " << bodyDerivs.size());
+	NS_LOG_DEBUG("Number of anno bodies: " << bodyAnnotations.size());
+	DerivNodeList::const_iterator itd;
+	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
+	{
+		(*itd)->PrintHeadInst(valueMap);
+		cout << endl;
+	}
+	DerivAnnoList::const_iterator ita;
+	for (ita = bodyAnnotations.begin();ita != bodyAnnotations.end();ita++)
+	{
+		(*ita)->PrintHeadInst(valueMap);
+		cout << endl;
+	}
+	if (ruleConstraints != NULL)
+	{
+		cout << "Constraints:" << endl;
+		ruleConstraints->PrintInstance(valueMap);
+		cout << endl;
+	}
+	cout << "%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
+}
+
+void
 DerivNode::PrintDerivation() const
 {
 	PrintDerivNode();
-	PrintCumuCons();
+	//PrintCumuCons();
 
 	DerivNodeList::const_iterator itd;
 	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
@@ -152,6 +192,25 @@ DerivNode::PrintDerivation() const
 	for (ita = bodyAnnotations.begin();ita != bodyAnnotations.end();ita++)
 	{
 		(*ita)->PrintDerivation();
+		cout << endl;
+	}
+}
+
+void
+DerivNode::PrintExecution(map<Variable*, int> valueMap) const
+{
+	PrintInstance(valueMap);
+
+	DerivNodeList::const_iterator itd;
+	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
+	{
+		(*itd)->PrintInstance(valueMap);
+		cout << endl;
+	}
+	DerivAnnoList::const_iterator ita;
+	for (ita = bodyAnnotations.begin();ita != bodyAnnotations.end();ita++)
+	{
+		(*ita)->PrintInstance(valueMap);
 		cout << endl;
 	}
 }
@@ -177,11 +236,26 @@ RecurNode::AddInvariant(Formula* inv)
 void
 RecurNode::PrintDerivNode() const
 {
-	cout << "Recursive Node:" << endl;
+	cout << endl;
+	cout << "++++++++++++ Recursive Node +++++++++++" << endl;
 	DerivNode::PrintDerivNode();
 
 	cout << "User-annotated formula:" << endl;
 	invariant->Print();
+	cout << "+++++++++++++++++++++++";
+	cout << endl;
+}
+
+void
+RecurNode::PrintInstance(const map<Variable*, int>& valueMap) const
+{
+	cout << endl;
+	cout << "++++++++++++ Recursive Instance +++++++++++" << endl;
+	DerivNode::PrintInstance(valueMap);
+
+	cout << "User-annotated formula:" << endl;
+	invariant->Print();
+	cout << "+++++++++++++++++++++++";
 	cout << endl;
 }
 
