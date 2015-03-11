@@ -153,16 +153,33 @@ string variables_declaration_to_str(std::map<string,string> mymap) {
 	return str;
 }
 
-map<Variable*, int> checking_with_z3(string str_to_check) {
+
+void add_expr_to_z3_solver(string exprstr, string exprname, context& c, solver& s) {
+	Z3_ast parsed = Z3_parse_smtlib2_string(c, exprstr.c_str(), 0, 0, 0, 0, 0, 0);
+    expr e = to_expr(c, parsed);
+    s.add(e, exprname.c_str()); 
+}
+
+map<Variable*, int> checking_with_z3(string fvstr, string pstr, string fstr, map<string, string> smtcmap, map<string, string> smtfmap) {
+
 	context c;
 	solver s(c);
 
-	Z3_ast parsed = Z3_parse_smtlib2_string(c, str_to_check.c_str(), 0, 0, 0, 0, 0, 0);
-    expr e(c, parsed);
-    s.add(e); // <--- Add to solver here
+	add_expr_to_z3_solver(fvstr, "free_variable_declarations", c, s);
+	add_expr_to_z3_solver(pstr, "predicate_declarations", c, s);
+	add_expr_to_z3_solver(fstr, "user_function_declarations", c, s);
+
+	for (std::map<string, string>::const_iterator itc = smtcmap.begin(); itc != smtcmap.end(); itc++) {
+		cout << "hello world: " << itc->second << endl;
+		add_expr_to_z3_solver(itc->second, itc->first, c, s);
+	}
+
+	for (std::map<string, string>::const_iterator itf = smtfmap.begin(); itf != smtfmap.end(); itf++) {
+		add_expr_to_z3_solver(itf->second, itf->first, c, s);
+	}
+
 
     map<Variable*, int> mapsubst;
-
     if (s.check() == sat) {
         model m = s.get_model();
         std::cout << "============== SAT MODEL ===============\n" << m << endl;
@@ -180,45 +197,49 @@ map<Variable*, int> checking_with_z3(string str_to_check) {
     return mapsubst;
 }
 
-map<Variable*, int> check_sat(const ConstraintsTemplate* contemp, FormList flist) {
-	const ConstraintList& clist = contemp->GetConstraints();
 
-	/* constraint */
+map<string, string> get_constraints_for_solver(const ConstraintsTemplate* contemp) {
+	const ConstraintList& clist = contemp->GetConstraints();
+	map<string, string> smtcmap;
 	ConstraintList::const_iterator itc;
-	string constraint_str = "";
 	int ccount = 0;
 	for (itc = clist.begin(); itc != clist.end(); itc++) {
 	    Constraint* newCons = new Constraint((**itc));
 	    string constr = parseFormula(newCons);
-
 	    ccount += 1;
-	    string counterstr = "c" + IntegerToString(ccount);
+	    string cname = "c" + IntegerToString(ccount);
+	    string constraint_str = "(assert " + constr + " )\n";
+	    smtcmap[cname] = constraint_str;
+	}
 
-	    constraint_str += "(assert (! " + constr + " :named " + counterstr + "))\n";
-	}	
+	return smtcmap;
+}
 
-	/* formula */
+map<string, string> get_formulas_for_solver(FormList flist) {
+	map<string, string> smtfmap;
 	FormList::const_iterator itf;
-	string formula_str = "";
 	int fcount = 0;
 	for (itf = flist.begin(); itf != flist.end(); itf++) {
 	    Formula* nform = (Formula*)*itf;
 	    string formstr = parseFormula(nform);
-	   
 	   	fcount += 1;
-	    string fcountstr = "f" + IntegerToString(fcount);
-
-	    formula_str += "\n(assert (!" + formstr + " :named " + fcountstr + "))\n";
+	    string fname = "f" + IntegerToString(fcount);
+	    string formula_str = "(assert " + formstr + ")\n";
+	    smtfmap[fname] = formula_str;
 	}	
+	return smtfmap;
+}
+
+
+map<Variable*, int> check_sat(const ConstraintsTemplate* contemp, FormList flist) {
+	map<string, string> smtcmap = get_constraints_for_solver(contemp);
+	map<string, string> smtfmap = get_formulas_for_solver(flist);
 
 	string fvstr = variables_declaration_to_str(all_free_variables);
 	string pstr = variables_declaration_to_str(all_predicate_schemas);
 	string fstr = variables_declaration_to_str(all_function_schemas);
-	
-	string to_check = "(set-option :produce-models true) \n" + fvstr + pstr + fstr + constraint_str + formula_str;
-	cout << "\n Testing if this is satisfiable: \n" << to_check << endl;
 
-	map<Variable*, int> mapsubst = checking_with_z3(to_check);
+	map<Variable*, int> mapsubst = checking_with_z3(fvstr, pstr, fstr, smtcmap, smtfmap);
 
 	clearAllVariables();
 	return mapsubst;
