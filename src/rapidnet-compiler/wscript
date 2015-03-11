@@ -43,6 +43,8 @@ def build(bld):
         'sdn-formula.h',
         'auxiliary.h',
         'sdn-property.h',
+        'sdn-parse-smtlib.h',
+        'sdn-verification.h'
         ]
 
     obj = bld.create_ns3_program('rapidnet-compiler')
@@ -51,14 +53,14 @@ def build(bld):
     objdp.source = 'rapidnet-dpcompiler.cc'
 
     ## ********************** Linux ********************************* ##
-    ## objdp.env.append_value("CXXFLAGS", "-I/usr/include")
-    ## objdp.env.append_value("LINKFLAGS", ["-L/usr/lib"])
-    ## objdp.env.append_value("LIB", ["z3"])
+    objdp.env.append_value("CXXFLAGS", "-I/usr/include")
+    objdp.env.append_value("LINKFLAGS", ["-L/usr/lib"])
+    objdp.env.append_value("LIB", ["z3"])
 
     ## ********************** MacOS ********************************* ##
-    objdp.env.append_value("CXXFLAGS", "-I/opt/local/Library/Frameworks/Python.framework/Versions/2.7/include")
-    objdp.env.append_value("LINKFLAGS", "-L/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib")
-    objdp.env.append_value("LIB", ["z3"])
+    # objdp.env.append_value("CXXFLAGS", "-I/opt/local/Library/Frameworks/Python.framework/Versions/2.7/include")
+    # objdp.env.append_value("LINKFLAGS", "-L/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib")
+    # objdp.env.append_value("LIB", ["z3"])
     
     bld.env.append_value('LINKFLAGS', '-lgmp')
 	

@@ -491,6 +491,7 @@ private:
 	vector<Term*> args;
 };
 
+class SimpConstraints;
 
 //TODO: variables in Constraint should be independent
 class Constraint: public Formula
@@ -533,6 +534,9 @@ public:
 					const map<Variable*, int>,
 					const map<int, Variable*>);
 
+	//TODO: make SimpConstraints const
+	void VarReplace(SimpConstraints&);
+
 	void Print() const;
 
 	void PrintInstance(const map<Variable*, int>&) const;
@@ -561,6 +565,8 @@ public:
 
 	void ReplaceVar(VarMap&);
 
+	void ReplaceVar(SimpConstraints&);
+
 	ConstraintsTemplate* Revert() const;
 
 	const ConstraintList& GetConstraints() const {return constraints;}
@@ -587,6 +593,12 @@ public:
 	map<int, list<Variable*> > GetEqualClass();
 
 	const ConstraintsTemplate& GetConstraints() const{return cts;}
+
+	UnionFindSet& GetUnionFindSet() {return varSet;}
+
+	const map<Variable*, int>& GetVarTable() {return varTable;}
+
+	const map<int, Variable*>& GetRevTable() {return varRevTable;}
 
 	void Print();
 

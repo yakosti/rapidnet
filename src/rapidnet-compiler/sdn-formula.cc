@@ -353,10 +353,8 @@ Term* Constraint::GetRightE() {
 void
 Constraint::Print() const
 {
-	NS_LOG_DEBUG("Printing a constraint");
 	leftE->PrintTerm();
 	PrintOp();
-	NS_LOG_DEBUG("Printing the right term");
 	rightE->PrintTerm();
 }
 
@@ -460,13 +458,23 @@ Constraint::VarReplace(UnionFindSet ufs,
 	Variable* var = NULL;
 	int varId = 0;
 	int newId = 0;
+	map<Variable*, int>::const_iterator itm;
 
 	var = dynamic_cast<Variable*>(leftE);
 	if (var != NULL)
 	{
-		varId = varTable.at(var);
-		newId = ufs.Root(varId);
-		Variable* newVar = varRevTable.at(newId);
+		itm = varTable.find(var);
+		if (itm != varTable.end())
+		{
+			varId = itm->second;
+			newId = ufs.Root(varId);
+			Variable* newVar = varRevTable.at(newId);
+			leftE = newVar;
+		}
+		else
+		{
+			NS_LOG_ERROR("Variable not found in Union Find Set!");
+		}
 	}
 	else
 	{
@@ -476,14 +484,31 @@ Constraint::VarReplace(UnionFindSet ufs,
 	var = dynamic_cast<Variable*>(rightE);
 	if (var != NULL)
 	{
-		varId = varTable.at(var);
-		newId = ufs.Root(varId);
-		Variable* newVar = varRevTable.at(newId);
+		itm = varTable.find(var);
+		if (itm != varTable.end())
+		{
+			varId = itm->second;
+			newId = ufs.Root(varId);
+			Variable* newVar = varRevTable.at(newId);
+			rightE = newVar;
+		}
+		else
+		{
+			NS_LOG_ERROR("Variable not found in Union Find Set!");
+		}
 	}
 	else
 	{
 		rightE->VarReplace(ufs, varTable, varRevTable);
 	}
+}
+
+void
+Constraint::VarReplace(SimpConstraints& simpCons)
+{
+	VarReplace(simpCons.GetUnionFindSet(),
+			   simpCons.GetVarTable(),
+			   simpCons.GetRevTable());
 }
 
 void
@@ -736,7 +761,6 @@ UserFunction::Clone()
 }
 
 void UserFunction::PrintTerm() {
-  NS_LOG_DEBUG("Printing function...");
   schema->PrintName();
   cout << "(";
   vector<Term*>::iterator it;
@@ -1136,6 +1160,16 @@ ConstraintsTemplate::ReplaceVar(VarMap& vmap)
 	}
 }
 
+void
+ConstraintsTemplate::ReplaceVar(SimpConstraints& simpCons)
+{
+	ConstraintList::iterator it;
+	for (it = constraints.begin();it != constraints.end();it++)
+	{
+		(*it)->VarReplace(simpCons);
+	}
+}
+
 ConstraintsTemplate*
 ConstraintsTemplate::Revert() const
 {
@@ -1200,7 +1234,6 @@ SimpConstraints::SimpConstraints(const ConsList& ctempList)
 	ConstraintList::const_iterator itc;
 	cts = ConstraintsTemplate();
 
-	NS_LOG_DEBUG("Reach here!!!");
 	NS_LOG_DEBUG("Size of ConList:" << ctempList.size());
 
 	//First iteration: register all variables
@@ -1224,8 +1257,6 @@ SimpConstraints::SimpConstraints(const ConsList& ctempList)
 		}
 	}
 
-	NS_LOG_DEBUG("Reach here???");
-
 	varSet = UnionFindSet(count);
 
 	//Second iteration: Build equivalent classes
@@ -1247,8 +1278,6 @@ SimpConstraints::SimpConstraints(const ConsList& ctempList)
 			}
 		}
 	}
-
-	NS_LOG_DEBUG("Reach here?");
 
 	Constraint* newCst;
 	//Third iteration: Build a new ConstraintsTemplate
@@ -1298,6 +1327,7 @@ SimpConstraints::GetEqualClass()
 void
 SimpConstraints::Print()
 {
+	cout << "###### Simplified constraints ######" << endl;
 	cts.PrintTemplate();
 	cout << endl;
 
@@ -1311,12 +1341,24 @@ SimpConstraints::Print()
 		cout << "Class " << count << ":";
 		for (itl = itm->second.begin();itl != itm->second.end();itl++)
 		{
+			if (itl == itm->second.begin())
+			{
+				//Print the representative element
+				//of each equivalent class
+				cout << "(";
+				int index = varTable.at(*itl);
+				int root = varSet.Root(index);
+				Variable* repre = varRevTable.at(root);
+				repre->PrintTerm();
+				cout << ")";
+			}
 			(*itl)->PrintTerm();
 			cout << ",";
 		}
 		count++;
 		cout << endl;
 	}
+	cout << "####################################" << endl;
 }
 
 

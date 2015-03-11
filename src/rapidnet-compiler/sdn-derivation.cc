@@ -98,7 +98,7 @@ void
 DerivNode::PrintCumuCons() const
 {
 	cout << endl;
-	cout << "============ Simplified Cumulative Constraints ===========" << endl;
+	cout << "============ Cumulative Simplified Constraints ===========" << endl;
 	SimpConstraints simp(allConstraints);
 	simp.Print();
 	cout << "=======================";
@@ -180,7 +180,7 @@ void
 DerivNode::PrintDerivation() const
 {
 	PrintDerivNode();
-	//PrintCumuCons();
+	PrintCumuCons();
 
 	DerivNodeList::const_iterator itd;
 	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
@@ -204,13 +204,13 @@ DerivNode::PrintExecution(map<Variable*, int> valueMap) const
 	DerivNodeList::const_iterator itd;
 	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
 	{
-		(*itd)->PrintInstance(valueMap);
+		(*itd)->PrintExecution(valueMap);
 		cout << endl;
 	}
 	DerivAnnoList::const_iterator ita;
 	for (ita = bodyAnnotations.begin();ita != bodyAnnotations.end();ita++)
 	{
-		(*ita)->PrintInstance(valueMap);
+		(*ita)->PrintExecution(valueMap);
 		cout << endl;
 	}
 }
@@ -606,200 +606,6 @@ Dpool::GetDerivList(string tpName) const
 	return derivations.at(tpName);
 }
 
-bool
-Dpool::CheckProperty(const Property& prop)
-{
-	//Process universally quantified predicates
-	const list<PredicateInstance*>& plist = prop.GetUniPred();
-	list<PredicateInstance*>::const_iterator itc = plist.begin();
-	DerivNodeList dlist = DerivNodeList();
-	return CheckRecurUniv(prop, plist, itc, dlist);
-}
-
-bool
-Dpool::CheckRecurUniv(const Property& prop,
-					  const list<PredicateInstance*>& plist,
-					  list<PredicateInstance*>::const_iterator itc,
-					  DerivNodeList dlist)
-{
-	if (itc == plist.end())
-	{
-		return CheckExistProp(prop, dlist);
-	}
-
-	string predName = (*itc)->GetName();
-	DerivNodeList& headList = derivations.at(predName);
-	itc++;
-	DerivNodeList::iterator itd;
-	for (itd = headList.begin();itd != headList.end();itd++)
-	{
-		dlist.push_back(*itd);
-		bool result = CheckRecurUniv(prop, plist, itc, dlist);
-		//One false branch makes the whole checking false
-		if (result == false)
-		{
-			//Generate counter-example
-			return false;
-		}
-		dlist.pop_back();
-	}
-
-	return true;
-}
-
-//TODO: Separate the verification of universally
-//quantified constraints from CheckExistProp
-bool
-Dpool::CheckExistProp(const Property& prop,
-					  const DerivNodeList& dlist)
-{
-	//First check if the assumption holds or not
-	VarMap vmap;
-	ConsList cslist;
-	FormList flist;
-	list<SimpConstraints*> slist;
-
-	const list<PredicateInstance*>& plist = prop.GetUniPred();
-	DerivNodeList::const_iterator itd = dlist.begin();
-	list<PredicateInstance*>::const_iterator itp = plist.begin();
-	for (;itd != dlist.end();itd++, itp++)
-	{
-		//Create variable mapping between predicate and the head tuple
-		const Tuple* head = (*itd)->GetHeadTuple();
-		VarMap headMap = head->CreateVarMap(*itp);
-		vmap.insert(headMap.begin(), headMap.end());
-
-		//Record simplified constraints
-		const ConsList& clist = (*itd)->GetCumuConsts();
-		SimpConstraints* newSimp = new SimpConstraints(clist);
-		slist.push_back(newSimp);
-
-		//Collect constraints
-		const ConstraintsTemplate& newCtemp = newSimp->GetConstraints();
-		cslist.push_back(&newCtemp);
-
-		//Collect invariants
-		const FormList& tupleFlist = (*itd)->GetInvariants();
-		flist.insert(flist.end(), tupleFlist.begin(), tupleFlist.end());
-	}
-	const ConstraintsTemplate* cTemp = prop.GetUniCons();
-	ConstraintsTemplate uniCons(*cTemp);
-	uniCons.ReplaceVar(vmap);
-	cslist.push_back(&uniCons);
-	//Check satisfiability of cslist + flist.
-	//If it is unsat, then return true;
-	//Otherwise, keep going.
-
-	//Check if assumption /\ not conclusion is sat
-
-	//First find existentially quantified tuples from derivations
-	//of universally quantified tuples
-	map<string, list<const Tuple*> > tlist;
-	list<const Tuple*> ctlist;
-	for (itp = plist.begin();itp != plist.end();itp++)
-	{
-		//tlist initialization
-		string pName = (*itp)->GetName();
-		tlist.insert(map<string, list<const Tuple*> >::value_type(
-													pName, ctlist));
-	}
-
-	DerivNodeList::const_iterator itdc;
-	for (itdc = dlist.begin();itdc != dlist.end();itdc++)
-	{
-		(*itdc)->FindSubTuple(plist, tlist);
-	}
-
-	//Check all possible combinations
-	map<string, list<const Tuple*> >::const_iterator itmc = tlist.begin();
-	list<const Tuple*> tplist;
-	bool res = CheckRecurExist(prop, tlist, itmc, tplist, cslist, flist);
-
-	//If the set of tuples are the instances in existential
-	//quantification, then they provide instantiation of
-	//existentially quantified variables.
-
-	//Release memory allocated to slist;
-	list<SimpConstraints*>::iterator itl;
-	for (itl = slist.begin();itl != slist.end();itl++)
-	{
-		delete (*itl);
-	}
-
-	return res;
-}
-
-bool
-Dpool::CheckRecurExist(const Property& prop,
-					   map<string, list<const Tuple*> >& tlist,
-					   map<string, list<const Tuple*> >::const_iterator itm,
-					   list<const Tuple*> tplist,
-					   ConsList& clist,
-					   const FormList& flist)
-{
-	if (itm == tlist.end())
-	{
-		return CheckWholeProp(prop, tplist, clist, flist);
-	}
-
-	const list<const Tuple*>& headList = itm->second;
-	itm++;
-	list<const Tuple*>::const_iterator itp;
-	for (itp = headList.begin();itp != headList.end();itp++)
-	{
-		tplist.push_back(*itp);
-		bool res = CheckRecurExist(prop, tlist, itm,
-								   tplist, clist, flist);
-		if (res == true)
-		{
-			//Generate a counter-example
-			return true;
-		}
-
-		tplist.pop_back();
-	}
-
-	return false;
-}
-
-bool
-Dpool::CheckWholeProp(const Property& prop,
-					  list<const Tuple*> tplist,
-					  ConsList& clist,
-					  const FormList& flist)
-{
-	VarMap vmap;
-	const list<PredicateInstance*>& plist = prop.GetUniPred();
-	list<const Tuple*>::const_iterator itt;
-	list<PredicateInstance*>::const_iterator itp;
-	for (itt = tplist.begin();itt != tplist.end();itt++)
-	{
-		string tpName = (*itt)->GetName();
-		for (itp = plist.begin();itp != plist.end();itp++)
-		{
-			string pName = (*itp)->GetName();
-			if (tpName == pName)
-			{
-				//Create variable mapping for existentially
-				//quantified predicates
-				VarMap newMap = (*itt)->CreateVarMap(*itp);
-				vmap.insert(newMap.begin(), newMap.end());
-				break;
-			}
-		}
-	}
-
-	const ConstraintsTemplate* csTemp = prop.GetExistCons();
-	ConstraintsTemplate* newTemp = csTemp->Revert();
-	newTemp->ReplaceVar(vmap);
-	clist.push_back(newTemp);
-
-	//Check clist + flist is sat?
-	//If sat, return false
-	//If unsat, return true
-
-	delete newTemp;
-}
 
 void
 Dpool::PrintDpool() const

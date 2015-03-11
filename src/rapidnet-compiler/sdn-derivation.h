@@ -23,6 +23,7 @@ class DerivNode;
 class DerivBody;
 class RecurNode;
 
+//TODO: Replace legacy type with macro
 typedef list<const ConstraintsTemplate*> ConsList;
 typedef list<const Formula*> FormList;
 typedef list<const DerivNode*> DerivNodeList;
@@ -154,31 +155,9 @@ public:
 						const VarMap& vmap,
 						const ConstraintsTemplate*) const;
 
+	const DerivMap& GetDerivation() const{return derivations;}
+
 	const DerivNodeList& GetDerivList(string tpName) const;
-
-	//TODO: We assume now that universally quantified tuples
-	//and existentially quantified tuples in Property do not
-	//have duplicates
-	bool CheckProperty(const Property&);
-
-	bool CheckRecurUniv(const Property&,
-						const list<PredicateInstance*>&,
-						list<PredicateInstance*>::const_iterator,
-						DerivNodeList);
-
-	bool CheckExistProp(const Property&, const DerivNodeList&);
-
-	bool CheckRecurExist(const Property&,
-						 map<string, list<const Tuple*> >&,
-						 map<string, list<const Tuple*> >::const_iterator,
-						 const list<const Tuple*>,
-						 ConsList&,
-						 const FormList&);
-
-	bool CheckWholeProp(const Property&,
-						list<const Tuple*>,
-			 	 	 	ConsList&,
-						const FormList&);
 
 	void PrintDpool() const;
 
