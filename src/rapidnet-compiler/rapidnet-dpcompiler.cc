@@ -195,25 +195,10 @@ void compile (string overlogFile, bool provenanceEnabled)
   /* adding smt solver part */
   //const DerivNodeList& dlist = dpool->GetDerivList("advertisements");
   //writeToFile("testing_constraints", dlist); //laykuan testing
-  
-  /* expression x > 4 */
-//  Variable* x_rapidnet = new Variable(Variable::INT, false);
-//  IntVal* four_rapidnet = new IntVal(4);
-//  Constraint* x_equals_4_rapidnet = new Constraint(Constraint::GT, x_rapidnet, four_rapidnet);
 
-  /* exists y, forall x ((0 < x AND x < 5) => (y > x)) */
-//  Quantifier* forallq = forall_rapidnet_example();
-//
-//  FormList flist;
-  //flist.push_back(x_equals_4_rapidnet);
-//  flist.push_back(&qtf);
-//  flist.push_back(forallq);
-//  write_to_z3(dlist, flist);
+  test_check_sat();
 
-  //const DerivNodeList& dlist = dpool->GetDerivList("advertisements");
   //Use DerivNode::GetAllObligs() to get all proof obligations
-
-
 }
 
 
@@ -221,6 +206,8 @@ void compile (string overlogFile, bool provenanceEnabled)
 //NDLog program should have no value as argument of a tuple
 int main (int argc, char** argv)
 {
+  test_parsing();
+
   LogComponentEnable ("RapidNetDPGraph", LOG_LEVEL_FUNCTION);
 //  LogComponentEnable ("DPGraph", LOG_LEVEL_FUNCTION);
   LogComponentEnable ("Formula", LOG_LEVEL_FUNCTION);

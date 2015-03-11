@@ -30,7 +30,6 @@ string parseQuantifier(Quantifier* q);
 // (variableName, variableDeclaration)
 std::map<string, string> all_free_variables;
 std::map<string, string> all_bound_variables;
-std::map<string, string> all_constants;
 std::map<string, string> all_predicate_schemas;
 std::map<string, string> all_function_schemas;
 
@@ -49,11 +48,11 @@ std::map<string, Variable*> name_to_rapidnet_bound_variable;
 void clearAllVariables() {
 	all_free_variables.clear();
 	all_bound_variables.clear();
-	all_constants.clear();
 	all_predicate_schemas.clear();
 	all_function_schemas.clear();
 
 	name_to_rapidnet_free_variable.clear();
+	name_to_rapidnet_bound_variable.clear();
 }
 
 string IntegerToString(int number) {
@@ -132,17 +131,21 @@ map<Variable*, int> map_substititions(context & c, model m) {
 
         if (v.arity() == 0) { // is a constant 
         	expr value = m.get_const_interp(v);
-        	Variable* rapidnet_var = name_to_rapidnet_free_variable[cnamestr];
+        	Variable* rapidnet_var_free = name_to_rapidnet_free_variable[cnamestr];
+        	Variable* rapidnet_var_bound = name_to_rapidnet_bound_variable[cnamestr];
         	int myint = -1; //default value
         	Z3_get_numeral_int(c, value, &myint);
-        	if (rapidnet_var) variable_map[rapidnet_var] = myint; //only add to map if var exists
+        	if (rapidnet_var_free) variable_map[rapidnet_var_free] = myint; //only add to map if var exists
+        	if (rapidnet_var_bound) variable_map[rapidnet_var_bound] = myint; //only add to map if var exists
         } else { //not constant
         	func_interp fi = m.get_func_interp(v);
         	expr value = fi.else_value();
         	int myint = -1; //default value
         	Z3_get_numeral_int(c, value, &myint);
         	Variable* rapidnet_var = name_to_rapidnet_bound_variable[cnamestr];
-        	if (rapidnet_var) variable_map[rapidnet_var] = myint; 
+        	if (rapidnet_var) {
+        		variable_map[rapidnet_var] = myint; 
+        	}
         }
     }
     return variable_map;
@@ -168,17 +171,11 @@ map<Variable*, int> checking_with_z3(string str_to_check) {
 
     if (s.check() == sat) {
         model m = s.get_model();
-        std::cout << "============== SAT MODEL ===============\n" << m << endl;
+        std::cout << "@@@@@@@ SAT MODEL @@@@@@@@\n" << m << endl;
         mapsubst = map_substititions(c, m);
         print_rapidnet_names_and_values(mapsubst);
     } else {
-    	std::cout << "============== UNSAT MODEL ===============\n"  << endl;
-    	expr_vector core = s.unsat_core();
-	    std::cout << core << "\n";
-	    std::cout << "size: " << core.size() << "\n";
-	    for (unsigned i = 0; i < core.size(); i++) {
-	        std::cout << core[i] << "\n";
-	    }
+    	std::cout << "@@@@@@@ UNSAT MODEL @@@@@@@@\n"  << endl;
     }
     return mapsubst;
 }
@@ -187,20 +184,18 @@ map<Variable*, int> check_sat(const ConsList& clist, const FormList& flist) {
 	ConsList::const_iterator itl;
 	ConstraintList::const_iterator itc;
 	string constraint_str = "";
-	for (itl = clist.begin();itl != clist.end();itl++)
-	{
-		const ConstraintList& clist = (*itl)->GetConstraints();
-
-		/* constraint */
-		int ccount = 0;
-		for (itc = clist.begin(); itc != clist.end(); itc++) {
-			Constraint* newCons = new Constraint((**itc));
-			string constr = parseFormula(newCons);
-
-			ccount += 1;
-			string counterstr = "c" + IntegerToString(ccount);
-
-			constraint_str += "(assert (! " + constr + " :named " + counterstr + "))\n";
+	int ccount = 0;
+	for (itl = clist.begin(); itl != clist.end(); itl++) {
+		const ConstraintList& cl = (*itl)->GetConstraints();
+		for (itc = cl.begin(); itc != cl.end(); itc++) {
+			Constraint* newCons = (Constraint*)*itc;
+			if (dynamic_cast<Constraint*>(newCons)) {
+				newCons->Print();
+				string constr = parseConstraint(newCons);
+				ccount += 1;
+				string counterstr = "c" + IntegerToString(ccount);
+				constraint_str += "(assert " + constr + ")\n";
+			} 
 		}
 	}
 
@@ -215,14 +210,14 @@ map<Variable*, int> check_sat(const ConsList& clist, const FormList& flist) {
 	   	fcount += 1;
 	    string fcountstr = "f" + IntegerToString(fcount);
 
-	    formula_str += "\n(assert (!" + formstr + " :named " + fcountstr + "))\n";
+	    formula_str += "(assert " + formstr + ")\n";
 	}	
 
 	string fvstr = variables_declaration_to_str(all_free_variables);
 	string pstr = variables_declaration_to_str(all_predicate_schemas);
 	string fstr = variables_declaration_to_str(all_function_schemas);
 	
-	string to_check = "(set-option :produce-models true) \n" + fvstr + pstr + fstr + constraint_str + formula_str;
+	string to_check = fvstr + pstr + fstr + constraint_str + formula_str;
 	cout << "\n Testing if this is satisfiable: \n" << to_check << endl;
 
 	map<Variable*, int> mapsubst = checking_with_z3(to_check);
@@ -234,12 +229,12 @@ map<Variable*, int> check_sat(const ConsList& clist, const FormList& flist) {
 
 /* Call only at the end 
  */
-void write_to_z3(const DerivNodeList& dlist, FormList flist) {
-	const DerivNode* deriv = dlist.front();
-	const ConstraintsTemplate* contemp = deriv->GetConstraints();
-	ConsList clist(1, contemp);
-	map<Variable*, int> mapsubst = check_sat(clist, flist);
-}
+// void write_to_z3(const DerivNodeList& dlist, FormList flist) {
+// 	const DerivNode* deriv = dlist.front();
+// 	const ConstraintsTemplate* contemp = deriv->GetConstraints();
+// 	ConsList clist(1, contemp);
+// 	map<Variable*, int> mapsubst = check_sat(clist, flist);
+// }
 
 
 /* To be removed when everything is build out */
@@ -355,13 +350,10 @@ void writeToFile(const char* filename, const DerivNodeList& dlist) {
 		const char* dfname = dlist_filename(filename, counter);
 		myfile.open(dfname);
 
-		myfile << "(set-logic S)\n"; // type of logic has strings
-
 		vector<string> all_constraints = parse_one_derivation(*itd);
 
 		// print all the variables declarations
 		writeDeclaration(all_free_variables, myfile);
-		writeDeclaration(all_constants, myfile);
 		writeDeclaration(all_bound_variables, myfile);
 		writeDeclaration(all_predicate_schemas, myfile);
 		writeDeclaration(all_function_schemas, myfile);
@@ -371,8 +363,6 @@ void writeToFile(const char* filename, const DerivNodeList& dlist) {
 			string constrd = all_constraints[i];
 			myfile << constrd;
 		}
-		
-		myfile << "(check-sat)\n"; // type of logic has strings
 
 		myfile.close();
 
@@ -671,8 +661,6 @@ string parseTerm(Term* t) {
 	if (dynamic_cast<IntVal*>(t)) {
 		int value = ((IntVal*)t)->GetIntValue();
 		string strvalue = IntegerToString(value);
-		if (all_constants.find(strvalue) == all_constants.end()) //not declared, declare and store
-			all_constants[strvalue] = "(declare-const " + strvalue + " Int)";
 	 	return strvalue;
 	} else if (dynamic_cast<BoolVal*>(t)) {
 		bool value = ((BoolVal*)t)->GetBoolValue();
@@ -680,8 +668,6 @@ string parseTerm(Term* t) {
 	 	return "false";
 	} else if (dynamic_cast<StringVal*>(t)) {
 		string value = ((StringVal*)t)->GetStringValue();
-		if (all_constants.find(value) == all_constants.end()) //not declared, declare and store
-			all_constants[value] = "(declare-const " + value + " Int)";
 		return value;
 	} else if (dynamic_cast<Variable*>(t)) {
 		Variable* v = (Variable*)t;
@@ -690,8 +676,10 @@ string parseTerm(Term* t) {
 		return parseFreeVariable(v);
 	} else if (dynamic_cast<UserFunction*>(t)) {
 		return parseUserFunction((UserFunction*)t);
-	} else { 
+	} else if (dynamic_cast<Arithmetic*>(t)){ 
 		return parseArithmetic((Arithmetic*)t);
+	} else {
+		throw std::invalid_argument("invalid term");
 	}
 }
 

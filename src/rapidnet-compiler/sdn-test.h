@@ -8,6 +8,26 @@
 #ifndef SDN_TEST_H_
 #define SDN_TEST_H_
 
+/*
+ * *******************************************************************************
+ *                                                                               *
+ *                       Create Rapidnet Structures                              *
+ *                                                                               *
+ * *******************************************************************************
+ */
+
+Quantifier* create_forall_x__x_equals_3_rapidnet() {
+  IntVal* three = new IntVal(3);
+  Variable* x = new Variable(Variable::INT, true);
+
+  vector<Variable*> boundVarList;
+  boundVarList.push_back(x);
+
+  Constraint* x_equals_3 = new Constraint(Constraint::GT, x, three);
+
+  Quantifier* forall_x__x_equals_3_rapidnet = new Quantifier(Quantifier::FORALL, boundVarList, x_equals_3);
+  return forall_x__x_equals_3_rapidnet;
+}
 
 /*
   forall x (
@@ -45,6 +65,245 @@ Quantifier* forall_rapidnet_example() {
   return forall_x__x_gt_0__and__x_lt_5__implies__exists_y__y_gt_x;
 }
 
+Connective* create__x_gt_y__AND__y_gt_z__IMPLIES__x_gt_z() {
+  Variable* x = new Variable(Variable::INT, false);
+  Variable* y = new Variable(Variable::INT, false);
+  Variable* z = new Variable(Variable::INT, false);
+
+  Constraint* x_gt_y = new Constraint(Constraint::EQ, x, y);
+  Constraint* y_gt_z = new Constraint(Constraint::EQ, y, z);
+  Constraint* x_gt_z = new Constraint(Constraint::EQ, x, z);
+
+  Connective* x_gt_y__AND__y_gt_z = new Connective(Connective::AND, x_gt_y, y_gt_z);
+  Connective* implies = new Connective(Connective::IMPLY, x_gt_y__AND__y_gt_z, x_gt_z);
+
+  return implies;
+}
+
+Quantifier* create_exists_x__isblue_x_rapidnet() {
+  // make isblue function
+  vector<Variable::TypeCode> types_rapidnet;
+  types_rapidnet.push_back(Variable::STRING);
+  PredicateSchema* isblue_rapidnet = new PredicateSchema("isblue", types_rapidnet);
+
+  //make bound var
+  Variable* x = new Variable(Variable::STRING, true);
+  vector<Variable*> boundVarList;
+  boundVarList.push_back(x);
+
+  // make the formula isblue(x)
+  // x is a bound variable
+  vector<Term*> args;
+  args.push_back(x);
+
+  PredicateInstance* isblue_x_rapidnet = new PredicateInstance(isblue_rapidnet, args);
+
+  //make it quantifier
+  Quantifier* exists_x__isblue_x_rapidnet = new Quantifier(Quantifier::EXISTS, boundVarList, isblue_x_rapidnet);
+  return exists_x__isblue_x_rapidnet;
+}
+
+/*
+ * *******************************************************************************
+ *                                                                               *
+ *                       Create Rapidnet Structures                              *
+ *                                                                               *
+ * *******************************************************************************
+ */
+
+
+
+
+
+
+
+
+/*
+ * *******************************************************************************
+ *                                                                               *
+ *                                  Test CHECK-SAT                               *
+ *                                                                               *
+ * *******************************************************************************
+ */
+
+/* exists y, forall x ((0 < x AND x < 5) => (y > x)) */
+FormList create_formula_list_one() {
+  /* expression x > 4 */
+  Variable* x_rapidnet = new Variable(Variable::INT, false);
+  IntVal* four_rapidnet = new IntVal(4);
+  Constraint* x_equals_4_rapidnet = new Constraint(Constraint::GT, x_rapidnet, four_rapidnet);
+
+  Quantifier* forallq = forall_rapidnet_example();
+
+  FormList flist;
+  flist.push_back(x_equals_4_rapidnet);
+  flist.push_back(forallq);
+
+  return flist;
+}
+
+/* 
+ * (y == 1)
+ * (x > 4)
+ * (x < 6)
+ * should be SAT
+ */
+ConsList create_constraint_list_one() {
+  /* RAPIDNET */
+  Variable* x = new Variable(Variable::INT, false);
+  Variable* y = new Variable(Variable::INT, false);
+
+  IntVal* one = new IntVal(1);
+  IntVal* four = new IntVal(4);
+  IntVal* six = new IntVal(6);
+
+  Constraint* y_equals_one = new Constraint(Constraint::EQ, y, one);
+  Constraint* x_gt_four = new Constraint(Constraint::GT, x, four);
+  Constraint* x_lt_six = new Constraint(Constraint::LT, x, six);
+
+  ConstraintsTemplate* ctemp = new ConstraintsTemplate();
+  ctemp->AddConstraint(y_equals_one);
+  ctemp->AddConstraint(x_gt_four);
+  ctemp->AddConstraint(x_lt_six);
+
+  ConsList clist;
+  clist.push_back(ctemp);
+  return clist;
+}
+
+/* 
+ * should be SAT
+ * (y == 1)
+ * (x > 4)
+ * (x > 6)
+ */
+ConsList create_constraint_list_two() {
+  /* RAPIDNET */
+  Variable* x = new Variable(Variable::INT, false);
+  Variable* y = new Variable(Variable::INT, false);
+
+  IntVal* one = new IntVal(1);
+  IntVal* four = new IntVal(4);
+  IntVal* six = new IntVal(6);
+
+  Constraint* y_equals_one = new Constraint(Constraint::EQ, y, one);
+  Constraint* x_gt_four = new Constraint(Constraint::GT, x, four);
+  Constraint* x_gt_six = new Constraint(Constraint::GT, x, six);
+
+  ConstraintsTemplate* ctemp = new ConstraintsTemplate();
+  ctemp->AddConstraint(y_equals_one);
+  ctemp->AddConstraint(x_gt_four);
+  ctemp->AddConstraint(x_gt_six);
+
+  ConsList clist;
+  clist.push_back(ctemp);
+  return clist;
+}
+
+/* forall x ( x = 3)
+ */
+FormList create_formula_list_two() {
+  FormList flist;
+  Quantifier* q = create_forall_x__x_equals_3_rapidnet();
+  flist.push_back(q);
+  return flist;
+}
+
+/* (x > y ) /\ (y > z) => (x > z)
+ */
+FormList create_formula_list_four() {
+  FormList flist;
+  Connective* c = create__x_gt_y__AND__y_gt_z__IMPLIES__x_gt_z();
+  flist.push_back(c);
+  return flist;
+}
+
+ConsList create_constraint_list_five() {
+  vector<Variable::TypeCode> domain_types;
+  domain_types.push_back(Variable::STRING);
+  FunctionSchema* mother_schema = new FunctionSchema("mother", domain_types, Variable::STRING);
+
+  //assert that MichelleObama is the mother of MaliaObama
+  vector<Term*> args;
+  StringVal* MaliaObama = new StringVal("MaliaObama");
+  args.push_back(MaliaObama);
+  UserFunction* mother_malia = new UserFunction(mother_schema, args);
+
+  StringVal* MichelleObama = new StringVal("MichelleObama");
+  StringVal* BarbaraBush = new StringVal("BarbaraBush");
+
+  Constraint* michelle_is_mother_of_malia = new Constraint(Constraint::EQ, mother_malia, MichelleObama);
+
+  ConstraintsTemplate* ctemp = new ConstraintsTemplate();
+  ctemp->AddConstraint(michelle_is_mother_of_malia);
+  ConsList clist;
+  clist.push_back(ctemp);
+  return clist;
+}
+
+
+/*
+ * CVC4
+ * ----
+  (declare-fun iseven (Int) Bool)
+  (assert (exists ((x Int)) (iseven x)))
+ */
+FormList create_formula_list_six() {
+  Quantifier* q = create_exists_x__isblue_x_rapidnet();
+
+  FormList flist;
+  flist.push_back(q);
+  return flist;
+}
+
+
+void test_check_sat() {
+  cout << "\n================= Testing Check Sat - should be SAT =======================\n";
+  ConsList clist1 = create_constraint_list_one();
+  FormList flist1;
+  map<Variable*, int> mymap1 = check_sat(clist1, flist1);
+
+  cout << "\n================= Testing Check Sat - should be SAT =======================\n";
+  ConsList clist2;
+  FormList flist2 = create_formula_list_one();
+  map<Variable*, int> mymap2 = check_sat(clist2, flist2);
+
+  cout << "\n================= Testing Check Sat - should be SAT =======================\n";
+  ConsList clist3;
+  FormList flist3 = create_formula_list_two();
+  map<Variable*, int> mymap3 = check_sat(clist3, flist3);
+
+  cout << "\n================= Testing Check Sat - should be SAT =======================\n";
+  ConsList clist4;
+  FormList flist4 = create_formula_list_four();
+  map<Variable*, int> mymap4 = check_sat(clist4, flist4);
+
+  // cout << "\n================= Testing Check Sat - UserFunction ========================\n";
+  // ConsList clist5 = create_constraint_list_five();
+  // FormList flist5;
+  // map<Variable*, int> mymap5 = check_sat(clist5, flist5);
+
+  cout << "\n================= Testing Check Sat - QuantifyPredicate ===================\n";
+  ConsList clist6;
+  FormList flist6 = create_formula_list_six();
+  map<Variable*, int> mymap6 = check_sat(clist6, flist6);
+}
+
+/*
+ * *******************************************************************************
+ *                                                                               *
+ *                                  Test CHECK-SAT                               *
+ *                                                                               *
+ * *******************************************************************************
+ */
+
+
+
+
+
+
+
+
 
 /*
  * *******************************************************************************
@@ -53,6 +312,8 @@ Quantifier* forall_rapidnet_example() {
  *                                                                               *
  * *******************************************************************************
  */
+
+
 
 /* PROGRAM
    ------------------------
@@ -114,6 +375,7 @@ void testVariables() {
   clearAllVariables();
 }
 
+
 /* Program
  * ---------------------
    (set-logic AUFLIA)
@@ -121,17 +383,7 @@ void testVariables() {
    (check-sat)
  */
 void testBoundVariables() {
-  /* rapidnet */
-  IntVal* three = new IntVal(3);
-  Variable* x = new Variable(Variable::INT, true);
-
-  vector<Variable*> boundVarList;
-  boundVarList.push_back(x);
-
-  Constraint* x_equals_3 = new Constraint(Constraint::GT, x, three);
-
-  Quantifier* forall_x__x_equals_3_rapidnet = new Quantifier(Quantifier::FORALL, boundVarList, x_equals_3);
-
+  Quantifier* forall_x__x_equals_3_rapidnet = create_forall_x__x_equals_3_rapidnet();
   /* CVC4 */
   string parsed = parseFormula(forall_x__x_equals_3_rapidnet);
   cout << "\n---------- forall x (x > 3) ------------" << endl;
@@ -199,6 +451,7 @@ void testExistVariables() {
   clearAllVariables();
 }
 
+
 /* Program
  * ---------------------
    (set-logic QF_LIA)
@@ -207,17 +460,7 @@ void testExistVariables() {
  * ((x > y) /\ (y > z)) => (x > z)
  */
 void connective__x_gt_y__AND__y_gt_z__IMPLIES__x_gt_z() {
-  /* RAPIDNET */
-  Variable* x = new Variable(Variable::INT, false);
-  Variable* y = new Variable(Variable::INT, false);
-  Variable* z = new Variable(Variable::INT, false);
-
-  Constraint* x_gt_y = new Constraint(Constraint::EQ, x, y);
-  Constraint* y_gt_z = new Constraint(Constraint::EQ, y, z);
-  Constraint* x_gt_z = new Constraint(Constraint::EQ, x, z);
-
-  Connective* x_gt_y__AND__y_gt_z = new Connective(Connective::AND, x_gt_y, y_gt_z);
-  Connective* implies = new Connective(Connective::IMPLY, x_gt_y__AND__y_gt_z, x_gt_z);
+  Connective* implies = create__x_gt_y__AND__y_gt_z__IMPLIES__x_gt_z();
 
   /* checking */
   string implies_smt = parseFormula(implies);
@@ -244,7 +487,7 @@ void connective__x_gt_y__AND__y_gt_z__IMPLIES__x_gt_z() {
    (check-sat) !unsat
  */
 void testEvenPredicate() {
-  /* ***************************** rapidnet: make isblue function ****************** */
+  /* ***************************** rapidnet: make iseven function ****************** */
   vector<Variable::TypeCode> types_rapidnet;
   types_rapidnet.push_back(Variable::INT);
   PredicateSchema* iseven_schema = new PredicateSchema("iseven", types_rapidnet);
@@ -254,8 +497,6 @@ void testEvenPredicate() {
   vector<Term*> args_two;
   args_two.push_back(two);
   PredicateInstance* iseven_2 = new PredicateInstance(iseven_schema, args_two);
-
-  //make the formula neg (iseven(2))
 
   /* ****************************** what to do *************************** */
   cout << "\n------------------ Test iseven(n) ----------------------" << endl;
@@ -362,7 +603,6 @@ void quantifier__function_child_younger_than_mother() {
   cout << michelle_is_mother_of_malia_smtlib << endl;
   string barbara_is_mother_of_malia_smtlib = parseFormula(barbara_is_mother_of_malia);
   cout << barbara_is_mother_of_malia_smtlib << endl;
-  printDeclaration(all_constants);
 
   clearAllVariables();
 }
