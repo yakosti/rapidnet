@@ -1,3 +1,6 @@
+#ifndef SDN_PARSE_SMTLIB_H_
+#define SDN_PARSE_SMTLIB_H_
+
 #include <iostream>
 #include <string>
 #include "sdn-formula.h"
@@ -180,22 +183,27 @@ map<Variable*, int> checking_with_z3(string str_to_check) {
     return mapsubst;
 }
 
-map<Variable*, int> check_sat(const ConstraintsTemplate* contemp, FormList flist) {
-	const ConstraintList& clist = contemp->GetConstraints();
-
-	/* constraint */
+map<Variable*, int> check_sat(const ConsList& clist, const FormList& flist) {
+	ConsList::const_iterator itl = clist.begin();
 	ConstraintList::const_iterator itc;
 	string constraint_str = "";
-	int ccount = 0;
-	for (itc = clist.begin(); itc != clist.end(); itc++) {
-	    Constraint* newCons = new Constraint((**itc));
-	    string constr = parseFormula(newCons);
+	for (itl = clist.begin();itl != clist.end();itl++)
+	{
+		const ConstraintList& clist = (*itl)->GetConstraints();
 
-	    ccount += 1;
-	    string counterstr = "c" + IntegerToString(ccount);
+		/* constraint */
+		constraint_str = "";
+		int ccount = 0;
+		for (itc = clist.begin(); itc != clist.end(); itc++) {
+			Constraint* newCons = new Constraint((**itc));
+			string constr = parseFormula(newCons);
 
-	    constraint_str += "(assert (! " + constr + " :named " + counterstr + "))\n";
-	}	
+			ccount += 1;
+			string counterstr = "c" + IntegerToString(ccount);
+
+			constraint_str += "(assert (! " + constr + " :named " + counterstr + "))\n";
+		}
+	}
 
 	/* formula */
 	FormList::const_iterator itf;
@@ -230,7 +238,8 @@ map<Variable*, int> check_sat(const ConstraintsTemplate* contemp, FormList flist
 void write_to_z3(const DerivNodeList& dlist, FormList flist) {
 	const DerivNode* deriv = dlist.front();
 	const ConstraintsTemplate* contemp = deriv->GetConstraints();
-	map<Variable*, int> mapsubst = check_sat(contemp, flist);
+	ConsList clist(1, contemp);
+	map<Variable*, int> mapsubst = check_sat(clist, flist);
 }
 
 
@@ -687,7 +696,7 @@ string parseTerm(Term* t) {
 	}
 }
 
-
+#endif
 
 
 

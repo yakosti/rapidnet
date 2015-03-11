@@ -20,15 +20,14 @@ Property::Property()
 	existPredList = list<PredicateInstance*>();
 	existConsList = new ConstraintsTemplate();
 
-	ProcessUniPred("bestRoute(a,b,c)", varMap);
+	ProcessUniPred("ePingPongFinish(a)", varMap);
+	//ProcessUniPred("verifyPath(m,n,l)", varMap);
 
-	ProcessUniPred("verifyPath(m,n,l)", varMap);
-	NS_LOG_DEBUG("Reach here?!");
 	ProcessUniCons(varMap);
 
-	ProcessExistPred("line(o,p)", varMap);
-	ProcessExistPred("link(r,s,t)", varMap);
-	ProcessExistCons(varMap);
+	//ProcessExistPred("line(o,p)", varMap);
+	//ProcessExistPred("link(r,s,t)", varMap);
+	//ProcessExistCons(varMap);
 }
 
 //TODO: Parse constraints from user input
@@ -42,7 +41,13 @@ Property::ProcessUniCons(const map<string, Variable*>& varMap)
 //	Constraint* newCons = new Constraint(Constraint::LT, varPtr, new IntVal(4));
 //
 //	univConsList->AddConstraint(newCons);
-//	NS_LOG_DEBUG("Reach here?!");
+
+	string var1 = "a";
+	Variable* varPtr = varMap.find(var1)->second;
+
+	Constraint* newCons = new Constraint(Constraint::LT, varPtr, new IntVal(5));
+
+	univConsList->AddConstraint(newCons);
 }
 
 void
@@ -110,7 +115,7 @@ PredicateInstance*
 Property::ParsePred(const string line, map<string, Variable*>& varMap)
 {
 	size_t leftParPos = line.find("(");
-	string predName = line.substr(0, leftParPos+1);
+	string predName = line.substr(0, leftParPos);
 	size_t rightParPos = line.find(")");
 	string predArgs = line.substr(leftParPos+1, (rightParPos - leftParPos - 1));
 	vector<Term*> args = ParseArgs(predArgs, varMap);

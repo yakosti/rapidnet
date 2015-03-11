@@ -460,13 +460,18 @@ Constraint::VarReplace(UnionFindSet ufs,
 	Variable* var = NULL;
 	int varId = 0;
 	int newId = 0;
+	map<Variable*, int>::const_iterator itm;
 
 	var = dynamic_cast<Variable*>(leftE);
 	if (var != NULL)
 	{
-		varId = varTable.at(var);
-		newId = ufs.Root(varId);
-		Variable* newVar = varRevTable.at(newId);
+		itm = varTable.find(var);
+		if (itm != varTable.end())
+		{
+			varId = itm->second;
+			newId = ufs.Root(varId);
+			Variable* newVar = varRevTable.at(newId);
+		}
 	}
 	else
 	{
@@ -476,14 +481,26 @@ Constraint::VarReplace(UnionFindSet ufs,
 	var = dynamic_cast<Variable*>(rightE);
 	if (var != NULL)
 	{
-		varId = varTable.at(var);
-		newId = ufs.Root(varId);
-		Variable* newVar = varRevTable.at(newId);
+		itm = varTable.find(var);
+		if (itm != varTable.end())
+		{
+			varId = itm->second;
+			newId = ufs.Root(varId);
+			Variable* newVar = varRevTable.at(newId);
+		}
 	}
 	else
 	{
 		rightE->VarReplace(ufs, varTable, varRevTable);
 	}
+}
+
+void
+Constraint::VarReplace(SimpConstraints& simpCons)
+{
+	VarReplace(simpCons.GetUnionFindSet(),
+			   simpCons.GetVarTable(),
+			   simpCons.GetRevTable());
 }
 
 void
@@ -1136,6 +1153,16 @@ ConstraintsTemplate::ReplaceVar(VarMap& vmap)
 	}
 }
 
+void
+ConstraintsTemplate::ReplaceVar(SimpConstraints& simpCons)
+{
+	ConstraintList::iterator it;
+	for (it = constraints.begin();it != constraints.end();it++)
+	{
+		(*it)->VarReplace(simpCons);
+	}
+}
+
 ConstraintsTemplate*
 ConstraintsTemplate::Revert() const
 {
@@ -1200,7 +1227,6 @@ SimpConstraints::SimpConstraints(const ConsList& ctempList)
 	ConstraintList::const_iterator itc;
 	cts = ConstraintsTemplate();
 
-	NS_LOG_DEBUG("Reach here!!!");
 	NS_LOG_DEBUG("Size of ConList:" << ctempList.size());
 
 	//First iteration: register all variables
