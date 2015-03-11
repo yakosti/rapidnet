@@ -231,3 +231,46 @@ Property::~Property()
 	}
 }
 
+Invariant::Invariant()
+{
+	invs = AnnotMap();
+
+//	string predName = "";
+//	int argNum = 3;
+//	PredicateSchema* scheme = new PredicateSchema(predName, argNum);
+//	vector<Term*> args;
+//	vector<Term*>::iterator ita;
+//	for (ita = args.begin();ita != args.end();ita++)
+//	{
+//		Variable* newVar = new Variable(Variable::STRING, true);
+//		args.push_back(newVar);
+//	}
+//	//Use index to create formulas;
+//	Formula* form;
+//	PredicateInstance* pInst = new PredicateInstance(scheme, args);
+//	Annotation* newAnnot = new Annotation(pInst, form);
+//	invs.insert(AnnotMap::value_type(predName, newAnnot));
+
+	//  AnnotMap testMap;
+	//  list<Variable::TypeCode> tlist (9, Variable::STRING);
+	//  Tuple tp = Tuple("verifyPath", tlist);
+	//  const vector<Variable*> arg = tp.GetArgs();
+	//  vector<Variable*> quantArg(1, arg[0]);
+	//  IntVal* value = new IntVal(10000);
+	//  Constraint* ct = new Constraint(Constraint::EQ, arg[0], value);
+	//  Quantifier qtf (Quantifier::EXISTS, quantArg, ct);
+	//  Annotation anno (&tp, &qtf);
+	//  testMap.insert(AnnotMap::value_type("verifyPath", &anno));
+}
+
+Invariant::~Invariant()
+{
+	AnnotMap::iterator itv;
+	for (itv = invs.begin();itv != invs.end();itv++)
+	{
+		Annotation* annot = itv->second;
+		delete annot->first;
+		delete annot->second;
+		delete annot;
+	}
+}

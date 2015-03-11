@@ -170,6 +170,15 @@ Quantifier::~Quantifier()
 
 /* ************************* PredicateSchema ******************************** */
 
+PredicateSchema::PredicateSchema(string n, int size):
+		name(n)
+{
+	for (int i = 0;i < size;i++)
+	{
+		types.push_back(Variable::STRING);
+	}
+}
+
 PredicateSchema::PredicateSchema(string n, vector<Variable::TypeCode>& t):
   name(n),types(t){}
 
