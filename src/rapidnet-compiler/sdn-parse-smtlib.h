@@ -54,6 +54,7 @@ void clearAllVariables() {
 	all_function_schemas.clear();
 
 	name_to_rapidnet_free_variable.clear();
+	name_to_rapidnet_bound_variable.clear();
 }
 
 string IntegerToString(int number) {

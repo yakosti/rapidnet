@@ -11,10 +11,23 @@
 /*
  * *******************************************************************************
  *                                                                               *
- *                         Create Rapidnet Examples                              *
+ *                       Create Rapidnet Structures                              *
  *                                                                               *
  * *******************************************************************************
  */
+
+Quantifier* create_forall_x__x_equals_3_rapidnet() {
+  IntVal* three = new IntVal(3);
+  Variable* x = new Variable(Variable::INT, true);
+
+  vector<Variable*> boundVarList;
+  boundVarList.push_back(x);
+
+  Constraint* x_equals_3 = new Constraint(Constraint::GT, x, three);
+
+  Quantifier* forall_x__x_equals_3_rapidnet = new Quantifier(Quantifier::FORALL, boundVarList, x_equals_3);
+  return forall_x__x_equals_3_rapidnet;
+}
 
 /*
   forall x (
@@ -52,6 +65,28 @@ Quantifier* forall_rapidnet_example() {
   return forall_x__x_gt_0__and__x_lt_5__implies__exists_y__y_gt_x;
 }
 
+/*
+ * *******************************************************************************
+ *                                                                               *
+ *                       Create Rapidnet Structures                              *
+ *                                                                               *
+ * *******************************************************************************
+ */
+
+
+
+
+
+
+
+
+/*
+ * *******************************************************************************
+ *                                                                               *
+ *                                  Test CHECK-SAT                               *
+ *                                                                               *
+ * *******************************************************************************
+ */
 
 FormList create_formula_list_one() {
   /* expression x > 4 */
@@ -70,7 +105,10 @@ FormList create_formula_list_one() {
 }
 
 /* 
- * 
+ * (y == 1)
+ * (x > 4)
+ * (x > 6)
+ * should be SAT
  */
 ConsList create_constraint_list_one() {
   /* RAPIDNET */
@@ -95,21 +133,52 @@ ConsList create_constraint_list_one() {
   return clist;
 }
 
+/* 
+ * (
+ * should be SAT
+ */
+ConsList create_constraint_list_two() {
+  /* RAPIDNET */
+  Variable* x = new Variable(Variable::INT, false);
+  Variable* y = new Variable(Variable::INT, false);
+
+  IntVal* one = new IntVal(1);
+  IntVal* four = new IntVal(4);
+  IntVal* six = new IntVal(6);
+
+  Constraint* y_equals_one = new Constraint(Constraint::EQ, y, one);
+  Constraint* x_gt_four = new Constraint(Constraint::GT, x, four);
+  Constraint* x_gt_six = new Constraint(Constraint::GT, x, six);
+
+  ConstraintsTemplate* ctemp = new ConstraintsTemplate();
+  ctemp->AddConstraint(y_equals_one);
+  ctemp->AddConstraint(x_gt_four);
+  ctemp->AddConstraint(x_gt_six);
+
+  ConsList clist;
+  clist.push_back(ctemp);
+  return clist;
+}
+
+
 void test_check_sat() {
   cout << "\n================= Testing Check Sat - should be SAT =======================\n";
   ConsList clist = create_constraint_list_one();
   FormList flist = create_formula_list_one();
   map<Variable*, int> mymap = check_sat(clist, flist);
+
   cout << "\n================= Testing Check Sat - should be SAT =======================\n";
 }
 
 /*
  * *******************************************************************************
  *                                                                               *
- *                         Create Rapidnet Examples                              *
+ *                                  Test CHECK-SAT                               *
  *                                                                               *
  * *******************************************************************************
  */
+
+
 
 
 
@@ -187,6 +256,7 @@ void testVariables() {
   clearAllVariables();
 }
 
+
 /* Program
  * ---------------------
    (set-logic AUFLIA)
@@ -194,17 +264,7 @@ void testVariables() {
    (check-sat)
  */
 void testBoundVariables() {
-  /* rapidnet */
-  IntVal* three = new IntVal(3);
-  Variable* x = new Variable(Variable::INT, true);
-
-  vector<Variable*> boundVarList;
-  boundVarList.push_back(x);
-
-  Constraint* x_equals_3 = new Constraint(Constraint::GT, x, three);
-
-  Quantifier* forall_x__x_equals_3_rapidnet = new Quantifier(Quantifier::FORALL, boundVarList, x_equals_3);
-
+  Quantifier* forall_x__x_equals_3_rapidnet = create_forall_x__x_equals_3_rapidnet();
   /* CVC4 */
   string parsed = parseFormula(forall_x__x_equals_3_rapidnet);
   cout << "\n---------- forall x (x > 3) ------------" << endl;
