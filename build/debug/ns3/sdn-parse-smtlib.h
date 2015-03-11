@@ -54,6 +54,7 @@ void clearAllVariables() {
 	all_function_schemas.clear();
 
 	name_to_rapidnet_free_variable.clear();
+	name_to_rapidnet_bound_variable.clear();
 }
 
 string IntegerToString(int number) {
@@ -168,17 +169,11 @@ map<Variable*, int> checking_with_z3(string str_to_check) {
 
     if (s.check() == sat) {
         model m = s.get_model();
-        std::cout << "============== SAT MODEL ===============\n" << m << endl;
+        std::cout << "@@@@@@@ SAT MODEL @@@@@@@@\n" << m << endl;
         mapsubst = map_substititions(c, m);
         print_rapidnet_names_and_values(mapsubst);
     } else {
-    	std::cout << "============== UNSAT MODEL ===============\n"  << endl;
-    	expr_vector core = s.unsat_core();
-	    std::cout << core << "\n";
-	    std::cout << "size: " << core.size() << "\n";
-	    for (unsigned i = 0; i < core.size(); i++) {
-	        std::cout << core[i] << "\n";
-	    }
+    	std::cout << "@@@@@@@ UNSAT MODEL @@@@@@@@\n"  << endl;
     }
     return mapsubst;
 }
@@ -187,26 +182,18 @@ map<Variable*, int> check_sat(const ConsList& clist, const FormList& flist) {
 	ConsList::const_iterator itl;
 	ConstraintList::const_iterator itc;
 	string constraint_str = "";
-
-	for (itl = clist.begin(); itl != clist.end(); itl++)
-	{
+	int ccount = 0;
+	for (itl = clist.begin(); itl != clist.end(); itl++) {
 		const ConstraintList& cl = (*itl)->GetConstraints();
-		/* constraint */
-		int ccount = 0;
 		for (itc = cl.begin(); itc != cl.end(); itc++) {
-			//Constraint* newCons = new Constraint((**itc));
 			Constraint* newCons = (Constraint*)*itc;
 			if (dynamic_cast<Constraint*>(newCons)) {
-				cout << "is constraint\n";
+				newCons->Print();
+				string constr = parseConstraint(newCons);
+				ccount += 1;
+				string counterstr = "c" + IntegerToString(ccount);
+				constraint_str += "(assert " + constr + ")\n";
 			} 
-			cout << "Am I here?" << endl;
-			string constr = parseConstraint(newCons);
-			cout << "Term\n";
-
-			ccount += 1;
-			string counterstr = "c" + IntegerToString(ccount);
-
-			constraint_str += "(assert (! " + constr + " :named " + counterstr + "))\n";
 		}
 	}
 
@@ -221,14 +208,14 @@ map<Variable*, int> check_sat(const ConsList& clist, const FormList& flist) {
 	   	fcount += 1;
 	    string fcountstr = "f" + IntegerToString(fcount);
 
-	    formula_str += "\n(assert (!" + formstr + " :named " + fcountstr + "))\n";
+	    formula_str += "(assert " + formstr + ")\n";
 	}	
 
 	string fvstr = variables_declaration_to_str(all_free_variables);
 	string pstr = variables_declaration_to_str(all_predicate_schemas);
 	string fstr = variables_declaration_to_str(all_function_schemas);
 	
-	string to_check = "(set-option :produce-models true) \n" + fvstr + pstr + fstr + constraint_str + formula_str;
+	string to_check = fvstr + pstr + fstr + constraint_str + formula_str;
 	cout << "\n Testing if this is satisfiable: \n" << to_check << endl;
 
 	map<Variable*, int> mapsubst = checking_with_z3(to_check);
@@ -572,7 +559,6 @@ string parseConstraint(Constraint* c) {
 	Constraint::Operator op = c->GetOperator();
 	string leftE = parseTerm(c->GetLeftE());
 	string rightE = parseTerm(c->GetRightE());
-	cout << "I AM PARSING NOW" << endl;
 	switch (op) {
 		case Constraint::EQ: 
 			return "(= " + leftE + " " + rightE + ")";

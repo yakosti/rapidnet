@@ -65,6 +65,21 @@ Quantifier* forall_rapidnet_example() {
   return forall_x__x_gt_0__and__x_lt_5__implies__exists_y__y_gt_x;
 }
 
+Connective* create__x_gt_y__AND__y_gt_z__IMPLIES__x_gt_z() {
+  Variable* x = new Variable(Variable::INT, false);
+  Variable* y = new Variable(Variable::INT, false);
+  Variable* z = new Variable(Variable::INT, false);
+
+  Constraint* x_gt_y = new Constraint(Constraint::EQ, x, y);
+  Constraint* y_gt_z = new Constraint(Constraint::EQ, y, z);
+  Constraint* x_gt_z = new Constraint(Constraint::EQ, x, z);
+
+  Connective* x_gt_y__AND__y_gt_z = new Connective(Connective::AND, x_gt_y, y_gt_z);
+  Connective* implies = new Connective(Connective::IMPLY, x_gt_y__AND__y_gt_z, x_gt_z);
+
+  return implies;
+}
+
 /*
  * *******************************************************************************
  *                                                                               *
@@ -88,13 +103,13 @@ Quantifier* forall_rapidnet_example() {
  * *******************************************************************************
  */
 
+/* exists y, forall x ((0 < x AND x < 5) => (y > x)) */
 FormList create_formula_list_one() {
   /* expression x > 4 */
   Variable* x_rapidnet = new Variable(Variable::INT, false);
   IntVal* four_rapidnet = new IntVal(4);
   Constraint* x_equals_4_rapidnet = new Constraint(Constraint::GT, x_rapidnet, four_rapidnet);
 
-  /* exists y, forall x ((0 < x AND x < 5) => (y > x)) */
   Quantifier* forallq = forall_rapidnet_example();
 
   FormList flist;
@@ -134,8 +149,10 @@ ConsList create_constraint_list_one() {
 }
 
 /* 
- * (
  * should be SAT
+ * (y == 1)
+ * (x > 4)
+ * (x > 6)
  */
 ConsList create_constraint_list_two() {
   /* RAPIDNET */
@@ -160,10 +177,21 @@ ConsList create_constraint_list_two() {
   return clist;
 }
 
+/* forall x ( x = 3)
+ */
 FormList create_formula_list_two() {
   FormList flist;
   Quantifier* q = create_forall_x__x_equals_3_rapidnet();
   flist.push_back(q);
+  return flist;
+}
+
+/* (x > y ) /\ (y > z) => (x > z)
+ */
+FormList create_formula_list_four() {
+  FormList flist;
+  Connective* c = create__x_gt_y__AND__y_gt_z__IMPLIES__x_gt_z();
+  flist.push_back(c);
   return flist;
 }
 
@@ -184,7 +212,10 @@ void test_check_sat() {
   FormList flist3 = create_formula_list_two();
   map<Variable*, int> mymap3 = check_sat(clist3, flist3);
 
-  
+  cout << "\n================= Testing Check Sat - should be SAT =======================\n";
+  ConsList clist4;
+  FormList flist4 = create_formula_list_four();
+  map<Variable*, int> mymap4 = check_sat(clist4, flist4);
 }
 
 /*
@@ -349,6 +380,7 @@ void testExistVariables() {
   clearAllVariables();
 }
 
+
 /* Program
  * ---------------------
    (set-logic QF_LIA)
@@ -357,17 +389,7 @@ void testExistVariables() {
  * ((x > y) /\ (y > z)) => (x > z)
  */
 void connective__x_gt_y__AND__y_gt_z__IMPLIES__x_gt_z() {
-  /* RAPIDNET */
-  Variable* x = new Variable(Variable::INT, false);
-  Variable* y = new Variable(Variable::INT, false);
-  Variable* z = new Variable(Variable::INT, false);
-
-  Constraint* x_gt_y = new Constraint(Constraint::EQ, x, y);
-  Constraint* y_gt_z = new Constraint(Constraint::EQ, y, z);
-  Constraint* x_gt_z = new Constraint(Constraint::EQ, x, z);
-
-  Connective* x_gt_y__AND__y_gt_z = new Connective(Connective::AND, x_gt_y, y_gt_z);
-  Connective* implies = new Connective(Connective::IMPLY, x_gt_y__AND__y_gt_z, x_gt_z);
+  Connective* implies = create__x_gt_y__AND__y_gt_z__IMPLIES__x_gt_z();
 
   /* checking */
   string implies_smt = parseFormula(implies);
