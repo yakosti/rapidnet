@@ -447,7 +447,9 @@ private:
 class PredicateSchema
 {
 public:
-	PredicateSchema(string n, vector<Variable::TypeCode>& t);
+	PredicateSchema(string, int);
+
+	PredicateSchema(string, vector<Variable::TypeCode>&);
 
 	PredicateSchema(const PredicateSchema&);
 
@@ -468,7 +470,7 @@ private:
 class PredicateInstance: public Formula
 {
 public:
-	PredicateInstance(PredicateSchema* s, vector<Term*>& a);
+	PredicateInstance(PredicateSchema*, vector<Term*>&);
 
 	PredicateInstance(const PredicateInstance&);
 
@@ -493,7 +495,10 @@ private:
 
 class SimpConstraints;
 
-//TODO: variables in Constraint should be independent
+//TODO: variables in Constraint is now required to be independent
+
+//TODO: Unification of variables in invariants and
+//representative variables in equivalent classes
 class Constraint: public Formula
 {
 public:
@@ -590,7 +595,9 @@ public:
 
 	SimpConstraints(const ConsList&);
 
-	map<int, list<Variable*> > GetEqualClass();
+	void CreateEquiClass();
+
+	const map<Variable*, list<Variable*> >& GetEquiClass() {return equiClass;}
 
 	const ConstraintsTemplate& GetConstraints() const{return cts;}
 
@@ -607,6 +614,8 @@ private:
 	map<Variable*, int> varTable;
 	map<int, Variable*> varRevTable;
 	UnionFindSet varSet;
+
+	map<Variable*, list<Variable*> > equiClass;
 };
 
 /* 

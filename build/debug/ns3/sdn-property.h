@@ -61,6 +61,23 @@ private:
 	ConstraintsTemplate* existConsList;
 };
 
+class BaseProperty;
 
+typedef pair<PredicateInstance*, Formula*> Annotation;
+typedef map<string, Annotation*> AnnotMap;
+
+class Invariant
+{
+public:
+	//TODO: For now we hardcode invariant properties
+	Invariant();
+
+	const AnnotMap& GetInv() const {return invs;}
+
+	~Invariant();
+
+private:
+	AnnotMap invs;
+};
 
 #endif /* SDN_PROPERTY_H_ */

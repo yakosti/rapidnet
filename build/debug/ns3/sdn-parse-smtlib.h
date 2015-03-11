@@ -214,8 +214,9 @@ map<Variable*, int> check_sat(const ConsList& clist, const FormList& flist) {
 	string fvstr = variables_declaration_to_str(all_free_variables);
 	string pstr = variables_declaration_to_str(all_predicate_schemas);
 	string fstr = variables_declaration_to_str(all_function_schemas);
+	string cstr = variables_declaration_to_str(all_constants);
 	
-	string to_check = fvstr + pstr + fstr + constraint_str + formula_str;
+	string to_check = fvstr + pstr + fstr + cstr + constraint_str + formula_str;
 	cout << "\n Testing if this is satisfiable: \n" << to_check << endl;
 
 	map<Variable*, int> mapsubst = checking_with_z3(to_check);

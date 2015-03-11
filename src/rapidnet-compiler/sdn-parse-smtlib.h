@@ -133,17 +133,21 @@ map<Variable*, int> map_substititions(context & c, model m) {
 
         if (v.arity() == 0) { // is a constant 
         	expr value = m.get_const_interp(v);
-        	Variable* rapidnet_var = name_to_rapidnet_free_variable[cnamestr];
+        	Variable* rapidnet_var_free = name_to_rapidnet_free_variable[cnamestr];
+        	Variable* rapidnet_var_bound = name_to_rapidnet_bound_variable[cnamestr];
         	int myint = -1; //default value
         	Z3_get_numeral_int(c, value, &myint);
-        	if (rapidnet_var) variable_map[rapidnet_var] = myint; //only add to map if var exists
+        	if (rapidnet_var_free) variable_map[rapidnet_var_free] = myint; //only add to map if var exists
+        	if (rapidnet_var_bound) variable_map[rapidnet_var_bound] = myint; //only add to map if var exists
         } else { //not constant
         	func_interp fi = m.get_func_interp(v);
         	expr value = fi.else_value();
         	int myint = -1; //default value
         	Z3_get_numeral_int(c, value, &myint);
         	Variable* rapidnet_var = name_to_rapidnet_bound_variable[cnamestr];
-        	if (rapidnet_var) variable_map[rapidnet_var] = myint; 
+        	if (rapidnet_var) {
+        		variable_map[rapidnet_var] = myint; 
+        	}
         }
     }
     return variable_map;
@@ -214,6 +218,7 @@ map<Variable*, int> check_sat(const ConsList& clist, const FormList& flist) {
 	string fvstr = variables_declaration_to_str(all_free_variables);
 	string pstr = variables_declaration_to_str(all_predicate_schemas);
 	string fstr = variables_declaration_to_str(all_function_schemas);
+	string cstr = variables_declaration_to_str(all_constants);
 	
 	string to_check = fvstr + pstr + fstr + constraint_str + formula_str;
 	cout << "\n Testing if this is satisfiable: \n" << to_check << endl;

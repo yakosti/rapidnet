@@ -80,6 +80,29 @@ Connective* create__x_gt_y__AND__y_gt_z__IMPLIES__x_gt_z() {
   return implies;
 }
 
+Quantifier* create_exists_x__isblue_x_rapidnet() {
+  // make isblue function
+  vector<Variable::TypeCode> types_rapidnet;
+  types_rapidnet.push_back(Variable::STRING);
+  PredicateSchema* isblue_rapidnet = new PredicateSchema("isblue", types_rapidnet);
+
+  //make bound var
+  Variable* x = new Variable(Variable::STRING, true);
+  vector<Variable*> boundVarList;
+  boundVarList.push_back(x);
+
+  // make the formula isblue(x)
+  // x is a bound variable
+  vector<Term*> args;
+  args.push_back(x);
+
+  PredicateInstance* isblue_x_rapidnet = new PredicateInstance(isblue_rapidnet, args);
+
+  //make it quantifier
+  Quantifier* exists_x__isblue_x_rapidnet = new Quantifier(Quantifier::EXISTS, boundVarList, isblue_x_rapidnet);
+  return exists_x__isblue_x_rapidnet;
+}
+
 /*
  * *******************************************************************************
  *                                                                               *
@@ -195,6 +218,44 @@ FormList create_formula_list_four() {
   return flist;
 }
 
+ConsList create_constraint_list_five() {
+  vector<Variable::TypeCode> domain_types;
+  domain_types.push_back(Variable::STRING);
+  FunctionSchema* mother_schema = new FunctionSchema("mother", domain_types, Variable::STRING);
+
+  //assert that MichelleObama is the mother of MaliaObama
+  vector<Term*> args;
+  StringVal* MaliaObama = new StringVal("MaliaObama");
+  args.push_back(MaliaObama);
+  UserFunction* mother_malia = new UserFunction(mother_schema, args);
+
+  StringVal* MichelleObama = new StringVal("MichelleObama");
+  StringVal* BarbaraBush = new StringVal("BarbaraBush");
+
+  Constraint* michelle_is_mother_of_malia = new Constraint(Constraint::EQ, mother_malia, MichelleObama);
+
+  ConstraintsTemplate* ctemp = new ConstraintsTemplate();
+  ctemp->AddConstraint(michelle_is_mother_of_malia);
+  ConsList clist;
+  clist.push_back(ctemp);
+  return clist;
+}
+
+
+/*
+ * CVC4
+ * ----
+  (declare-fun iseven (Int) Bool)
+  (assert (exists ((x Int)) (iseven x)))
+ */
+FormList create_formula_list_six() {
+  Quantifier* q = create_exists_x__isblue_x_rapidnet();
+
+  FormList flist;
+  flist.push_back(q);
+  return flist;
+}
+
 
 void test_check_sat() {
   cout << "\n================= Testing Check Sat - should be SAT =======================\n";
@@ -216,6 +277,16 @@ void test_check_sat() {
   ConsList clist4;
   FormList flist4 = create_formula_list_four();
   map<Variable*, int> mymap4 = check_sat(clist4, flist4);
+
+  cout << "\n================= Testing Check Sat - UserFunction ========================\n";
+  ConsList clist5 = create_constraint_list_five();
+  FormList flist5;
+  map<Variable*, int> mymap5 = check_sat(clist5, flist5);
+
+  cout << "\n================= Testing Check Sat - QuantifyPredicate ===================\n";
+  ConsList clist6;
+  FormList flist6 = create_formula_list_six();
+  map<Variable*, int> mymap6 = check_sat(clist6, flist6);
 }
 
 /*
