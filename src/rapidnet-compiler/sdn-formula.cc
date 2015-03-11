@@ -170,6 +170,15 @@ Quantifier::~Quantifier()
 
 /* ************************* PredicateSchema ******************************** */
 
+PredicateSchema::PredicateSchema(string n, int size):
+		name(n)
+{
+	for (int i = 0;i < size;i++)
+	{
+		types.push_back(Variable::STRING);
+	}
+}
+
 PredicateSchema::PredicateSchema(string n, vector<Variable::TypeCode>& t):
   name(n),types(t){}
 
@@ -1224,6 +1233,7 @@ SimpConstraints::SimpConstraints()
 	varTable = map<Variable*, int>();
 	varRevTable = map<int, Variable*>();
 	varSet = UnionFindSet();
+	equiClass = map<Variable*, list<Variable*> >();
 }
 
 SimpConstraints::SimpConstraints(const ConsList& ctempList)
@@ -1278,6 +1288,7 @@ SimpConstraints::SimpConstraints(const ConsList& ctempList)
 			}
 		}
 	}
+	CreateEquiClass();
 
 	Constraint* newCst;
 	//Third iteration: Build a new ConstraintsTemplate
@@ -1299,21 +1310,21 @@ SimpConstraints::SimpConstraints(const ConsList& ctempList)
 }
 
 
-map<int, list<Variable*> >
-SimpConstraints::GetEqualClass()
+void
+SimpConstraints::CreateEquiClass()
 {
-	map<int, list<Variable*> > equiClass;
-	map<int, list<Variable*> >::iterator itv =  equiClass.begin();
-
+	map<Variable*, list<Variable*> >::iterator itv;
 	map<Variable*, int>::iterator itm;
 	for (itm = varTable.begin();itm != varTable.end();itm++)
 	{
 		int root = varSet.Root(itm->second);
-		itv = equiClass.find(root);
+		Variable* rootVar = varRevTable.at(root);
+		itv = equiClass.find(rootVar);
 		if (itv == equiClass.end())
 		{
 			list<Variable*> vlist(1, itm->first);
-			equiClass.insert(map<int, list<Variable*> >::value_type(root, vlist));
+			equiClass.insert(map<Variable*, list<Variable*> >::
+							 	 	 value_type(rootVar, vlist));
 		}
 		else
 		{
@@ -1321,7 +1332,6 @@ SimpConstraints::GetEqualClass()
 		}
 	}
 
-	return equiClass;
 }
 
 void
@@ -1333,10 +1343,9 @@ SimpConstraints::Print()
 
 	cout << "--------- Equivalent Classes --------" << endl;
 	int count = 0;
-	map<int, list<Variable*> > equaList = GetEqualClass();
-	map<int, list<Variable*> >::iterator itm;
+	map<Variable*, list<Variable*> >::iterator itm;
 	list<Variable*>::iterator itl;
-	for (itm = equaList.begin(); itm != equaList.end();itm++)
+	for (itm = equiClass.begin(); itm != equiClass.end();itm++)
 	{
 		cout << "Class " << count << ":";
 		for (itl = itm->second.begin();itl != itm->second.end();itl++)
@@ -1346,10 +1355,7 @@ SimpConstraints::Print()
 				//Print the representative element
 				//of each equivalent class
 				cout << "(";
-				int index = varTable.at(*itl);
-				int root = varSet.Root(index);
-				Variable* repre = varRevTable.at(root);
-				repre->PrintTerm();
+				itm->first->PrintTerm();
 				cout << ")";
 			}
 			(*itl)->PrintTerm();

@@ -18,6 +18,7 @@
 #include "ns3/ptr.h"
 
 #include "sdn-formula.h"
+#include "sdn-property.h"
 #include "ol-context.h"
 #include "parser-util.h"
 #include "auxiliary.h"
@@ -237,8 +238,6 @@ private:
 	RMBMap inEdgesRM;	//Edges from a rule node to its body metanodes
 };
 
-typedef pair<Tuple*, Formula*> Annotation;
-typedef map<string, Annotation*> AnnotMap;
 
 class MiniGraph: public RefCountBase
 {

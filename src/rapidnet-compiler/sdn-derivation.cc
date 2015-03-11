@@ -270,9 +270,10 @@ RecurNode::~RecurNode()
 	}
 }
 
-Dpool::Dpool(const Ptr<DPGraph> dpgraph, const AnnotMap& invariants)
+Dpool::Dpool(const Ptr<DPGraph> dpgraph, const Invariant& inv)
 {
 	//Perform topological sorting on the dependency graph
+	const AnnotMap& invariants = inv.GetInv();
 	const TupleNode* head = NULL;
 	Ptr<MiniGraph> mGraph (new MiniGraph(dpgraph));
 	pair<RuleListC, RuleListC> topoOrder = mGraph->TopoSort(invariants);
@@ -321,7 +322,8 @@ Dpool::Dpool(const Ptr<DPGraph> dpgraph, const AnnotMap& invariants)
 		const Annotation* inv = invariants.at(tpName);
 		Formula* newInv = inv->second->Clone();
 		const Tuple* tpr = rnode->GetHeadTuple();
-		VarMap vmapInv = inv->first->CreateVarMap(tpr);
+		VarMap vmapInv = tpr->CreateVarMap(inv->first);
+		//TODO: unification with equivalent class representative
 		newInv->VarReplace(vmapInv);
 		rnode->AddInvariant(newInv);
 
@@ -473,14 +475,15 @@ Dpool::UpdateDerivNode(string tpName, DerivNode* dnode)
 }
 
 bool
-Dpool::VerifyInvariants(const AnnotMap& invariant) const
+Dpool::VerifyInvariants(const Invariant& inv) const
 {
+	const AnnotMap& invariant = inv.GetInv();
 	AnnotMap::const_iterator ita;
 	for (ita = invariant.begin();ita != invariant.end();ita++)
 	{
 		string tpName = ita->first;
 		const Annotation* annot = ita->second;
-		Tuple* tp = annot->first;
+		PredicateInstance* predInst = annot->first;
 		Formula* tupleInv = annot->second;
 
 		const DerivNodeList& dlist = derivations.at(tpName);
@@ -493,7 +496,7 @@ Dpool::VerifyInvariants(const AnnotMap& invariant) const
 				//Base case
 				//Unify the head tuple
 				const Tuple* head = (*itd)->GetHeadTuple();
-				VarMap vmap = tp->CreateVarMap(head);
+				VarMap vmap = head->CreateVarMap(predInst);
 				Formula* newInv = tupleInv->Clone();
 				newInv->VarReplace(vmap);
 
@@ -582,10 +585,10 @@ Dpool::VerifyRecurInv(DerivNodeList::const_iterator curPos,
 		//A recursive body
 		//Use invariant instead of all its derivations
 		Annotation* bodyInv = ita->second;
-		Tuple* tupleInv = bodyInv->first;
+		PredicateInstance* predInst = bodyInv->first;
 		Formula* formInv = bodyInv->second;
 
-		VarMap formMap = tupleInv->CreateVarMap(bodyTuple);
+		VarMap formMap = bodyTuple->CreateVarMap(predInst);
 		Formula* newInv = formInv->Clone();
 		newInv->VarReplace(formMap);
 		flist.push_back(newInv);
