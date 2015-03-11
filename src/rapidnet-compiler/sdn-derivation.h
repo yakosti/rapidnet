@@ -127,7 +127,7 @@ class Derivation;
 class Dpool: public RefCountBase
 {
 public:
-	Dpool(const Ptr<DPGraph>, const AnnotMap&);
+	Dpool(const Ptr<DPGraph>, const Invariant&);
 
 	void ProcessRuleNode(Tuple*,
 		   	   	   	   	 const RuleNode*,
@@ -143,7 +143,7 @@ public:
 
 	void UpdateDerivNode(string tpName, DerivNode* dnode);
 
-	bool VerifyInvariants(const AnnotMap&) const;
+	bool VerifyInvariants(const Invariant&) const;
 
 	//TODO: to be tested with z3
 	bool VerifyRecurInv(DerivNodeList::const_iterator,

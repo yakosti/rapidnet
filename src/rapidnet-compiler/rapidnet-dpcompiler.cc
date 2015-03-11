@@ -177,21 +177,14 @@ void compile (string overlogFile, bool provenanceEnabled)
   //Ptr<MiniGraph> miniGraph (new MiniGraph(graphNdlog));
   //miniGraph->PrintGraph();
 
-  AnnotMap testMap;
-//  list<Variable::TypeCode> tlist (9, Variable::STRING);
-//  Tuple tp = Tuple("verifyPath", tlist);
-//  const vector<Variable*> arg = tp.GetArgs();
-//  vector<Variable*> quantArg(1, arg[0]);
-//  IntVal* value = new IntVal(10000);
-//  Constraint* ct = new Constraint(Constraint::EQ, arg[0], value);
-//  Quantifier qtf (Quantifier::EXISTS, quantArg, ct);
-//  Annotation anno (&tp, &qtf);
-//  testMap.insert(AnnotMap::value_type("verifyPath", &anno));
-  Ptr<Dpool> dpool (new Dpool(graphNdlog, testMap));
+  //Recursive invariant
+  Invariant inv = Invariant();
+  Ptr<Dpool> dpool (new Dpool(graphNdlog, inv));
   //dpool->PrintDeriv("ePingPongFinish");
   NS_LOG_DEBUG("Dpool constructed.");
   //User-defined property
   Property p = Property();
+
 
   NS_LOG_DEBUG("Property constructed.");
   //Verify the property
