@@ -145,7 +145,7 @@ FormList create_formula_list_one() {
 /* 
  * (y == 1)
  * (x > 4)
- * (x > 6)
+ * (x < 6)
  * should be SAT
  */
 ConsList create_constraint_list_one() {
@@ -159,12 +159,12 @@ ConsList create_constraint_list_one() {
 
   Constraint* y_equals_one = new Constraint(Constraint::EQ, y, one);
   Constraint* x_gt_four = new Constraint(Constraint::GT, x, four);
-  Constraint* x_gt_six = new Constraint(Constraint::GT, x, six);
+  Constraint* x_lt_six = new Constraint(Constraint::LT, x, six);
 
   ConstraintsTemplate* ctemp = new ConstraintsTemplate();
   ctemp->AddConstraint(y_equals_one);
   ctemp->AddConstraint(x_gt_four);
-  ctemp->AddConstraint(x_gt_six);
+  ctemp->AddConstraint(x_lt_six);
 
   ConsList clist;
   clist.push_back(ctemp);
@@ -278,10 +278,10 @@ void test_check_sat() {
   FormList flist4 = create_formula_list_four();
   map<Variable*, int> mymap4 = check_sat(clist4, flist4);
 
-  cout << "\n================= Testing Check Sat - UserFunction ========================\n";
-  ConsList clist5 = create_constraint_list_five();
-  FormList flist5;
-  map<Variable*, int> mymap5 = check_sat(clist5, flist5);
+  // cout << "\n================= Testing Check Sat - UserFunction ========================\n";
+  // ConsList clist5 = create_constraint_list_five();
+  // FormList flist5;
+  // map<Variable*, int> mymap5 = check_sat(clist5, flist5);
 
   cout << "\n================= Testing Check Sat - QuantifyPredicate ===================\n";
   ConsList clist6;
@@ -487,7 +487,7 @@ void connective__x_gt_y__AND__y_gt_z__IMPLIES__x_gt_z() {
    (check-sat) !unsat
  */
 void testEvenPredicate() {
-  /* ***************************** rapidnet: make isblue function ****************** */
+  /* ***************************** rapidnet: make iseven function ****************** */
   vector<Variable::TypeCode> types_rapidnet;
   types_rapidnet.push_back(Variable::INT);
   PredicateSchema* iseven_schema = new PredicateSchema("iseven", types_rapidnet);
@@ -497,8 +497,6 @@ void testEvenPredicate() {
   vector<Term*> args_two;
   args_two.push_back(two);
   PredicateInstance* iseven_2 = new PredicateInstance(iseven_schema, args_two);
-
-  //make the formula neg (iseven(2))
 
   /* ****************************** what to do *************************** */
   cout << "\n------------------ Test iseven(n) ----------------------" << endl;
@@ -605,7 +603,6 @@ void quantifier__function_child_younger_than_mother() {
   cout << michelle_is_mother_of_malia_smtlib << endl;
   string barbara_is_mother_of_malia_smtlib = parseFormula(barbara_is_mother_of_malia);
   cout << barbara_is_mother_of_malia_smtlib << endl;
-  printDeclaration(all_constants);
 
   clearAllVariables();
 }

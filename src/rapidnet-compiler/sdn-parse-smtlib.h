@@ -30,7 +30,6 @@ string parseQuantifier(Quantifier* q);
 // (variableName, variableDeclaration)
 std::map<string, string> all_free_variables;
 std::map<string, string> all_bound_variables;
-std::map<string, string> all_constants;
 std::map<string, string> all_predicate_schemas;
 std::map<string, string> all_function_schemas;
 
@@ -49,7 +48,6 @@ std::map<string, Variable*> name_to_rapidnet_bound_variable;
 void clearAllVariables() {
 	all_free_variables.clear();
 	all_bound_variables.clear();
-	all_constants.clear();
 	all_predicate_schemas.clear();
 	all_function_schemas.clear();
 
@@ -218,7 +216,6 @@ map<Variable*, int> check_sat(const ConsList& clist, const FormList& flist) {
 	string fvstr = variables_declaration_to_str(all_free_variables);
 	string pstr = variables_declaration_to_str(all_predicate_schemas);
 	string fstr = variables_declaration_to_str(all_function_schemas);
-	string cstr = variables_declaration_to_str(all_constants);
 	
 	string to_check = fvstr + pstr + fstr + constraint_str + formula_str;
 	cout << "\n Testing if this is satisfiable: \n" << to_check << endl;
@@ -357,7 +354,6 @@ void writeToFile(const char* filename, const DerivNodeList& dlist) {
 
 		// print all the variables declarations
 		writeDeclaration(all_free_variables, myfile);
-		writeDeclaration(all_constants, myfile);
 		writeDeclaration(all_bound_variables, myfile);
 		writeDeclaration(all_predicate_schemas, myfile);
 		writeDeclaration(all_function_schemas, myfile);
@@ -665,8 +661,6 @@ string parseTerm(Term* t) {
 	if (dynamic_cast<IntVal*>(t)) {
 		int value = ((IntVal*)t)->GetIntValue();
 		string strvalue = IntegerToString(value);
-		if (all_constants.find(strvalue) == all_constants.end()) //not declared, declare and store
-			all_constants[strvalue] = "(declare-const " + strvalue + " Int)";
 	 	return strvalue;
 	} else if (dynamic_cast<BoolVal*>(t)) {
 		bool value = ((BoolVal*)t)->GetBoolValue();
@@ -674,8 +668,6 @@ string parseTerm(Term* t) {
 	 	return "false";
 	} else if (dynamic_cast<StringVal*>(t)) {
 		string value = ((StringVal*)t)->GetStringValue();
-		if (all_constants.find(value) == all_constants.end()) //not declared, declare and store
-			all_constants[value] = "(declare-const " + value + " Int)";
 		return value;
 	} else if (dynamic_cast<Variable*>(t)) {
 		Variable* v = (Variable*)t;
