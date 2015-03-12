@@ -1212,6 +1212,12 @@ ConstraintsTemplate::~ConstraintsTemplate()
 	}
 }
 
+bool
+ConstraintsTemplate::IsEmpty()
+{
+	return (constraints.size() == 0?true:false);
+}
+
 void
 ConstraintsTemplate::PrintTemplate() const
 {

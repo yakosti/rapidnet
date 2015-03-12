@@ -23,11 +23,11 @@ Property::Property()
 	ProcessUniPred("ePingPongFinish(a)", varMap);
 	//ProcessUniPred("verifyPath(m,n,l)", varMap);
 
-	ProcessUniCons(varMap);
+	//ProcessUniCons(varMap);
 
-	//ProcessExistPred("line(o,p)", varMap);
+	ProcessExistPred("ePing(o,p)", varMap);
 	//ProcessExistPred("link(r,s,t)", varMap);
-	//ProcessExistCons(varMap);
+	ProcessExistCons(varMap);
 }
 
 //TODO: Parse constraints from user input
@@ -42,14 +42,14 @@ Property::ProcessUniCons(const map<string, Variable*>& varMap)
 //
 //	univConsList->AddConstraint(newCons);
 
-	string var1 = "a";
-	Variable* varPtr = varMap.find(var1)->second;
-
-	Constraint* newCons = new Constraint(Constraint::GT,
-										 varPtr,
-										 new IntVal(6));
-
-	univConsList->AddConstraint(newCons);
+//	string var1 = "a";
+//	Variable* varPtr = varMap.find(var1)->second;
+//
+//	Constraint* newCons = new Constraint(Constraint::GT,
+//										 varPtr,
+//										 new IntVal(6));
+//
+//	univConsList->AddConstraint(newCons);
 }
 
 void
@@ -76,6 +76,24 @@ Property::ProcessExistCons(const map<string, Variable*>& varMap)
 //	Variable* varPtr2 = itm->second;
 //	Constraint* newCons = new Constraint(Constraint::EQ, varPtr1, varPtr2);
 //	existConsList->AddConstraint(newCons);
+
+//	string var1 = "a";
+//	Variable* varPtr = varMap.find(var1)->second;
+//
+//	Constraint* newCons = new Constraint(Constraint::GT,
+//										 varPtr,
+//										 new IntVal(3));
+//
+//	existConsList->AddConstraint(newCons);
+
+	string var1 = "p";
+	Variable* varPtr = varMap.find(var1)->second;
+
+	Constraint* newCons = new Constraint(Constraint::GT,
+										 varPtr,
+										 new IntVal(3));
+
+	existConsList->AddConstraint(newCons);
 }
 
 

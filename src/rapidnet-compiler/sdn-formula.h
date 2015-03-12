@@ -576,6 +576,8 @@ public:
 
 	const ConstraintList& GetConstraints() const {return constraints;}
 
+	bool IsEmpty();
+
 	void PrintTemplate() const;
 
 	void PrintInstance(const map<Variable*, int>&) const;
