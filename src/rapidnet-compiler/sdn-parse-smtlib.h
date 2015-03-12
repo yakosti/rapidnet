@@ -19,6 +19,14 @@
 using namespace z3;
 using namespace std;
 
+/* 
+ * *******************************************************************************
+ *                                                                               *
+ *                              DECLARE VARIABLES                                *
+ *                                                                               *
+ * *******************************************************************************
+ */
+
 string parseArithmetic(Arithmetic* a);
 string parseTerm(Term* t);
 string parseFormula(Formula* f);
@@ -26,16 +34,41 @@ string parseConstraint(Constraint* c);
 string parseConnective(Connective* c);
 string parseQuantifier(Quantifier* q);
 
+/* for check-sat */
+struct Pair {
+    int first;
+    string second;
+};
+
 // All seperate variables should have DIFFERENT names
 // (variableName, variableDeclaration)
 std::map<string, string> all_free_variables;
 std::map<string, string> all_bound_variables;
 std::map<string, string> all_predicate_schemas;
 std::map<string, string> all_function_schemas;
+std::map<string, string> all_constants;
 
 // name of var, variable
-std::map<string, Variable*> name_to_rapidnet_free_variable;
-std::map<string, Variable*> name_to_rapidnet_bound_variable;
+std::map<string, Variable*> name_to_rapidnet_variable;
+
+std::map<Variable*, Pair*> temp_map;
+
+/* 
+ * *******************************************************************************
+ *                                                                               *
+ *                              DECLARE VARIABLES                                *
+ *                                                                               *
+ * *******************************************************************************
+ */
+
+
+
+
+
+
+
+
+
 
 /* 
  * *******************************************************************************
@@ -50,9 +83,8 @@ void clearAllVariables() {
 	all_bound_variables.clear();
 	all_predicate_schemas.clear();
 	all_function_schemas.clear();
-
-	name_to_rapidnet_free_variable.clear();
-	name_to_rapidnet_bound_variable.clear();
+	all_constants.clear();
+	name_to_rapidnet_variable.clear();
 }
 
 string IntegerToString(int number) {
@@ -125,28 +157,16 @@ map<Variable*, int> map_substititions(context & c, model m) {
 	map<Variable*, int> variable_map;
     for (int i = 0; i < m.size(); i++) {
         func_decl v = m[i];
-        symbol name = v.name();
-        string namestr = Z3_get_symbol_string(c, name);
+        string namestr = Z3_get_symbol_string(c, v.name());
         string cnamestr = truncate_string_at_exclamation(namestr);
 
         if (v.arity() == 0) { // is a constant 
         	expr value = m.get_const_interp(v);
-        	Variable* rapidnet_var_free = name_to_rapidnet_free_variable[cnamestr];
-        	Variable* rapidnet_var_bound = name_to_rapidnet_bound_variable[cnamestr];
+        	Variable* rapidnet_var = name_to_rapidnet_variable[cnamestr];
         	int myint = -1; //default value
         	Z3_get_numeral_int(c, value, &myint);
-        	if (rapidnet_var_free) variable_map[rapidnet_var_free] = myint; //only add to map if var exists
-        	if (rapidnet_var_bound) variable_map[rapidnet_var_bound] = myint; //only add to map if var exists
-        } else { //not constant
-        	func_interp fi = m.get_func_interp(v);
-        	expr value = fi.else_value();
-        	int myint = -1; //default value
-        	Z3_get_numeral_int(c, value, &myint);
-        	Variable* rapidnet_var = name_to_rapidnet_bound_variable[cnamestr];
-        	if (rapidnet_var) {
-        		variable_map[rapidnet_var] = myint; 
-        	}
-        }
+        	if (rapidnet_var) variable_map[rapidnet_var] = myint; //only add to map if var exists
+        } 
     }
     return variable_map;
 }
@@ -206,18 +226,17 @@ map<Variable*, int> check_sat(const ConsList& clist, const FormList& flist) {
 	for (itf = flist.begin(); itf != flist.end(); itf++) {
 	    Formula* nform = (Formula*)*itf;
 	    string formstr = parseFormula(nform);
-	   
 	   	fcount += 1;
 	    string fcountstr = "f" + IntegerToString(fcount);
-
 	    formula_str += "(assert " + formstr + ")\n";
 	}	
 
 	string fvstr = variables_declaration_to_str(all_free_variables);
 	string pstr = variables_declaration_to_str(all_predicate_schemas);
 	string fstr = variables_declaration_to_str(all_function_schemas);
+	string cstr = variables_declaration_to_str(all_constants);
 	
-	string to_check = fvstr + pstr + fstr + constraint_str + formula_str;
+	string to_check = fvstr + pstr + fstr + cstr + constraint_str + formula_str;
 	cout << "\n Testing if this is satisfiable: \n" << to_check << endl;
 
 	map<Variable*, int> mapsubst = checking_with_z3(to_check);
@@ -225,16 +244,6 @@ map<Variable*, int> check_sat(const ConsList& clist, const FormList& flist) {
 	clearAllVariables();
 	return mapsubst;
 }
-
-
-/* Call only at the end 
- */
-// void write_to_z3(const DerivNodeList& dlist, FormList flist) {
-// 	const DerivNode* deriv = dlist.front();
-// 	const ConstraintsTemplate* contemp = deriv->GetConstraints();
-// 	ConsList clist(1, contemp);
-// 	map<Variable*, int> mapsubst = check_sat(clist, flist);
-// }
 
 
 /* To be removed when everything is build out */
@@ -416,7 +425,7 @@ string parseFreeVariable(Variable* v) {
 
 	//present, return stored variable
 	if (all_free_variables.find(varname) != all_free_variables.end()) return varname;
-	name_to_rapidnet_free_variable[varname] = v;
+	name_to_rapidnet_variable[varname] = v;
 
 	//absent, create and store in hash map
 	switch (vartype) {
@@ -449,7 +458,6 @@ string parseBoundVariable(Variable* v, string qt) {
 
 	//present, return stored variable
 	if (all_bound_variables.find(varname) != all_bound_variables.end()) return varname;
-	name_to_rapidnet_bound_variable[varname] = v; //store mapping 
 
 	//absent, create and store in hash map, but return variable name only
 	switch (vartype) {
@@ -546,14 +554,10 @@ string parseConnective(Connective* c) {
 			return "(or " + leftF + " " + rightF + ")";
 		case Connective::AND:
 			return "(and " + leftF + " " + rightF + ")";
-		case Connective::NEG:
-			return "(not " + leftF + " " + rightF + ")";
 		default:
 			throw std::invalid_argument("Not a valid connective");
 	}
 }
-
-
 
 
 string parseConstraint(Constraint* c) {
@@ -666,8 +670,10 @@ string parseTerm(Term* t) {
 		bool value = ((BoolVal*)t)->GetBoolValue();
 	 	if (value) return "true";
 	 	return "false";
-	} else if (dynamic_cast<StringVal*>(t)) {
+	} else if (dynamic_cast<StringVal*>(t)) { //constants are saved here 
 		string value = ((StringVal*)t)->GetStringValue();
+		string constant_smtlib = "(declare-const " + value + " Int)";
+		all_constants[value] = constant_smtlib;
 		return value;
 	} else if (dynamic_cast<Variable*>(t)) {
 		Variable* v = (Variable*)t;
