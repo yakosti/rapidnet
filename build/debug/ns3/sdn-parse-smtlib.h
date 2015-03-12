@@ -137,16 +137,7 @@ map<Variable*, int> map_substititions(context & c, model m) {
         	Z3_get_numeral_int(c, value, &myint);
         	if (rapidnet_var_free) variable_map[rapidnet_var_free] = myint; //only add to map if var exists
         	if (rapidnet_var_bound) variable_map[rapidnet_var_bound] = myint; //only add to map if var exists
-        } else { //not constant
-        	func_interp fi = m.get_func_interp(v);
-        	expr value = fi.else_value();
-        	int myint = -1; //default value
-        	Z3_get_numeral_int(c, value, &myint);
-        	Variable* rapidnet_var = name_to_rapidnet_bound_variable[cnamestr];
-        	if (rapidnet_var) {
-        		variable_map[rapidnet_var] = myint; 
-        	}
-        }
+        } 
     }
     return variable_map;
 }

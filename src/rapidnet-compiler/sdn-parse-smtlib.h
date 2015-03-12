@@ -34,8 +34,8 @@ std::map<string, string> all_predicate_schemas;
 std::map<string, string> all_function_schemas;
 
 // name of var, variable
-std::map<string, Variable*> name_to_rapidnet_free_variable;
-std::map<string, Variable*> name_to_rapidnet_bound_variable;
+std::map<string, Variable*> name_to_rapidnet_variable;
+//std::map<string, Variable*> name_to_rapidnet_bound_variable;
 
 /* 
  * *******************************************************************************
@@ -51,8 +51,7 @@ void clearAllVariables() {
 	all_predicate_schemas.clear();
 	all_function_schemas.clear();
 
-	name_to_rapidnet_free_variable.clear();
-	name_to_rapidnet_bound_variable.clear();
+	name_to_rapidnet_variable.clear();
 }
 
 string IntegerToString(int number) {
@@ -125,18 +124,15 @@ map<Variable*, int> map_substititions(context & c, model m) {
 	map<Variable*, int> variable_map;
     for (int i = 0; i < m.size(); i++) {
         func_decl v = m[i];
-        symbol name = v.name();
-        string namestr = Z3_get_symbol_string(c, name);
+        string namestr = Z3_get_symbol_string(c, v.name());
         string cnamestr = truncate_string_at_exclamation(namestr);
 
         if (v.arity() == 0) { // is a constant 
         	expr value = m.get_const_interp(v);
-        	Variable* rapidnet_var_free = name_to_rapidnet_free_variable[cnamestr];
-        	Variable* rapidnet_var_bound = name_to_rapidnet_bound_variable[cnamestr];
+        	Variable* rapidnet_var = name_to_rapidnet_variable[cnamestr];
         	int myint = -1; //default value
         	Z3_get_numeral_int(c, value, &myint);
-        	if (rapidnet_var_free) variable_map[rapidnet_var_free] = myint; //only add to map if var exists
-        	if (rapidnet_var_bound) variable_map[rapidnet_var_bound] = myint; //only add to map if var exists
+        	if (rapidnet_var) variable_map[rapidnet_var] = myint; //only add to map if var exists
         } 
     }
     return variable_map;
@@ -407,7 +403,7 @@ string parseFreeVariable(Variable* v) {
 
 	//present, return stored variable
 	if (all_free_variables.find(varname) != all_free_variables.end()) return varname;
-	name_to_rapidnet_free_variable[varname] = v;
+	name_to_rapidnet_variable[varname] = v;
 
 	//absent, create and store in hash map
 	switch (vartype) {
@@ -440,7 +436,6 @@ string parseBoundVariable(Variable* v, string qt) {
 
 	//present, return stored variable
 	if (all_bound_variables.find(varname) != all_bound_variables.end()) return varname;
-	name_to_rapidnet_bound_variable[varname] = v; //store mapping 
 
 	//absent, create and store in hash map, but return variable name only
 	switch (vartype) {
