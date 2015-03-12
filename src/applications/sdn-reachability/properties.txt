@@ -1,0 +1,12 @@
+REACHABLE
+---------
+
+Property 1 (true)
+	// assuming that we define all links to have Cost > 0
+	forall Src Dest Cost (reachable(Src,Dest,Cost) -> Cost>0)
+
+Property 2 (true)
+	forall Src Dest Cost (reachable(Src,Dest,Cost) -> exists Cost1 Mid ( link(Src, Mid, Cost1)) )
+
+Property 3 (False)
+	forall Src Dest Cost ( reachable(Src,Dest,Cost) -> exists Cost1 (link(Src, Dest, Cost1)) )
