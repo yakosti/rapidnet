@@ -35,7 +35,7 @@ std::map<string, string> all_function_schemas;
 
 // name of var, variable
 std::map<string, Variable*> name_to_rapidnet_variable;
-//std::map<string, Variable*> name_to_rapidnet_bound_variable;
+
 
 /* 
  * *******************************************************************************
@@ -50,7 +50,6 @@ void clearAllVariables() {
 	all_bound_variables.clear();
 	all_predicate_schemas.clear();
 	all_function_schemas.clear();
-
 	name_to_rapidnet_variable.clear();
 }
 
@@ -532,8 +531,6 @@ string parseConnective(Connective* c) {
 			return "(or " + leftF + " " + rightF + ")";
 		case Connective::AND:
 			return "(and " + leftF + " " + rightF + ")";
-		case Connective::NEG:
-			return "(not " + leftF + " " + rightF + ")";
 		default:
 			throw std::invalid_argument("Not a valid connective");
 	}
