@@ -1,34 +1,12 @@
 REACHABLE
 ---------
 
-// if for all src, dest, cost > 0
-P1: forall x y c (reachable(x,y,c) -> c > 0)
+Property 1 (true)
+	// assuming that we define all links to have Cost > 0
+	forall Src Dest Cost (reachable(Src,Dest,Cost) -> Cost>0)
 
+Property 2 (true)
+	forall Src Dest Cost (reachable(Src,Dest,Cost) -> exists Cost1 Mid ( link(Src, Mid, Cost1)) )
 
-P2: forall x y c (reachable(x,y,c) -> exists c1 z( link(x,z,c1)) )
-
-P3: (wrong) 
-	forall x y c (reachable(x,y,c) -> exists c1 (link(x,y,c1)))
-
-MAC LEARNING
-------------
-
-P1: forall C Switch (ofconn(C, Switch))
-
-P2: forall C Switch InPort SrcMac (macPort(@C, Switch, InPort, SrcMac) 
-	-> exists C Switch(ofconn(@C, Switch))
-
-P2: forall S Mac Output (flowEntry(@S, Mac, OutPort) 
-	-> 
-	exists S Mac Output (flowEntry(@S, Mac, OutPort)))
-
-P3: (wrong)
-	forall S Mac OutPort (flowMod(@S, Mac, OutPort)) -> exists S Mac OutPort (flowEntry(@S, Mac, OutPort))
-
-
-
-
-
-
-
-
+Property 3 (False)
+	forall Src Dest Cost ( reachable(Src,Dest,Cost) -> exists Cost1 (link(Src, Dest, Cost1)) )
