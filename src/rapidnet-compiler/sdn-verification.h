@@ -76,7 +76,7 @@ bool CheckWholeProp(const Property& prop,
 {
 	NS_LOG_FUNCTION("Check combined predicates...");
 	VarMap vmap;
-	const list<PredicateInstance*>& plist = prop.GetUniPred();
+	const list<PredicateInstance*>& plist = prop.GetExistPred();
 	list<const Tuple*>::const_iterator itt;
 	list<PredicateInstance*>::const_iterator itp;
 	for (itt = tplist.begin();itt != tplist.end();itt++)
@@ -201,23 +201,19 @@ bool CheckExistProp(const Property& prop,
 	const ConstraintsTemplate* cTemp = prop.GetUniCons();
 	ConstraintsTemplate uniCons(*cTemp);
 	uniCons.ReplaceVar(vmap);
-	NS_LOG_DEBUG("Before Simplified:");
-	uniCons.PrintTemplate();
 	//Replace variables with representative ones of the equivalent class
 	list<SimpConstraints*>::iterator its;
 	for (its = slist.begin();its != slist.end();its++)
 	{
 		uniCons.ReplaceVar(**its);
 	}
-	NS_LOG_DEBUG("After Simplified:");
-	uniCons.PrintTemplate();
 	cslist.push_back(&uniCons);
 
-	cout << "cslist contents:" << endl;
-	for (ConsList::iterator itc = cslist.begin();itc != cslist.end();itc++)
-	{
-		(*itc)->PrintTemplate();
-	}
+//	cout << "cslist contents:" << endl;
+//	for (ConsList::iterator itc = cslist.begin();itc != cslist.end();itc++)
+//	{
+//		(*itc)->PrintTemplate();
+//	}
 
 	//Check satisfiability of cslist + flist.
 	NS_LOG_INFO("Check satisfiability of the assumption.");
@@ -233,40 +229,78 @@ bool CheckExistProp(const Property& prop,
 
 	//First find existentially quantified tuples from derivations
 	//of universally quantified tuples
-	map<string, list<const Tuple*> > tlist;
-	list<const Tuple*> ctlist;
-	for (itp = plist.begin();itp != plist.end();itp++)
+	const list<PredicateInstance*>& existPlist = prop.GetExistPred();
+	//TODO: Separate checking process for the case where
+	//existentially quantified predicates does not exist
+	if (existPlist.size() == 0)
 	{
-		//tlist initialization
-		string pName = (*itp)->GetName();
-		tlist.insert(map<string, list<const Tuple*> >::value_type(
-													pName, ctlist));
-	}
+		//Proof the case where there is no
+		//existentially quantified predicate
+		const ConstraintsTemplate* csTemp = prop.GetExistCons();
+		ConstraintsTemplate* newTemp = csTemp->Revert();
+		newTemp->ReplaceVar(vmap);
+		list<SimpConstraints*>::iterator its;
+		for (its = slist.begin();its != slist.end();its++)
+		{
+			newTemp->ReplaceVar(**its);
+		}
 
-	DerivNodeList::const_iterator itdc;
-	for (itdc = dlist.begin();itdc != dlist.end();itdc++)
+		cslist.push_back(newTemp);
+//		cout << "cslist contents:" << endl;
+//		for (ConsList::iterator itc = cslist.begin();itc != cslist.end();itc++)
+//		{
+//			(*itc)->PrintTemplate();
+//		}
+
+		//Check cslist + flist is sat?
+		assignment = check_sat(cslist, flist);
+		delete newTemp;
+		if (assignment.size() > 0)
+		{
+			return false;
+		}
+		else
+		{
+			return true;
+		}
+	}
+	else
 	{
-		(*itdc)->FindSubTuple(plist, tlist);
+		map<string, list<const Tuple*> > tlist;
+		list<const Tuple*> ctlist;
+		for (itp = existPlist.begin();itp != existPlist.end();itp++)
+		{
+			//tlist initialization
+			string pName = (*itp)->GetName();
+			tlist.insert(map<string, list<const Tuple*> >::value_type(
+														pName, ctlist));
+		}
+
+		DerivNodeList::const_iterator itdc;
+		for (itdc = dlist.begin();itdc != dlist.end();itdc++)
+		{
+			(*itdc)->FindSubTuple(existPlist, tlist);
+		}
+
+		//Check all possible combinations
+		map<string, list<const Tuple*> >::const_iterator itmc = tlist.begin();
+		list<const Tuple*> tplist;
+		bool res = CheckRecurExist(prop, tlist, itmc, tplist,
+								   cslist, flist, assignment, slist);
+
+		//If the set of tuples are the instances in existential
+		//quantification, then they provide instantiation of
+		//existentially quantified variables.
+
+		//Release memory allocated to slist;
+		list<SimpConstraints*>::iterator itl;
+		for (itl = slist.begin();itl != slist.end();itl++)
+		{
+			delete (*itl);
+		}
+
+		return res;
 	}
-
-	//Check all possible combinations
-	map<string, list<const Tuple*> >::const_iterator itmc = tlist.begin();
-	list<const Tuple*> tplist;
-	bool res = CheckRecurExist(prop, tlist, itmc, tplist,
-							   cslist, flist, assignment, slist);
-
-	//If the set of tuples are the instances in existential
-	//quantification, then they provide instantiation of
-	//existentially quantified variables.
-
-	//Release memory allocated to slist;
-	list<SimpConstraints*>::iterator itl;
-	for (itl = slist.begin();itl != slist.end();itl++)
-	{
-		delete (*itl);
-	}
-
-	return res;
 }
 
 //Return value: [true: property holds|false: property does not hold]

@@ -49,6 +49,12 @@ DerivNode::UpdateConstraint(ConstraintsTemplate* ctp)
 	ruleConstraints = ctp;
 }
 
+void
+DerivNode::UpdateCumuCons(ConsList& clist)
+{
+	allConstraints = clist;
+}
+
 Obligation
 DerivNode::GetAllObligs() const
 {
@@ -140,6 +146,8 @@ DerivNode::PrintDerivNode() const
 		simpCons.Print();
 		cout << "####################################" << endl;
 	}
+
+	PrintCumuCons();
 }
 
 void
@@ -270,8 +278,11 @@ RecurNode::~RecurNode()
 	}
 }
 
-Dpool::Dpool(const Ptr<DPGraph> dpgraph, const Invariant& inv)
+Dpool::Dpool(const Ptr<DPGraph> dpgraph,
+			 const BaseProperty& baseProp,
+			 const Invariant& inv)
 {
+	NS_LOG_INFO("Creating Dpool...");
 	//Perform topological sorting on the dependency graph
 	const AnnotMap& invariants = inv.GetInv();
 	const TupleNode* head = NULL;
@@ -280,7 +291,6 @@ Dpool::Dpool(const Ptr<DPGraph> dpgraph, const Invariant& inv)
 	MetaListC btlist = mGraph->GetBaseTuples();
 
 	//Create a key in derivations for each tuple node in dpgraph
-	NS_LOG_INFO("Creating Dpool...");
 	const TupleList& tnlist = dpgraph->GetTupleList();
 	TupleList::const_iterator itn;
 	DerivNodeList dlist = DerivNodeList();
@@ -291,15 +301,32 @@ Dpool::Dpool(const Ptr<DPGraph> dpgraph, const Invariant& inv)
 	}
 
 	//Process base tuples
-	//TODO: Handle cases where base tuples have annotations
 	NS_LOG_INFO("Process base tuples...");
 	NS_LOG_DEBUG("Size of MetaList:" << btlist.size());
+	const ConsAnnotMap& baseAnnot = baseProp.GetProp();
 	MetaListC::const_iterator itti;
 	for (itti = btlist.begin();itti != btlist.end();itti++)
 	{
 		list<Variable::TypeCode> tlist = (*itti)->GetSchema();
 		string tpName = (*itti)->GetName();
 		DerivNode* dNode = new DerivNode(tpName, tlist);
+		//Add user-specified constraints if any
+		const Tuple* headTuple = dNode->GetHeadTuple();
+		ConsAnnotMap::const_iterator itc = baseAnnot.find(tpName);
+		if (itc != baseAnnot.end())
+		{
+			const ConsAnnot& cat = itc->second;
+			const PredicateInstance* predInst = cat.first;
+			const ConstraintsTemplate* cts = cat.second;
+			VarMap propMap = headTuple->CreateVarMap(predInst);
+			ConstraintsTemplate* newCons = new ConstraintsTemplate(*cts);
+			newCons->ReplaceVar(propMap);
+			//Update rule constraints
+			dNode->UpdateConstraint(newCons);
+			//Update cumulative constraints
+			ConsList cl(1, newCons);
+			dNode->UpdateCumuCons(cl);
+		}
 		UpdateDerivNode(tpName, dNode);
 	}
 
@@ -319,10 +346,10 @@ Dpool::Dpool(const Ptr<DPGraph> dpgraph, const Invariant& inv)
 
 		//Add the annotation to the node
 		string tpName = headTuple->GetName();
-		const Annotation* inv = invariants.at(tpName);
-		Formula* newInv = inv->second->Clone();
+		const Annotation& inv = invariants.at(tpName);
+		Formula* newInv = inv.second->Clone();
 		const Tuple* tpr = rnode->GetHeadTuple();
-		VarMap vmapInv = tpr->CreateVarMap(inv->first);
+		VarMap vmapInv = tpr->CreateVarMap(inv.first);
 		//TODO: unification with equivalent class representative
 		newInv->VarReplace(vmapInv);
 		rnode->AddInvariant(newInv);
@@ -482,9 +509,9 @@ Dpool::VerifyInvariants(const Invariant& inv) const
 	for (ita = invariant.begin();ita != invariant.end();ita++)
 	{
 		string tpName = ita->first;
-		const Annotation* annot = ita->second;
-		PredicateInstance* predInst = annot->first;
-		Formula* tupleInv = annot->second;
+		const Annotation& annot = ita->second;
+		PredicateInstance* predInst = annot.first;
+		Formula* tupleInv = annot.second;
 
 		const DerivNodeList& dlist = derivations.at(tpName);
 		DerivNodeList::const_iterator itd;
@@ -584,9 +611,9 @@ Dpool::VerifyRecurInv(DerivNodeList::const_iterator curPos,
 	{
 		//A recursive body
 		//Use invariant instead of all its derivations
-		Annotation* bodyInv = ita->second;
-		PredicateInstance* predInst = bodyInv->first;
-		Formula* formInv = bodyInv->second;
+		const Annotation& bodyInv = ita->second;
+		PredicateInstance* predInst = bodyInv.first;
+		Formula* formInv = bodyInv.second;
 
 		VarMap formMap = bodyTuple->CreateVarMap(predInst);
 		Formula* newInv = formInv->Clone();

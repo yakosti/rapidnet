@@ -300,10 +300,14 @@ PredicateInstance::~PredicateInstance()
 /* *************************** CONSTRAINT ************************************** */
 
 Constraint::Constraint(Operator opt, Term* exprL, Term* exprR):
-    op(opt),leftE(exprL),rightE(exprR){}
+    op(opt),leftE(exprL),rightE(exprR)
+{
+	NS_LOG_FUNCTION("Constraint default constructor.");
+}
 
 Constraint::Constraint(const Constraint& cst)
 {
+	NS_LOG_FUNCTION("Constraint copy constructor.");
 	op = cst.op;
 	leftE = cst.leftE->Clone();
 	rightE = cst.rightE->Clone();
@@ -311,17 +315,21 @@ Constraint::Constraint(const Constraint& cst)
 
 Constraint::~Constraint()
 {
+	NS_LOG_FUNCTION("Destruct Constraint...");
 	Variable* var = dynamic_cast<Variable*>(leftE);
 	if (var == NULL)
 	{
 		delete leftE;
 	}
 
+
+
 	var = dynamic_cast<Variable*>(rightE);
 	if (var == NULL)
 	{
 		delete rightE;
 	}
+
 }
 
 Constraint*
@@ -1196,11 +1204,18 @@ ConstraintsTemplate::Revert() const
 
 ConstraintsTemplate::~ConstraintsTemplate()
 {
+	NS_LOG_FUNCTION("Dectruct ConstraintsTemplate...");
 	ConstraintList::iterator it;
 	for (it = constraints.begin(); it != constraints.end(); it++)
 	{
 		delete (*it);
 	}
+}
+
+bool
+ConstraintsTemplate::IsEmpty()
+{
+	return (constraints.size() == 0?true:false);
 }
 
 void

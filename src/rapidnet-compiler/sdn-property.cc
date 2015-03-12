@@ -23,11 +23,11 @@ Property::Property()
 	ProcessUniPred("ePingPongFinish(a)", varMap);
 	//ProcessUniPred("verifyPath(m,n,l)", varMap);
 
-	ProcessUniCons(varMap);
+	//ProcessUniCons(varMap);
 
-	//ProcessExistPred("line(o,p)", varMap);
+	ProcessExistPred("ePing(o,p)", varMap);
 	//ProcessExistPred("link(r,s,t)", varMap);
-	//ProcessExistCons(varMap);
+	ProcessExistCons(varMap);
 }
 
 //TODO: Parse constraints from user input
@@ -42,12 +42,14 @@ Property::ProcessUniCons(const map<string, Variable*>& varMap)
 //
 //	univConsList->AddConstraint(newCons);
 
-	string var1 = "a";
-	Variable* varPtr = varMap.find(var1)->second;
-
-	Constraint* newCons = new Constraint(Constraint::GT, varPtr, new IntVal(6));
-
-	univConsList->AddConstraint(newCons);
+//	string var1 = "a";
+//	Variable* varPtr = varMap.find(var1)->second;
+//
+//	Constraint* newCons = new Constraint(Constraint::GT,
+//										 varPtr,
+//										 new IntVal(6));
+//
+//	univConsList->AddConstraint(newCons);
 }
 
 void
@@ -74,6 +76,24 @@ Property::ProcessExistCons(const map<string, Variable*>& varMap)
 //	Variable* varPtr2 = itm->second;
 //	Constraint* newCons = new Constraint(Constraint::EQ, varPtr1, varPtr2);
 //	existConsList->AddConstraint(newCons);
+
+//	string var1 = "a";
+//	Variable* varPtr = varMap.find(var1)->second;
+//
+//	Constraint* newCons = new Constraint(Constraint::GT,
+//										 varPtr,
+//										 new IntVal(3));
+//
+//	existConsList->AddConstraint(newCons);
+
+	string var1 = "p";
+	Variable* varPtr = varMap.find(var1)->second;
+
+	Constraint* newCons = new Constraint(Constraint::GT,
+										 varPtr,
+										 new IntVal(3));
+
+	existConsList->AddConstraint(newCons);
 }
 
 
@@ -231,6 +251,43 @@ Property::~Property()
 	}
 }
 
+BaseProperty::BaseProperty()
+{
+	propSet = ConsAnnotMap();
+
+//	string predName = "tLink";
+//	int argNum = 2;
+//	PredicateSchema* scheme = new PredicateSchema(predName, argNum);
+//	vector<Term*> args;
+//	for (int i = 0;i < argNum;i++)
+//	{
+//		Variable* newVar = new Variable(Variable::STRING, true);
+//		args.push_back(newVar);
+//	}
+//	//Use index to create formulas;
+//	PredicateInstance* pInst = new PredicateInstance(scheme, args);
+//	IntVal* value = new IntVal(10000);
+//	Constraint* ct = new Constraint(Constraint::EQ, args[0], value);
+//	ConstraintsTemplate* cts = new ConstraintsTemplate();
+//	cts->AddConstraint(ct);
+//
+//	ConsAnnot cat = ConsAnnot(pInst, cts);
+//	propSet.insert(ConsAnnotMap::value_type(predName, cat));
+}
+
+BaseProperty::~BaseProperty()
+{
+	NS_LOG_FUNCTION("Dectruct BaseProperty...");
+	ConsAnnotMap::iterator itm;
+	for (itm = propSet.begin();itm != propSet.end();itm++)
+	{
+		ConsAnnot& cat = itm->second;
+		delete cat.second;
+		delete cat.first;
+	}
+
+}
+
 Invariant::Invariant()
 {
 	invs = AnnotMap();
@@ -248,7 +305,7 @@ Invariant::Invariant()
 //	//Use index to create formulas;
 //	Formula* form;
 //	PredicateInstance* pInst = new PredicateInstance(scheme, args);
-//	Annotation* newAnnot = new Annotation(pInst, form);
+//	Annotation newAnnot = Annotation(pInst, form);
 //	invs.insert(AnnotMap::value_type(predName, newAnnot));
 
 	//  AnnotMap testMap;
@@ -268,9 +325,10 @@ Invariant::~Invariant()
 	AnnotMap::iterator itv;
 	for (itv = invs.begin();itv != invs.end();itv++)
 	{
-		Annotation* annot = itv->second;
-		delete annot->first;
-		delete annot->second;
-		delete annot;
+		Annotation& annot = itv->second;
+		//The order of deletion cannot be reverted,
+		//because Formula refers to variables in PredicateInstance
+		delete annot.second;
+		delete annot.first;
 	}
 }

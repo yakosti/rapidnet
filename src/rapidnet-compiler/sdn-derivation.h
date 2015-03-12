@@ -55,6 +55,8 @@ public:
 
 	void UpdateConstraint(ConstraintsTemplate*);
 
+	void UpdateCumuCons(ConsList&);
+
 	const Tuple* GetHeadTuple() const{return head;}
 
 	const ConsList& GetCumuConsts() const{return allConstraints;}
@@ -127,7 +129,7 @@ class Derivation;
 class Dpool: public RefCountBase
 {
 public:
-	Dpool(const Ptr<DPGraph>, const Invariant&);
+	Dpool(const Ptr<DPGraph>, const BaseProperty&, const Invariant&);
 
 	void ProcessRuleNode(Tuple*,
 		   	   	   	   	 const RuleNode*,
