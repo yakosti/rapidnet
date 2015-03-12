@@ -142,6 +142,12 @@ As suggested [here](http://stackoverflow.com/questions/107701/how-can-i-remove-d
 In the command line, cd into the rapidnet folder. Get the entire path the the NDLog file you want to run `<path-to-file>/<My-NDLog-Program>.olg`. Run 
 
     ./rapidnet/dpcompiler/dpcompile <path-to-file>/<My-NDLog-Program>.olg
+    
+In NDLog Programs, all string constants must be assigned a value larger than 1000 using 
+
+    #define <STR-CONSTANT-NAME> value
+    
+where value > 1000,  so we know it is a string constant. (March 12, 2015)
 
 10) SMT-LIB
 -----------
