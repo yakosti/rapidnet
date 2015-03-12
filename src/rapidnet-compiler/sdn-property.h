@@ -61,10 +61,23 @@ private:
 	ConstraintsTemplate* existConsList;
 };
 
-class BaseProperty;
+typedef pair<PredicateInstance*, ConstraintsTemplate*> ConsAnnot;
+typedef map<string, ConsAnnot> ConsAnnotMap;
+
+class BaseProperty
+{
+public:
+	BaseProperty();
+
+	const ConsAnnotMap& GetProp() const{return propSet;}
+
+	~BaseProperty();
+private:
+	ConsAnnotMap propSet;
+};
 
 typedef pair<PredicateInstance*, Formula*> Annotation;
-typedef map<string, Annotation*> AnnotMap;
+typedef map<string, Annotation> AnnotMap;
 
 class Invariant
 {

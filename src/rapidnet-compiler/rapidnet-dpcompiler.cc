@@ -177,14 +177,15 @@ void compile (string overlogFile, bool provenanceEnabled)
   //Ptr<MiniGraph> miniGraph (new MiniGraph(graphNdlog));
   //miniGraph->PrintGraph();
 
+  //Base properties
+  BaseProperty baseProp = BaseProperty();
   //Recursive invariant
   Invariant inv = Invariant();
-  Ptr<Dpool> dpool (new Dpool(graphNdlog, inv));
-  dpool->PrintDpool();
+  Ptr<Dpool> dpool (new Dpool(graphNdlog, baseProp, inv));
+  //dpool->PrintDpool();
   //dpool->PrintDeriv("ePingPongFinish");
   //User-defined property
   Property p = Property();
-
 
   NS_LOG_DEBUG("Property constructed.");
   //Verify the property
@@ -196,7 +197,7 @@ void compile (string overlogFile, bool provenanceEnabled)
   //const DerivNodeList& dlist = dpool->GetDerivList("advertisements");
   //writeToFile("testing_constraints", dlist); //laykuan testing
 
-  test_check_sat();
+  //test_check_sat();
 
   //Use DerivNode::GetAllObligs() to get all proof obligations
 }
@@ -206,14 +207,12 @@ void compile (string overlogFile, bool provenanceEnabled)
 //NDLog program should have no value as argument of a tuple
 int main (int argc, char** argv)
 {
-  test_parsing();
-
   LogComponentEnable ("RapidNetDPGraph", LOG_LEVEL_FUNCTION);
 //  LogComponentEnable ("DPGraph", LOG_LEVEL_FUNCTION);
   LogComponentEnable ("Formula", LOG_LEVEL_FUNCTION);
-//  LogComponentEnable ("Dpool", LOG_LEVEL_FUNCTION);
+  LogComponentEnable ("Dpool", LOG_LEVEL_FUNCTION);
   LogComponentEnable ("Property", LOG_LEVEL_FUNCTION);
-  LogComponentEnable ("Dpool", LOG_INFO);
+//  LogComponentEnable ("Dpool", LOG_INFO);
 //  LogComponentEnable ("DPGraph", LOG_INFO);
 //  LogComponentEnable ("Formula", LOG_INFO);
 //  LogComponentEnable ("Property", LOG_INFO);
