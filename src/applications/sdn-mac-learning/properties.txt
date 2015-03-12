@@ -1,16 +1,4 @@
-REACHABLE
----------
-
-// if for all src, dest, cost > 0
-P1: forall x y c (reachable(x,y,c) -> c > 0)
-
-
-P2: forall x y c (reachable(x,y,c) -> exists c1 z( link(x,z,c1)) )
-
-P3: (wrong) 
-	forall x y c (reachable(x,y,c) -> exists c1 (link(x,y,c1)))
-
-MAC LEARNING
+PROPERTIES
 ------------
 
 P1: forall C Switch (ofconn(C, Switch))
