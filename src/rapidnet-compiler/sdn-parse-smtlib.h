@@ -19,12 +19,26 @@
 using namespace z3;
 using namespace std;
 
+/* 
+ * *******************************************************************************
+ *                                                                               *
+ *                              DECLARE VARIABLES                                *
+ *                                                                               *
+ * *******************************************************************************
+ */
+
 string parseArithmetic(Arithmetic* a);
 string parseTerm(Term* t);
 string parseFormula(Formula* f);
 string parseConstraint(Constraint* c);
 string parseConnective(Connective* c);
 string parseQuantifier(Quantifier* q);
+
+/* for check-sat */
+struct Pair {
+    int first;
+    string second;
+};
 
 // All seperate variables should have DIFFERENT names
 // (variableName, variableDeclaration)
@@ -36,6 +50,24 @@ std::map<string, string> all_constants;
 
 // name of var, variable
 std::map<string, Variable*> name_to_rapidnet_variable;
+
+std::map<Variable*, Pair*> temp_map;
+
+/* 
+ * *******************************************************************************
+ *                                                                               *
+ *                              DECLARE VARIABLES                                *
+ *                                                                               *
+ * *******************************************************************************
+ */
+
+
+
+
+
+
+
+
 
 
 /* 
@@ -194,10 +226,8 @@ map<Variable*, int> check_sat(const ConsList& clist, const FormList& flist) {
 	for (itf = flist.begin(); itf != flist.end(); itf++) {
 	    Formula* nform = (Formula*)*itf;
 	    string formstr = parseFormula(nform);
-	   
 	   	fcount += 1;
 	    string fcountstr = "f" + IntegerToString(fcount);
-
 	    formula_str += "(assert " + formstr + ")\n";
 	}	
 
@@ -214,16 +244,6 @@ map<Variable*, int> check_sat(const ConsList& clist, const FormList& flist) {
 	clearAllVariables();
 	return mapsubst;
 }
-
-
-/* Call only at the end 
- */
-// void write_to_z3(const DerivNodeList& dlist, FormList flist) {
-// 	const DerivNode* deriv = dlist.front();
-// 	const ConstraintsTemplate* contemp = deriv->GetConstraints();
-// 	ConsList clist(1, contemp);
-// 	map<Variable*, int> mapsubst = check_sat(clist, flist);
-// }
 
 
 /* To be removed when everything is build out */
@@ -538,8 +558,6 @@ string parseConnective(Connective* c) {
 			throw std::invalid_argument("Not a valid connective");
 	}
 }
-
-
 
 
 string parseConstraint(Constraint* c) {

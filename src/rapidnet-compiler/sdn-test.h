@@ -278,10 +278,10 @@ void test_check_sat() {
   FormList flist4 = create_formula_list_four();
   map<Variable*, int> mymap4 = check_sat(clist4, flist4);
 
-  // cout << "\n================= Testing Check Sat - UserFunction ========================\n";
-  // ConsList clist5 = create_constraint_list_five();
-  // FormList flist5;
-  // map<Variable*, int> mymap5 = check_sat(clist5, flist5);
+  cout << "\n================= Testing Check Sat - UserFunction ========================\n";
+  ConsList clist5 = create_constraint_list_five();
+  FormList flist5;
+  map<Variable*, int> mymap5 = check_sat(clist5, flist5);
 
   cout << "\n================= Testing Check Sat - QuantifyPredicate ===================\n";
   ConsList clist6;
@@ -691,6 +691,8 @@ void test_parsing() {
   testBoundPredicate();
   quantifier__function_child_younger_than_mother();
   nested_function_check();
+  
+  test_check_sat();
 }
 
 /*

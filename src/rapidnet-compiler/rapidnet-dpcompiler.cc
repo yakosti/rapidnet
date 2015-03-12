@@ -217,7 +217,7 @@ int main (int argc, char** argv)
 //  LogComponentEnable ("Formula", LOG_INFO);
 //  LogComponentEnable ("Property", LOG_INFO);
 
-  //test_parsing();
+  test_parsing();
 
   string overlogFile;
   string baseoverlogFile = DEFAULT_RN_APP_BASE;
