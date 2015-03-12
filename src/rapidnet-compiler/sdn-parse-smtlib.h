@@ -32,6 +32,7 @@ std::map<string, string> all_free_variables;
 std::map<string, string> all_bound_variables;
 std::map<string, string> all_predicate_schemas;
 std::map<string, string> all_function_schemas;
+std::map<string, string> all_constants;
 
 // name of var, variable
 std::map<string, Variable*> name_to_rapidnet_variable;
@@ -50,6 +51,7 @@ void clearAllVariables() {
 	all_bound_variables.clear();
 	all_predicate_schemas.clear();
 	all_function_schemas.clear();
+	all_constants.clear();
 	name_to_rapidnet_variable.clear();
 }
 
@@ -202,8 +204,9 @@ map<Variable*, int> check_sat(const ConsList& clist, const FormList& flist) {
 	string fvstr = variables_declaration_to_str(all_free_variables);
 	string pstr = variables_declaration_to_str(all_predicate_schemas);
 	string fstr = variables_declaration_to_str(all_function_schemas);
+	string cstr = variables_declaration_to_str(all_constants);
 	
-	string to_check = fvstr + pstr + fstr + constraint_str + formula_str;
+	string to_check = fvstr + pstr + fstr + cstr + constraint_str + formula_str;
 	cout << "\n Testing if this is satisfiable: \n" << to_check << endl;
 
 	map<Variable*, int> mapsubst = checking_with_z3(to_check);
@@ -649,8 +652,10 @@ string parseTerm(Term* t) {
 		bool value = ((BoolVal*)t)->GetBoolValue();
 	 	if (value) return "true";
 	 	return "false";
-	} else if (dynamic_cast<StringVal*>(t)) {
+	} else if (dynamic_cast<StringVal*>(t)) { //constants are saved here 
 		string value = ((StringVal*)t)->GetStringValue();
+		string constant_smtlib = "(declare-const " + value + " Int)";
+		all_constants[value] = constant_smtlib;
 		return value;
 	} else if (dynamic_cast<Variable*>(t)) {
 		Variable* v = (Variable*)t;
