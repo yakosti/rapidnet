@@ -8,7 +8,7 @@ forall Switch Mac_A OutPort (
 
 	->
 
-	exists Nei  DstMac
+	exists Nei DstMac
 		packet(@Switch, Nei, Mac_A, DstMac) //received packet from A
 		OR
 		packet(@Nei, Switch, Mac_A, DstMac) //forward packet sourced from from A
@@ -17,12 +17,17 @@ forall Switch Mac_A OutPort (
 
 2. @ End-host: Forall: Have received a frame B that is not destined to end-host A -> SW does not have a routing entry for B's dest address
 
-	
+forall Switch Nei Mac_A Mac_B
+	packet(@Switch, Nei, Mac_A, Mac_B)
 
+	->
+
+	not exists Outport 
+		flowEntry(@Switch, Mac_B, OutPort)
 
 3. @ SW: Not exist a routing entry to MAC address A -> never have received/forwarded a packet sourced from A
 
-forall Switch Mac_A OutPort 
+forall Switch Mac_A OutPort (
 	not flowEntry(@Switch, MAC_A, OutPort)
 
 	->
@@ -31,6 +36,6 @@ forall Switch Mac_A OutPort
 		not packet(@Switch, Nei, Mac_A, DstMac) //received packet from A
 		AND
 		not packet(@Nei, Switch, Mac_A, DstMac) //forward packet sourced from from A
-
+)
 
 
