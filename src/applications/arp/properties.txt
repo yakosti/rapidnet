@@ -13,6 +13,7 @@ forall Host IP_A Mac_A DstIP DstMac(
 
 2. Forall: Send a broadcast ARP message for IP A -> no entry that maps IP A to a MAC address
 
+(NEED FIXING)
 forall Switch Controller Port SrcMac SrcIP Mac_A IP_A (
 	packetOut(@Switch, Controller, Port, Pkt), 
 	PktLoad1 := f_empty(),
@@ -32,7 +33,6 @@ forall Switch Controller Port SrcMac SrcIP Mac_A IP_A (
 
 
 3. Forall: have a map between IP A and MAC M -> either A has responded to an ARP request or A has sent a broadcast ARP request. 
-
 
 forall Controller, IP_A, Mac_A (
 	arpMapping(@Controller, IP_A, Mac_A)
