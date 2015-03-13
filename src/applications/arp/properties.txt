@@ -26,7 +26,7 @@ forall Switch Controller Port SrcMac SrcIP Mac_A IP_A,
           							f_prepend(IP_A, 
           								f_prepend(Mac_A, f_empty())))))))))
      -> 
-     forall IP, Mac, (arpMapping(Controller, IP, Mac) != arpMapping(@Controller, IP_A, Mac_A))
+     forall IP, Mac, ( (Mac!=Mac_A) -> (arpMapping(Controller,IP,Mac)!=arpMapping(@Controller,IP_A,Mac_A)) )
 
 
 
@@ -35,12 +35,11 @@ forall Switch Controller Port SrcMac SrcIP Mac_A IP_A,
 	or (@Host) A has sent a broadcast ARP request
 
 forall Controller, IP_A, Mac_A,
-	arpMapping(@Controller, IP_A, Mac_A) 
+	arpMapping(Controller, IP_A, Mac_A) 
 	->
 	exists Host, SrcIP, SrcMac, DstIP, DstMac,
-		arpReply(Host, SrcIP, SrcMac, IP_A, Mac_A) //responded to ARP request sent by A
-		OR
-		arpRequest(Host, Ip_A, Mac_A, DstIP, DstMac) // A has sent a broadcast request 
+		arpReply(Host, SrcIP, SrcMac, IP_A, Mac_A) **responded to ARP request sent by A** OR
+		arpRequest(Host, Ip_A, Mac_A, DstIP, DstMac) **A has sent a broadcast request** 
 
 
 
