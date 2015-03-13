@@ -35,7 +35,7 @@ forall Switch Controller Port SrcMac SrcIP Mac_A IP_A (
 
 	-> 
 
-	not exists arpMapping(@Controller, IP_A, Mac_A) 
+	not arpMapping(@Controller, IP_A, Mac_A) 
 )
 
 
