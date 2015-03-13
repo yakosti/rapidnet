@@ -16,7 +16,7 @@ forall Switch Mac_A OutPort (
 2. @ End-host: Forall: Have received a frame B that is not destined to end-host A -> SW does not have a routing entry for B's dest address
 
 forall Switch Nei Mac_A Mac_B Outport
-	packet(@Switch, Nei, Mac_A, Mac_B)
+	packet(@Switch, Nei, Mac_A, Mac_B) AND (Mac_A != Mac_B)
 	->
 	not flowEntry(@Switch, Mac_B, OutPort)
 
