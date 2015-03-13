@@ -14,8 +14,8 @@ forall Host1, IP_A, Mac_A, DstIP, DstMac,
 	@(Controller) no entry that maps IP A to a MAC address
 
 (NEED FIXING)
-forall Switch Controller Port SrcMac SrcIP Mac_A IP_A,
-   packetOut(@Switch, Controller, Port, 
+forall Switch, Controller, Port, SrcMac, SrcIP, Mac_A, IP_A,
+   packetOut(Switch, Controller, Port, 
  	   f_prepend(SrcIP,
           	f_prepend(DstIp,
           		f_prepend(ARP_TYPE,
