@@ -49,9 +49,10 @@ forall Controller, IP_A, Mac_A (
 
 	->
 
-	arpReply(@Host, SrcIP, SrcMac, DstIP_A, DstMac_A) //responded to ARP request sent by A
+	exists Host, SrcIP, SrcMac, DstIP, DstMac
+	arpReply(@Host, SrcIP, SrcMac, IP_A, Mac_A) //responded to ARP request sent by A
 	OR
-	arpRequest(@Host, SrcIp_A, SrcMac_A, DstIP, DstMac)
+	arpRequest(@Host, Ip_A, Mac_A, DstIP, DstMac)
 	// A has sent a broadcast request 
 )
 
