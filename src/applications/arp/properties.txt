@@ -2,8 +2,7 @@
 |  ARP  |
 ---------
 
-1. Forall: (@Host1) receive a ARP response for IP A 
-	-> 
+1. Forall: (@Host1) receive a ARP response for IP A -> 
 	(@Host2) have sent a broadcast ARP request message for IP A. 
 
 forall Host1, IP_A, Mac_A, DstIP, DstMac,
@@ -11,7 +10,8 @@ forall Host1, IP_A, Mac_A, DstIP, DstMac,
 	-> exists Host2, SrcIP, SrcMac, arpRequest(Host2, SrcIp, SrcMac, IP_A, Mac_A)
 
 
-2. Forall: (@Switch)Send a broadcast ARP message for IP A -> @(Controller) no entry that maps IP A to a MAC address
+2. Forall: (@Switch)Send a broadcast ARP message for IP A -> 
+	@(Controller) no entry that maps IP A to a MAC address
 
 (NEED FIXING)
 forall Switch Controller Port SrcMac SrcIP Mac_A IP_A,
@@ -26,10 +26,7 @@ forall Switch Controller Port SrcMac SrcIP Mac_A IP_A,
           							f_prepend(IP_A, 
           								f_prepend(Mac_A, f_empty())))))))))
      -> 
-	not arpMapping(@Controller, IP_A, Mac_A) 
-	arpMapping(@Controller, IP, MAC) -> IP_A
-
-
+     forall IP, Mac, (arpMapping(Controller, IP, Mac) != arpMapping(@Controller, IP_A, Mac_A))
 
 
 
