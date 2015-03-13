@@ -3,22 +3,29 @@ ARP
 
 1. Forall: receive a ARP response for IP A -> have sent a broadcast ARP request message for IP A. 
 
-forall Host IP_A Mac_A DstIP DstMac(
+forall Host IP_A Mac_A DstIP DstMac,
 	arpReply(@Host, IP_A, Mac_A, DstIP, DstMac)
-	->
-	exists SrcIP, SrcMac (
-		arpRequest(@Host, SrcIp, SrcMac, IP_A, Mac_A),
-	)
-)
+	-> exists Host', SrcIP, SrcMac, arpRequest(@Host', SrcIp, SrcMac, IP_A, Mac_A)
+
 
 2. Forall: Send a broadcast ARP message for IP A -> no entry that maps IP A to a MAC address
 
 (NEED FIXING)
-forall Switch Controller Port SrcMac SrcIP Mac_A IP_A (
-	packetOut(@Switch, Controller, Port, f_prepend(SrcIP,f_prepend(DstIp,f_prepend(ARP_TYPE,f_prepend(ARP_REPLY,f_prepend(SrcIp,f_prepend(SrcMac,f_prepend(IP_A,f_prepend(IP_A, f_prepend(Mac_A, f_empty())))))))))
-	-> 
+forall Switch Controller Port SrcMac SrcIP Mac_A IP_A,
+   packetOut(@Switch, Controller, Port, 
+ 	   f_prepend(SrcIP,
+          	f_prepend(DstIp,
+          		f_prepend(ARP_TYPE,
+          			f_prepend(ARP_REPLY,
+          				f_prepend(SrcIp,
+          					f_prepend(SrcMac,
+          						f_prepend(IP_A,
+          							f_prepend(IP_A, 
+          								f_prepend(Mac_A, f_empty())))))))))
+     -> 
 	not arpMapping(@Controller, IP_A, Mac_A) 
-)
+	arpMapping(@Controller, IP, MAC) -> IP_A<>
+
 
 
 
