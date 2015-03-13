@@ -15,7 +15,9 @@ forall Switch Mac_A OutPort (
 )
 
 
-??
+2. @ End-host: Forall: Have received a frame B that is not destined to end-host A -> SW does not have a routing entry for B's dest address
+
+	
 
 
 3. @ SW: Not exist a routing entry to MAC address A -> never have received/forwarded a packet sourced from A
