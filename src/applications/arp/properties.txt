@@ -1,14 +1,17 @@
-ARP
----
+---------
+|  ARP  |
+---------
 
-1. Forall: receive a ARP response for IP A -> have sent a broadcast ARP request message for IP A. 
+1. Forall: (@Host1) receive a ARP response for IP A 
+	-> 
+	(@Host2) have sent a broadcast ARP request message for IP A. 
 
-forall Host IP_A Mac_A DstIP DstMac,
-	arpReply(@Host, IP_A, Mac_A, DstIP, DstMac)
-	-> exists Host', SrcIP, SrcMac, arpRequest(@Host', SrcIp, SrcMac, IP_A, Mac_A)
+forall Host1, IP_A, Mac_A, DstIP, DstMac,
+	arpReply(Host1, IP_A, Mac_A, DstIP, DstMac)
+	-> exists Host2, SrcIP, SrcMac, arpRequest(Host2, SrcIp, SrcMac, IP_A, Mac_A)
 
 
-2. Forall: Send a broadcast ARP message for IP A -> no entry that maps IP A to a MAC address
+2. Forall: (@Switch)Send a broadcast ARP message for IP A -> @(Controller) no entry that maps IP A to a MAC address
 
 (NEED FIXING)
 forall Switch Controller Port SrcMac SrcIP Mac_A IP_A,
@@ -24,23 +27,24 @@ forall Switch Controller Port SrcMac SrcIP Mac_A IP_A,
           								f_prepend(Mac_A, f_empty())))))))))
      -> 
 	not arpMapping(@Controller, IP_A, Mac_A) 
-	arpMapping(@Controller, IP, MAC) -> IP_A<>
+	arpMapping(@Controller, IP, MAC) -> IP_A
 
 
 
 
 
-3. Forall: have a map between IP A and MAC M -> either A has responded to an ARP request or A has sent a broadcast ARP request. 
+3. Forall: (@Controller )have a map between IP A and MAC A -> 
+	either (@Host) A has responded to an ARP request 
+	or (@Host) A has sent a broadcast ARP request
 
-forall Controller, IP_A, Mac_A (
-	arpMapping(@Controller, IP_A, Mac_A)
+forall Controller, IP_A, Mac_A,
+	arpMapping(@Controller, IP_A, Mac_A) 
 	->
-	exists Host, SrcIP, SrcMac, DstIP, DstMac (
-		arpReply(@Host, SrcIP, SrcMac, IP_A, Mac_A) //responded to ARP request sent by A
+	exists Host, SrcIP, SrcMac, DstIP, DstMac,
+		arpReply(Host, SrcIP, SrcMac, IP_A, Mac_A) //responded to ARP request sent by A
 		OR
-		arpRequest(@Host, Ip_A, Mac_A, DstIP, DstMac) // A has sent a broadcast request 
-	)
-)
+		arpRequest(Host, Ip_A, Mac_A, DstIP, DstMac) // A has sent a broadcast request 
+
 
 
 
