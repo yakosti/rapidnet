@@ -7,21 +7,24 @@ Learning Bridge
 
 forall Switch, Mac_A, OutPort, flowEntry(Switch, MAC_A, OutPort) ->
 	exists Nei, DstMac, 
-		packet(Switch, Nei, Mac_A, DstMac) **received packet from A** OR
-		packet(Nei, Switch, Mac_A, DstMac) **forward packet sourced from from A**
+		packet(Switch, Nei, Mac_A, DstMac) **received packet from A** 
+		OR packet(Nei, Switch, Mac_A, DstMac) **forward packet sourced from from A**
 
 
 2. Forall: (@End-host) Have received a frame B that is not destined to end-host A 
         -> (@Switch) Switch does not have a routing entry for B's dest address
 
-forall Switch, Nei, Mac_A, Mac_B, Outport, packet(Switch, Nei, Mac_A, Mac_B) AND (Mac_A != Mac_B) ->
-	forall Mac, (Mac != Mac_B) AND ((flowEntry(Switch, Mac, Outport) != flowEntry(Switch, Mac_B, OutPort))
+forall Switch, Nei, Mac_A, Mac_B, Outport, 
+	Mac_A != Mac_B ->
+		packet(Switch, Nei, Mac_A, Mac_B) ->
+		forall Mac, ( (Mac != Mac_B) -> ((flowEntry(Switch, Mac, Outport) != flowEntry(Switch, Mac_B, OutPort)) )
 
 3. (@Switch) Not exist a routing entry to MAC address A -> (@Switch) never have received/forwarded a packet sourced from A
       
 forall Switch, Mac_A, OutPort, Nei, DstMac, Mac,
-	(Mac != Mac_A) AND (flowEntry(Switch, Mac, Outport) != flowEntry(@Switch, Mac_A, OutPort))
-	->
-	(packet(Switch, Nei, Mac, DstMac) != packet(@Switch, Nei, Mac_A, DstMac)) **received packet from A** AND
-	(packet(@Nei, Switch, Mac_A, DstMac) != packet(@Nei, Switch, Mac_A, DstMac)) **forward packet sourced from from A**
+	(Mac!=Mac_A) -> 
+		(flowEntry(Switch,Mac,Outport) != flowEntry(@Switch,Mac_A,OutPort)) 
+		->
+		(packet(Switch,Nei,Mac,DstMac) != packet(Switch,Nei,Mac_A,DstMac)) **received packet from A** 
+		AND (packet(Nei,Switch,Mac_A,DstMac) != packet(Nei,Switch,Mac_A,DstMac)) **forward packet sourced from from A**
 
