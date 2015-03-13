@@ -5,6 +5,8 @@ Learning Bridge
 	OR (@Nei) have forwarded a frame source from A
 (Assumptions: no spoofing, no changing it to a frame that has source MAC address A)
 
+QUESTION: IS THE SWITCH THE SAME IN THE ANTECEDENT AND CONSEQUENT?
+
 forall Switch, Mac_A, OutPort, flowEntry(Switch, MAC_A, OutPort) ->
 	exists Nei, DstMac, 
 		packet(Switch, Nei, Mac_A, DstMac) **received packet from A** 
@@ -20,7 +22,8 @@ forall Switch, Nei, Mac_A, Mac_B, Outport,
 		forall Mac, ( (Mac != Mac_B) -> ((flowEntry(Switch, Mac, Outport) != flowEntry(Switch, Mac_B, OutPort)) )
 
 3. (@Switch) Not exist a routing entry to MAC address A -> (@Switch) never have received/forwarded a packet sourced from A
-      
+QUESTION: IS THE SWITCH THE SAME IN THE ANTECEDENT AND CONSEQUENT? 
+
 forall Switch, Mac_A, OutPort, Nei, DstMac, Mac,
 	(Mac!=Mac_A) -> 
 		(flowEntry(Switch,Mac,Outport) != flowEntry(@Switch,Mac_A,OutPort)) 
