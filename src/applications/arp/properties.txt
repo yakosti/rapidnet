@@ -8,14 +8,6 @@ forall Host IP_A Mac_A DstIP DstMac(
 	->
 	exists SrcIP, SrcMac (
 		arpRequest(@Host, SrcIp, SrcMac, IP_A, Mac_A),
-		PktLoad1 := f_empty(),
-		PktLoad2 := f_prepend(Mac_A, PktLoad1),
-		PktLoad3 := f_prepend(IP_A, PktLoad2),
-		PktLoad4 := f_prepend(SrcMac, PktLoad3),
-		PktLoad5 := f_prepend(SrcIp, PktLoad4),
-		PktLoad6 := f_prepend(ARP_REQUEST, PktLoad5),
-		PktLoad := f_prepend(ARP_TYPE, PktLoad6),
-		Dst := BROADCAST.
 	)
 )
 
@@ -48,8 +40,7 @@ forall Controller, IP_A, Mac_A (
 	exists Host, SrcIP, SrcMac, DstIP, DstMac (
 		arpReply(@Host, SrcIP, SrcMac, IP_A, Mac_A) //responded to ARP request sent by A
 		OR
-		arpRequest(@Host, Ip_A, Mac_A, DstIP, DstMac)
-		// A has sent a broadcast request 
+		arpRequest(@Host, Ip_A, Mac_A, DstIP, DstMac) // A has sent a broadcast request 
 	)
 )
 
