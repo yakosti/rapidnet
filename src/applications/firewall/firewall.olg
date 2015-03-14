@@ -1,0 +1,112 @@
+// DECLARE PREDICATES
+// ===================
+// 
+// Constants
+// ---------
+// TRUSTED_PORT
+// UNTRUSTED_PORT
+//
+// A packet from host Src appeared on Switch via SrcPort and is to be send to Dst
+// --------------------------------------------------------------------------------------------
+// pktIn(@Switch, Src, SrcPort, Dst)  
+//  
+// a packet sent by Src via PortSrc was received from Switch at Dst via PortDst
+// -------------------------------------------------------
+// pktReceived(@Dst, PortDst, Src, PortSrc, Switch) 
+//
+// relation table entry: packet sent from host Src via port SrcPort is forwarded by Switch
+// -------------------------------------------------------
+// forwardingEntry(@Switch, Src, SrcPort, Dst) to host DST.
+//
+// relation table entry in controller memory: switch and trusted Host 
+// -------------------------------------------------------
+// trustedControllerMemory(@Controller, Switch, Host) 
+//
+// Ok for the switch to forward packets from Src via PortIn to Dst via PortOut
+// -------------------------------------------------------
+// perFlowRule(@Switch, Src, SrcPort, Dst, DstPort)
+//  
+// Stupid Switch asks the Smart controller is this host Src is trusted on Switch
+// pktFromSwitch(@Controller, Switch, Src)
+
+
+
+// ************************************************* //
+
+#DEFINE TRUSTED_PORT
+#DEFINE UNTRUSTED_PORT
+
+// a packet from a trusted host via TRUSTED_PORT appeared on switch without a forwarding rule
+// we know its from a trusted host since it came via TRUSTED_PORT
+// forward packet to untrusted hosts
+pktReceived(@Dst, UNTRUSTED_PORT, Src, TRUSTED_PORT, Switch)  :- 
+	pktIn(@Switch, Src, Dst, TRUSTED_PORT),
+
+// a packet from a trusted host appeared on switch without a forwarding rule
+// we know its from a trusted host since it came via TRUSTED_PORT
+// Insert the target of the packet into trusted controller memory
+trustedControllerMemory(@Controller, Switch, Dst) :-
+	pktReceived(@Dst, UNTRUSTED_PORT, Src, TRUSTED_PORT, Switch).
+
+// ************************************************* //
+
+// a packet from a trusted host appeared on switch without a forwarding rule
+// we know its from a trusted host since it came via TRUSTED_PORT
+// Insert a per-flow rule to forward future packets 
+perFlowRule(@Switch, Src, TRUSTED_PORT, Dst, UNTRUSTED_PORT) :-
+	trustedControllerMemory(@Controller, Switch, Dst), 
+	pktIn(@Switch, Src, TRUSTED_PORT, Dst),
+
+// ************************************************* //
+
+// a packet from trusted hosts with a forwarding rule
+pktReceived(@Dst, PortDst, Src, TRUSTED_PORT, Switch) :- 
+ 	pktIn(@Switch, Src, TRUSTED_PORT, Dst),
+	perFlowRule(@Switch, Src, TRUSTED_PORT, Dst, PortDst).
+
+// ************************************************* //
+
+// Packet from unstrusted host appeared on switch
+// Send it to the controller to check if it is trused
+pktFromSwitch(@Controller, Switch, Src, UNTRUSTED_PORT, Dst) :- 
+	pktIn(@Switch, Src, UNTRUSTED_PORT, Dst).
+
+// Packet from untrusted host appeared on switch
+// the controller checked, and tells the switch the Src is trusted
+// Controller tells the switch it can forward the packet to the trusted hosts
+//  	by inserting a per flow rule into the swtich for that host
+perFlowRule(@Switch, Src, UNTRUSTED_PORT, Dst, TRUSTED_PORT) :-  // installs a flow rule on Switch
+	pktFromSwitch(@Controller, Switch, Src, UNTRUSTED_PORT, Dst), //controller received packet from switch
+	trustedControllerMemory(@Controller, Switch, Src)  // Controller knows that Switch trusts Src
+
+// ************************************************* //
+
+// (previous) Switch now has perFlowRule from an untrusted host, so it forst the packet to the target trusted host
+// (current) A packet from untrusted hosts with a forwarding rule also falls into this category
+pktReceived(@Dst, TRUSTED_PORT, Src, UNTRUSTED_POST, Switch) :-
+	perFlowRule(@Switch, Src, UNTRUSTED_PORT, Dst, TRUSTED_PORT),
+ 	pktIn(@Switch, Src, UNTRUSTED_PORT, Dst).
+
+// ************************************************* //
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
