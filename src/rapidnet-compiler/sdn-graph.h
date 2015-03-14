@@ -27,12 +27,16 @@ using namespace std;
 using namespace ns3;
 using namespace rapidnet_compiler;
 
+class CircleNode;
+
 /*
  * Class tuple represents the schema of tuples in NDLog program
  */
 class Tuple
 {
 public:
+	Tuple(string, int);
+
 	Tuple(ParseFunctor*);
 
 	Tuple(string, list<Variable::TypeCode>);
@@ -42,6 +46,7 @@ public:
 
 	//Self mapped to argument tuple
 	VarMap CreateVarMap(const Tuple*) const;
+
 
 	//Predicate mapped to self
 	VarMap CreateVarMap(const PredicateInstance*) const;
@@ -75,6 +80,8 @@ private:
 class Node
 {
 public:
+	virtual string GetName() const =0;
+
 	virtual void PrintNode() const =0;
 
 	virtual ~Node(){}
@@ -87,7 +94,7 @@ public:
 
 	const ConstraintList& GetConstraints() const {return cTemp->GetConstraints();}
 
-	const ConstraintsTemplate* GetConsTemp() const {return cTemp;}
+	ConstraintsTemplate* GetConsTemp() {return cTemp;}
 
 	void UpdateUnif(Variable*, Variable*);
 
@@ -133,6 +140,24 @@ private:
 	Tuple* tuple;
 };
 
+class CircleNode: public Node
+{
+public:
+	CircleNode(const Tuple*, const AnnotMap&);
+
+	string GetName() const {return tuple->GetName();}
+
+	Tuple* GetTuple() {return tuple;}
+
+	virtual void PrintNode() const;
+
+	~CircleNode();
+private:
+	Tuple* tuple;
+	//TODO: Add formula* to class Node
+	Formula* anntProp;
+};
+
 /*
  * MetaNode: a logical node that wraps TupleNodes of the same predicate
  */
@@ -157,22 +182,45 @@ public:
 	list<TupleNode*> bodyTuples;
 };
 
+class NewMetaNode: public Node
+{
+public:
+	NewMetaNode(string);
+
+	NewMetaNode(MetaNode*&);
+
+	string GetName() const {return predName;}
+
+	void AddHeadTuple(Node*);
+
+	void AddBodyTuple(Node*);
+
+	void PrintNode() const;
+
+public:
+	string predName;
+	list<Node*> headTuples; //Allow CircleNode
+	list<Node*> bodyTuples;
+};
+
+//TODO: Convert TupleListC back to const
 typedef list<TupleNode*> TupleList;
 typedef list<RuleNode*> RuleList;
 typedef list<MetaNode*> MetaList;
-typedef list<const TupleNode*> TupleListC;
-typedef list<const RuleNode*> RuleListC;
-typedef list<const MetaNode*> MetaListC;
-typedef map<const RuleNode*, TupleListC> RBMap;//Mapping from the rule node to bodies
-typedef map<const RuleNode*, MetaListC> RMBMap;//Mapping from the rule node to bodies
-typedef map<const RuleNode*, const TupleNode*> RHMap;//Mapping from the rule node to the head
-typedef map<const RuleNode*, const MetaNode*> RMHMap;//Mapping from the rule node to the head
-typedef map<const TupleNode*, RuleListC> TRMap;
-typedef map<const MetaNode*, RuleListC> MTRMap;
+typedef list<TupleNode*> TupleListC;
+typedef list<RuleNode*> RuleListC;
+typedef list<MetaNode*> MetaListC;
+typedef map<RuleNode*, TupleListC> RBMap;//Mapping from the rule node to bodies
+typedef map<RuleNode*, MetaListC> RMBMap;//Mapping from the rule node to bodies
+typedef map<RuleNode*, TupleNode*> RHMap;//Mapping from the rule node to the head
+typedef map<RuleNode*, MetaNode*> RMHMap;//Mapping from the rule node to the head
+typedef map<TupleNode*, RuleListC> TRMap;
+typedef map<MetaNode*, RuleListC> MTRMap;
 
 class DPGraph: public RefCountBase
 {
 	friend class MiniGraph;
+	friend class NewDPGraph;
 
 public:
 	//Rule format: head :- body1, body2,...bodyn, cstraint1, cstraint2...
@@ -180,9 +228,9 @@ public:
 
 	const TupleList& GetTupleList() const {return tupleNodes;}
 
-	const TupleListC& GetBodyTuples(const RuleNode*) const;
+	const TupleListC& GetBodyTuples(RuleNode*) const;
 
-	const TupleNode* GetHeadTuple(const RuleNode*) const;
+	const TupleNode* GetHeadTuple(RuleNode*) const;
 
 	void ProcessRule(OlContext::Rule*);
 
@@ -239,24 +287,50 @@ private:
 };
 
 
-class MiniGraph: public RefCountBase
+//TODO: NewDPGraph will destroy the old DPGraph
+class NewDPGraph: public RefCountBase
 {
 public:
-	MiniGraph(Ptr<DPGraph>);
+	NewDPGraph(Ptr<DPGraph>, const Invariant&);
 
-	//Topological sorting on the dependency graph
-	//in order to obtain an ordered list of rule nodes for processing.
-	pair<RuleListC, RuleListC> TopoSort(const AnnotMap&) const;
+	void Print();
 
-	MetaListC GetBaseTuples() const;
-
-	void PrintGraph() const;
+	~NewDPGraph();
 
 private:
-	RMHMap outEdgeRM;	//Outbound edges of rules to head tuples
-	RMBMap inEdgesRM;	//Inbound edges of rules from body tuples
-	MTRMap outEdgesMT;	//Outbound edges of body tuples to rules
-	MTRMap inEdgesMT;	//Inbound edges of head tuples from rules
+	TupleList tupleNodes;
+	list<CircleNode*> circleNodes;
+	list<NewMetaNode*> metaNodes;
+	RuleList ruleNodes;
+	map<RuleNode*, Node*> outEdgeRL;
+	map<RuleNode*, list<Node*> > inEdgesRL;
+	map<RuleNode*, NewMetaNode*> outEdgeRM;
+	map<RuleNode*, list<NewMetaNode*> > inEdgesRM;
 };
+
+//class MiniGraph: public RefCountBase
+//{
+//public:
+//	MiniGraph(Ptr<DPGraph>, const Invariant&);
+//
+//	//Topological sorting on the dependency graph
+//	//in order to obtain an ordered list of rule nodes for processing.
+//	pair<RuleListC, RuleListC> TopoSort(const AnnotMap&) const;
+//
+//	MetaListC GetBaseTuples() const;
+//
+//	void PrintGraph() const;
+//
+//	~MiniGraph();
+//
+//private:
+//	list<CircleNode*> circList; //Copy of recursive tuple nodes
+//	list<NewMetaNode*> newMetaNodes; //Replace old metaNodes for recursive tuple nodes
+//
+//	map<const RuleNode*, const NewMetaNode*> outEdgeRM;	//Outbound edges of rules to head tuples
+//	map<const RuleNode*, list<NewMetaNode*> > inEdgesRM;	//Inbound edges of rules from body tuples
+//	map<const NewMetaNode*, RuleListC> outEdgesMT;	//Outbound edges of body tuples to rules
+//	map<const NewMetaNode*, RuleListC> inEdgesMT;	//Inbound edges of head tuples from rules
+//};
 
 #endif /* SDNCONTEXT_H_ */
