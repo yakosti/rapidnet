@@ -1,0 +1,30 @@
+
+
+#define TRUSTED_PORT 1
+#define UNTRUSTED_PORT 2
+
+materialize(trustedControllerMemory,infinity,infinity,keys(1,2,3)). 
+materialize(openConnectionToController,infinity,infinity,keys(1,2)).
+
+materialize(pktIn,infinity,infinity,keys(1,2,3,4)).
+
+
+// ************************************************* //
+
+// a packet from a trusted host via TRUSTED_PORT appeared on switch without a forwarding rule
+// we know its from a trusted host since it came via TRUSTED_PORT
+// forward packet to untrusted hosts
+pktReceived(@Dst, UNTRUSTED_PORT, Src, TRUSTED_PORT, Switch)  :- 
+	pktIn(@Switch, Src, Dst, TRUSTED_PORT).
+
+// a packet from a trusted host appeared on switch without a forwarding rule
+// we know its from a trusted host since it came via TRUSTED_PORT
+// Insert the target of the packet into trusted controller memory
+trustedControllerMemory(@Controller, Switch, Dst) :-
+	pktReceived(@Dst, UNTRUSTED_PORT, Src, TRUSTED_PORT, Switch),
+	openConnectionToController(@Dst, Controller).
+
+// ************************************************* //
+
+
+

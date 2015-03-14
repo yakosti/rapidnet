@@ -32,71 +32,71 @@
 
 // ************************************************* //
 
-#define TRUSTED_PORT 1
-#define UNTRUSTED_PORT 2
+
+
 
 /*Database for controller*/
 //stores the pairs of trusted switch-host 
-materialize(trustedControllerMemory,infinity,infinity,keys(2)). 
+materialize(trustedControllerMemory,infinity,infinity,keys(2)) 
 
 /* Database for */
 materialize(pktIn,infinity,infinity,keys(1,2,3,4)). //a packet is sent to a switch
 
 // ************************************************* //
 
-// a packet from a trusted host via TRUSTED_PORT appeared on switch without a forwarding rule
-// we know its from a trusted host since it came via TRUSTED_PORT
+// a packet from a trusted host via 1 appeared on switch without a forwarding rule
+// we know its from a trusted host since it came via 1
 // forward packet to untrusted hosts
-pktReceived(@Dst, UNTRUSTED_PORT, Src, TRUSTED_PORT, Switch)  :- 
-	pktIn(@Switch, Src, Dst, TRUSTED_PORT).
+pktReceived(@Dst, 2, Src, 1, Switch)  :- 
+	pktIn(@Switch, Src, Dst, 1),
 
 // a packet from a trusted host appeared on switch without a forwarding rule
-// we know its from a trusted host since it came via TRUSTED_PORT
+// we know its from a trusted host since it came via 1
 // Insert the target of the packet into trusted controller memory
 trustedControllerMemory(@Controller, Switch, Dst) :-
-	pktReceived(@Dst, UNTRUSTED_PORT, Src, TRUSTED_PORT, Switch),
-	openConnectionToController(@Dst, Controller).
+	pktReceived(@Dst, 2, Src, 1, Switch).
 
 // ************************************************* //
 
 // a packet from a trusted host appeared on switch without a forwarding rule
-// we know its from a trusted host since it came via TRUSTED_PORT
+// we know its from a trusted host since it came via 1
 // Insert a per-flow rule to forward future packets 
-perFlowRule(@Switch, Src, TRUSTED_PORT, Dst, UNTRUSTED_PORT) :-
+perFlowRule(@Switch, Src, 1, Dst, 2) :-
 	trustedControllerMemory(@Controller, Switch, Dst), 
-	pktIn(@Switch, Src, TRUSTED_PORT, Dst).
+	pktIn(@Switch, Src, 1, Dst),
 
 // ************************************************* //
 
 // a packet from trusted hosts with a forwarding rule
-pktReceived(@Dst, PortDst, Src, TRUSTED_PORT, Switch) :- 
- 	pktIn(@Switch, Src, TRUSTED_PORT, Dst),
-	perFlowRule(@Switch, Src, TRUSTED_PORT, Dst, PortDst).
+pktReceived(@Dst, PortDst, Src, 1, Switch) :- 
+ 	pktIn(@Switch, Src, 1, Dst),
+	perFlowRule(@Switch, Src, 1, Dst, PortDst).
 
 // ************************************************* //
 
 // Packet from unstrusted host appeared on switch
 // Send it to the controller to check if it is trused
-pktFromSwitch(@Controller, Switch, Src, UNTRUSTED_PORT, Dst) :- 
-	pktIn(@Switch, Src, UNTRUSTED_PORT, Dst).
+pktFromSwitch(@Controller, Switch, Src, 2, Dst) :- 
+	pktIn(@Switch, Src, 2, Dst).
 
 // Packet from untrusted host appeared on switch
 // the controller checked, and tells the switch the Src is trusted
 // Controller tells the switch it can forward the packet to the trusted hosts
 //  	by inserting a per flow rule into the swtich for that host
-perFlowRule(@Switch, Src, UNTRUSTED_PORT, Dst, TRUSTED_PORT) :-  // installs a flow rule on Switch
-	pktFromSwitch(@Controller, Switch, Src, UNTRUSTED_PORT, Dst), //controller received packet from switch
+perFlowRule(@Switch, Src, 2, Dst, 1) :-  // installs a flow rule on Switch
+	pktFromSwitch(@Controller, Switch, Src, 2, Dst), //controller received packet from switch
 	trustedControllerMemory(@Controller, Switch, Src)  // Controller knows that Switch trusts Src
 
 // ************************************************* //
 
 // (previous) Switch now has perFlowRule from an untrusted host, so it forst the packet to the target trusted host
 // (current) A packet from untrusted hosts with a forwarding rule also falls into this category
-pktReceived(@Dst, TRUSTED_PORT, Src, UNTRUSTED_POST, Switch) :-
-	perFlowRule(@Switch, Src, UNTRUSTED_PORT, Dst, TRUSTED_PORT),
- 	pktIn(@Switch, Src, UNTRUSTED_PORT, Dst).
+pktReceived(@Dst, 1, Src, UNTRUSTED_POST, Switch) :-
+	perFlowRule(@Switch, Src, 2, Dst, 1),
+ 	pktIn(@Switch, Src, 2, Dst).
 
 // ************************************************* //
+
 
 
 

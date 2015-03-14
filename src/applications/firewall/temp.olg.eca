@@ -1,0 +1,3 @@
+ECA Rule Eca2Ins ACTION_REMOTE_SEND<pktReceived(@Dst, $1, Src, $2, Switch)> :- EVENT_INSERT<pktIn(@Switch, Src, Dst, 1)>, $1 := 2, $2 := 1.
+ECA Rule ECAMat ACTION_ADD<trustedControllerMemory(@Controller, Switch, Dst)> :- EVENT_RECV<trustedControllerMemorysend(@Controller, Switch, Dst)>.
+ECA Rule _eca ACTION_REMOTE_SEND<trustedControllerMemorysend(@Controller, Switch, Dst)> :- EVENT_RECV<pktReceived(@Dst, 2, Src, 1, Switch)>, openConnectionToController(@Dst, Controller).
