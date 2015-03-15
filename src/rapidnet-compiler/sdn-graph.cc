@@ -859,6 +859,47 @@ NewDPGraph::NewDPGraph(Ptr<DPGraph> dpgraph, const Invariant& inv)
 																  nlist));
 	}
 
+	//Copy metaNodes
+	MetaList& mlist = dpgraph->metaNodes;
+	map<string, pair<NewMetaNode*, NewMetaNode*> > metaMap;
+	MetaList::iterator itmt;
+	for (itmt = mlist.begin();itmt != mlist.end();itmt++)
+	{
+		string mName = (*itmt)->GetName();
+		AnnotMap::const_iterator ita = annotation.find(mName);
+		if (ita != annotation.end())
+		{
+			//Create a two MetaNodes for a recursive tuple
+			NewMetaNode* headMeta = new NewMetaNode(mName);
+			NewMetaNode* bodyMeta = new NewMetaNode(mName);
+
+			list<TupleNode*>& headList = (*itmt)->headTuples;
+			list<TupleNode*>::iterator itl;
+			for (itl = headList.begin();itl != headList.end();itl++)
+			{
+				headMeta->AddHeadTuple(*itl);
+			}
+
+			list<TupleNode*>& tlist = (*itmt)->bodyTuples;
+			for (itl = tlist.begin();itl != tlist.end();itl++)
+			{
+				CircleNode* cnode = nmap.at(*itl);
+				bodyMeta->AddBodyTuple(cnode);
+			}
+
+			metaNodes.push_back(headMeta);
+			metaNodes.push_back(bodyMeta);
+			pair<NewMetaNode*, NewMetaNode*> metaPair(headMeta, bodyMeta);
+			metaMap.insert(map<string, pair<NewMetaNode*, NewMetaNode*> >::
+										value_type(mName, metaPair));
+		}
+		else
+		{
+			NewMetaNode* newMeta = new NewMetaNode(*itmt);
+			metaNodes.push_back(newMeta);
+		}
+	}
+
 	RMHMap::iterator itrh;
 	RMHMap& oldOutERM = dpgraph->outEdgeRM;
 	for (itrh = oldOutERM.begin();itrh != oldOutERM.end();itrh++)
@@ -867,22 +908,28 @@ NewDPGraph::NewDPGraph(Ptr<DPGraph> dpgraph, const Invariant& inv)
 		MetaNode* mnode = itrh->second;
 		string mName = mnode->GetName();
 		NewMetaNode* newMeta = NULL;
-		AnnotMap::const_iterator ita = annotation.find(mName);
-		if (ita != annotation.end())
+		map<string, pair<NewMetaNode*, NewMetaNode*> >::iterator itp;
+		itp = metaMap.find(mName);
+		if (itp != metaMap.end())
 		{
-			newMeta = new NewMetaNode(mName);
-			list<TupleNode*>& headList = mnode->headTuples;
-			list<TupleNode*>::iterator itl;
-			for (itl = headList.begin();itl != headList.end();itl++)
-			{
-				newMeta->AddHeadTuple(*itl);
-			}
+			outEdgeRM.insert(map<RuleNode*, NewMetaNode*>::
+								value_type(rnode, itp->second.first));
 		}
 		else
 		{
-			newMeta = new NewMetaNode(mnode);
+			list<NewMetaNode*>::iterator itl;
+			for (itl = metaNodes.begin();itl != metaNodes.end();itl++)
+			{
+				string metaName = (*itl)->GetName();
+				if (metaName == mName)
+				{
+					outEdgeRM.insert(map<RuleNode*, NewMetaNode*>::
+										value_type(rnode, *itl));
+					break;
+				}
+			}
 		}
-		outEdgeRM.insert(map<RuleNode*, NewMetaNode*>::value_type(rnode, newMeta));
+
 	}
 
 	RMBMap::iterator itrb;
@@ -896,29 +943,30 @@ NewDPGraph::NewDPGraph(Ptr<DPGraph> dpgraph, const Invariant& inv)
 		for (itm = mlist.begin();itm != mlist.end();itm++)
 		{
 			string mName = (*itm)->GetName();
-			NewMetaNode* newMeta = NULL;
-			AnnotMap::const_iterator ita = annotation.find(mName);
-			if (ita != annotation.end())
+			map<string, pair<NewMetaNode*, NewMetaNode*> >::iterator itp;
+			itp = metaMap.find(mName);
+			if (itp != metaMap.end())
 			{
-				newMeta = new NewMetaNode(mName);
-				list<TupleNode*>::iterator itl;
-				list<TupleNode*>& tlist = (*itm)->bodyTuples;
-				for (itl = tlist.begin();itl != tlist.end();itl++)
-				{
-
-					CircleNode* cnode = nmap.at(*itl);
-					newMeta->AddBodyTuple(cnode);
-				}
+				nlist.push_back(itp->second.second);
 			}
 			else
 			{
-				newMeta = new NewMetaNode(*itm);
+				list<NewMetaNode*>::iterator itl;
+				for (itl = metaNodes.begin();itl != metaNodes.end();itl++)
+				{
+					string metaName = (*itl)->GetName();
+					if (metaName == mName)
+					{
+						nlist.push_back(*itl);
+						break;
+					}
+				}
 			}
-			nlist.push_back(newMeta);
+
 		}
 
-		inEdgesRM.insert(map<RuleNode*, list<NewMetaNode*> >::value_type(rnode,
-																         nlist));
+		inEdgesRM.insert(map<RuleNode*, list<NewMetaNode*> >::
+									value_type(rnode, nlist));
 	}
 }
 
@@ -975,271 +1023,213 @@ NewDPGraph::~NewDPGraph()
 	}
 }
 
-//MiniGraph::MiniGraph(Ptr<DPGraph> dpgraph, const Invariant& invariant)
-//{
-//	outEdgeRM = dpgraph->outEdgeRM;
-//	inEdgesRM = dpgraph->inEdgesRM;
-//
-//	MetaList::iterator itt;
-//	MetaList& mNodes = dpgraph->metaNodes;
-//	for (itt = mNodes.begin(); itt != mNodes.end(); itt++)
-//	{
-//		RuleListC rlist;
-//		outEdgesMT.insert(MTRMap::value_type((*itt),rlist));
-//		inEdgesMT.insert(MTRMap::value_type((*itt),rlist));
-//	}
-//
-//	RMHMap::iterator itr;
-//	RMHMap& outE = dpgraph->outEdgeRM;
-//	for (itr = outE.begin(); itr != outE.end(); itr++)
-//	{
-//		inEdgesMT[itr->second].push_back(itr->first);
-//	}
-//
-//	RMBMap::iterator itb;
-//	RMBMap& inE = dpgraph->inEdgesRM;
-//	for (itb = inE.begin(); itb != inE.end(); itb++)
-//	{
-//		MetaListC& tvec = itb->second;
-//		MetaListC::iterator itp;
-//		for (itp = tvec.begin(); itp != tvec.end(); itp++)
-//		{
-//			outEdgesMT[(*itp)].push_back(itb->first);
-//		}
-//	}
-//}
-//
-//pair<RuleListC, RuleListC>
-//MiniGraph::TopoSort(const AnnotMap& invariants) const
-//{
-//	NS_LOG_INFO("Topological sorting");
-//	//Create a copy of the topology for processing
-//	RMHMap outEdgeRMCopy = outEdgeRM;
-//	RMBMap inEdgesRMCopy = inEdgesRM;
-//	MTRMap outEdgesMTCopy = outEdgesMT;
-//	MTRMap inEdgesMTCopy = inEdgesMT;
-//
-//	//TupleList: a list of base tuples
-//	//RuleList: an ordered list of rules
-//	pair<RuleListC, RuleListC> topoOrder;
-//	int rNodeNum = outEdgeRMCopy.size();
-//	int rNodeCount = 0;	//Record how many rule nodes have been processed
-//
-//	//ProcessQueue initialization
-//	deque<const Node*> processQueue;
-//	MTRMap::const_iterator itti;
-//	for (itti = inEdgesMTCopy.begin();itti != inEdgesMTCopy.end();itti++)
-//	{
-//		if (itti->second.size() == 0)
-//		{
-//			processQueue.push_back(itti->first);
-//		}
-//	}
-//
-//	NS_LOG_DEBUG("Elements in Process Queue:" << processQueue.size());
-//	//Topological sorting
-//	while (rNodeCount < rNodeNum)
-//	{
-//		NS_LOG_DEBUG("Enter loop");
-//		NS_LOG_DEBUG("rNodeCount: " << rNodeCount);
-//		NS_LOG_DEBUG("rNodeNum: " << rNodeNum);
-//		NS_LOG_DEBUG("Size of processQueue: " << processQueue.size());
-//		//Non-recursive case
-//		if (processQueue.size() > 0)
-//		{
-//			const Node* curNode = processQueue.front();
-//			cout << endl;
-//			NS_LOG_INFO("Processing: ");
-//			curNode->PrintNode();
-//			cout << endl;
-//			processQueue.pop_front();
-//			//Process a meta node
-//			const MetaNode* mnode = dynamic_cast<const MetaNode*>(curNode);
-//			if (mnode != NULL)
-//			{
-//				//Delete the corresponding entry in inEdgesMTCopy
-//				inEdgesMTCopy.erase(mnode);
-//				RuleListC& rlist = outEdgesMTCopy[mnode];
-//				RuleListC::iterator itrl;
-//				for (itrl = rlist.begin();itrl != rlist.end();itrl++)
-//				{
-//					MetaListC& mlist = inEdgesRMCopy[(*itrl)];
-//					mlist.remove(mnode);
-//					if (mlist.size() == 0)
-//					{
-//						processQueue.push_back((*itrl));
-//					}
-//				}
-//				outEdgesMTCopy.erase(mnode);
-//			}
-//
-//			//Process a rule node
-//			const RuleNode* rnode = dynamic_cast<const RuleNode*>(curNode);
-//			if (rnode != NULL)
-//			{
-//				//Store the topological order of the rule node
-//				topoOrder.first.push_back(rnode);
-//				//Delete the corresponding entry in inEdgesRMCopy
-//				inEdgesRMCopy.erase(rnode);
-//				const MetaNode* mtNode = outEdgeRMCopy[rnode];
-//				RuleListC& rl = inEdgesMTCopy[mtNode];
-//				rl.remove(rnode);
-//				if (rl.size() == 0)
-//				{
-//					processQueue.push_back(mtNode);
-//				}
-//				outEdgeRMCopy.erase(rnode);
-//				rNodeCount++;
-//			}
-//		}
-//		//Recursive case
-//		else
-//		{
-//			//TODO: Differentiate recursive rules with non-recursive ones
-//			MTRMap::iterator itm;
-//			for (itm = inEdgesMTCopy.begin(); itm != inEdgesMTCopy.end();itm++)
-//			{
-//				string tName = itm->first->GetName();
-//				AnnotMap::const_iterator ita = invariants.find(tName);
-//				if (ita != invariants.end())
-//				{
-//					NS_LOG_INFO("Processing Recursive Node: ");
-//					itm->first->PrintNode();
-//					//A tuple in a recursive loop
-//					processQueue.push_back(itm->first);
-//
-//					RuleListC& rlist = itm->second;
-//					RuleListC::const_iterator itrc;
-//					for (itrc = rlist.begin(); itrc != rlist.end(); itrc++)
-//					{
-//						NS_LOG_INFO("Processing the incoming rule: ");
-//						(*itrc)->PrintNode();
-//						//Add all incoming rule nodes to topoOrder
-//						NS_LOG_DEBUG("Reach here??");
-//						topoOrder.second.push_back((*itrc));
-//						//Delete corresponding outbound edges from body tuples
-//
-//						MetaListC& ml = inEdgesRMCopy[(*itrc)];
-//						MetaListC::const_iterator itml;
-//						NS_LOG_DEBUG("Reach here???");
-//						for (itml = ml.begin();itml != ml.end(); itml++)
-//						{
-//							MTRMap::iterator itmi = outEdgesMTCopy.find((*itml));
-//							if (itmi != outEdgesMTCopy.end())
-//							{
-//								itmi->second.remove((*itrc));
-//							}
-//						}
-//						inEdgesRMCopy.erase((*itrc));
-//						outEdgeRMCopy.erase((*itrc));
-//						rNodeCount++;
-//					}
-//					NS_LOG_DEBUG("Reach here?");
-//					break;
-//				}
-//			}
-//			inEdgesMTCopy.erase(itm);
-//		}
-//	}
-//
-//	NS_LOG_INFO("Topological sorting completed!");
-//
-//	return topoOrder;
-//}
-//
-//MetaListC
-//MiniGraph::GetBaseTuples() const
-//{
-//	MetaListC mlist;
-//
-//	MTRMap::const_iterator itti;
-//	for (itti = inEdgesMT.begin();itti != inEdgesMT.end();itti++)
-//	{
-//		if (itti->second.size() == 0)
-//		{
-//			//Record all base tuples
-//			mlist.push_back(itti->first);
-//		}
-//	}
-//
-//	return mlist;
-//}
-//
-//void
-//MiniGraph::PrintGraph() const
-//{
-//	cout << "------------------ Mini Graph --------------------" << endl;
-//	cout << "Rule node edges (outbound):" << endl;
-//	RMHMap::const_iterator itrh;
-//	for (itrh = outEdgeRM.begin();itrh != outEdgeRM.end();itrh++)
-//	{
-//		cout << "Rule head:";
-//		itrh->second->PrintNode();
-//		cout << endl;
-//		cout << "Rule name and constraints:" << endl;
-//		itrh->first->PrintNode();
-//		cout << endl;
-//	}
-//	cout << endl;
-//
-//	cout << "Rule node edges (inbound):" << endl;
-//	RMBMap::const_iterator itrb;
-//	MetaListC::const_iterator ittv;
-//	for (itrb = inEdgesRM.begin();itrb != inEdgesRM.end();itrb++)
-//	{
-//		cout << "Rule name:" << endl;
-//		itrb->first->PrintName();
-//		cout << endl << endl;
-//		cout << "Rule bodies:" << endl;
-//		const MetaListC& mnodes = itrb->second;
-//		for (ittv = mnodes.begin();ittv != mnodes.end();ittv++)
-//		{
-//			cout << "\t";
-//			(*ittv)->PrintNode();
-//			cout << endl;
-//		}
-//		cout << endl;
-//	}
-//	cout << endl;
-//
-//	cout << "Tuple node edges (outbound):" << endl;
-//	MTRMap::const_iterator itti;
-//	RuleListC::const_iterator itri;
-//	for (itti = outEdgesMT.begin();itti != outEdgesMT.end();itti++)
-//	{
-//		itti->first->PrintNode();
-//		cout << endl;
-//		const RuleListC& rnodes = itti->second;
-//		for (itri = rnodes.begin();itri != rnodes.end();itri++)
-//		{
-//			cout << "\t";
-//			(*itri)->PrintName();
-//			cout << endl;
-//		}
-//	}
-//	cout << endl;
-//
-//	cout << "Tuple node edges (inbound):" << endl;
-//	for (itti = inEdgesMT.begin();itti != inEdgesMT.end();itti++)
-//	{
-//		itti->first->PrintNode();
-//		cout << endl;
-//		const RuleListC& rnodes = itti->second;
-//		for (itri = rnodes.begin();itri != rnodes.end();itri++)
-//		{
-//			cout << "\t";
-//			(*itri)->PrintName();
-//			cout << endl;
-//		}
-//	}
-//	cout << endl;
-//}
-//
-//MiniGraph::~MiniGraph()
-//{
-//	list<CircleNode*>::iterator itl;
-//	for (itl = circList.begin();itl != circList.end();itl++)
-//	{
-//		delete (*itl);
-//	}
-//}
+MiniGraph::MiniGraph(Ptr<NewDPGraph> newGraph, const Invariant& invariant)
+{
+	outEdgeRM = newGraph->outEdgeRM;
+	inEdgesRM = newGraph->inEdgesRM;
+
+	list<NewMetaNode*>::iterator itt;
+	list<NewMetaNode*>& mNodes = newGraph->metaNodes;
+	for (itt = mNodes.begin(); itt != mNodes.end(); itt++)
+	{
+		RuleListC rlist;
+		outEdgesMT.insert(map<NewMetaNode*, RuleListC>::value_type((*itt),rlist));
+		inEdgesMT.insert(map<NewMetaNode*, RuleListC>::value_type((*itt),rlist));
+	}
+
+	map<RuleNode*, NewMetaNode*>::iterator itr;
+	map<RuleNode*, NewMetaNode*>& outE = newGraph->outEdgeRM;
+	for (itr = outE.begin(); itr != outE.end(); itr++)
+	{
+		inEdgesMT[itr->second].push_back(itr->first);
+	}
+
+	map<RuleNode*, list<NewMetaNode*> >::iterator itb;
+	map<RuleNode*, list<NewMetaNode*> >& inE = newGraph->inEdgesRM;
+	for (itb = inE.begin(); itb != inE.end(); itb++)
+	{
+		list<NewMetaNode*>& tvec = itb->second;
+		list<NewMetaNode*>::iterator itp;
+		for (itp = tvec.begin(); itp != tvec.end(); itp++)
+		{
+			outEdgesMT[(*itp)].push_back(itb->first);
+		}
+	}
+}
+
+RuleListC
+MiniGraph::TopoSort(const Invariant& inv) const
+{
+	NS_LOG_INFO("Topological sorting");
+	const AnnotMap& invariants = inv.GetInv();
+	//Create a copy of the topology for processing
+	map<RuleNode*, NewMetaNode*> outEdgeRMCopy = outEdgeRM;
+	map<RuleNode*, list<NewMetaNode*> > inEdgesRMCopy = inEdgesRM;
+	map<NewMetaNode*, RuleListC> outEdgesMTCopy = outEdgesMT;
+	map<NewMetaNode*, RuleListC> inEdgesMTCopy = inEdgesMT;
+
+	//RuleList: an ordered list of rules
+	RuleListC topoOrder;
+	int rNodeNum = outEdgeRMCopy.size();
+	int rNodeCount = 0;	//Record how many rule nodes have been processed
+
+	//ProcessQueue initialization
+	deque<Node*> processQueue;
+	map<NewMetaNode*, RuleListC>::const_iterator itti;
+	NS_LOG_DEBUG("Size of inEdgesMTCopy: " << inEdgesMTCopy.size());
+	for (itti = inEdgesMTCopy.begin();itti != inEdgesMTCopy.end();itti++)
+	{
+		int ruleSize = itti->second.size();
+		NS_LOG_DEBUG("MetaNode: " << itti->first->GetName());
+		NS_LOG_DEBUG("Rule size: "<< ruleSize << endl);
+		if (ruleSize == 0)
+		{
+
+			//Add base tuple TupleNode and CircleNode into the queue.
+			processQueue.push_back(itti->first);
+		}
+	}
+
+	NS_LOG_DEBUG("Elements in Process Queue:" << processQueue.size());
+	//Topological sorting
+	while (rNodeCount < rNodeNum)
+	{
+		NS_LOG_DEBUG("Enter loop");
+		NS_LOG_DEBUG("rNodeCount: " << rNodeCount);
+		NS_LOG_DEBUG("rNodeNum: " << rNodeNum);
+		NS_LOG_DEBUG("Size of processQueue: " << processQueue.size());
+		Node* curNode = processQueue.front();
+		NS_LOG_DEBUG("Topo sorting: " << curNode->GetName());
+		processQueue.pop_front();
+		//Process a meta node
+		NewMetaNode* mnode = dynamic_cast<NewMetaNode*>(curNode);
+		if (mnode != NULL)
+		{
+			//Delete the corresponding entry in inEdgesMTCopy
+			inEdgesMTCopy.erase(mnode);
+			RuleListC& rlist = outEdgesMTCopy[mnode];
+			RuleListC::iterator itrl;
+			for (itrl = rlist.begin();itrl != rlist.end();itrl++)
+			{
+				list<NewMetaNode*>& mlist = inEdgesRMCopy[(*itrl)];
+				mlist.remove(mnode);
+				if (mlist.size() == 0)
+				{
+					processQueue.push_back((*itrl));
+				}
+			}
+			outEdgesMTCopy.erase(mnode);
+		}
+
+		//Process a rule node
+		RuleNode* rnode = dynamic_cast<RuleNode*>(curNode);
+		if (rnode != NULL)
+		{
+			//Store the topological order of the rule node
+			topoOrder.push_back(rnode);
+			//Delete the corresponding entry in inEdgesRMCopy
+			inEdgesRMCopy.erase(rnode);
+			NewMetaNode* mtNode = outEdgeRMCopy[rnode];
+			RuleListC& rl = inEdgesMTCopy[mtNode];
+			rl.remove(rnode);
+			if (rl.size() == 0)
+			{
+				processQueue.push_back(mtNode);
+			}
+			outEdgeRMCopy.erase(rnode);
+			rNodeCount++;
+		}
+	}
+
+	NS_LOG_INFO("Topological sorting completed!");
+
+	return topoOrder;
+}
+
+list<NewMetaNode*>
+MiniGraph::GetBaseTuples() const
+{
+	list<NewMetaNode*> mlist;
+
+	map<NewMetaNode*, RuleListC>::const_iterator itti;
+	for (itti = inEdgesMT.begin();itti != inEdgesMT.end();itti++)
+	{
+		if (itti->second.size() == 0)
+		{
+			//Record all base tuples
+			mlist.push_back(itti->first);
+		}
+	}
+
+	return mlist;
+}
+
+void
+MiniGraph::PrintGraph() const
+{
+	cout << "------------------ Mini Graph --------------------" << endl;
+	cout << "Rule node edges (outbound):" << endl;
+	map<RuleNode*, NewMetaNode*>::const_iterator itrh;
+	for (itrh = outEdgeRM.begin();itrh != outEdgeRM.end();itrh++)
+	{
+		cout << "Rule head:";
+		itrh->second->PrintNode();
+		cout << endl;
+		cout << "Rule name and constraints:" << endl;
+		itrh->first->PrintNode();
+		cout << endl;
+	}
+	cout << endl;
+
+	cout << "Rule node edges (inbound):" << endl;
+	map<RuleNode*, list<NewMetaNode*> >::const_iterator itrb;
+	list<NewMetaNode*>::const_iterator ittv;
+	for (itrb = inEdgesRM.begin();itrb != inEdgesRM.end();itrb++)
+	{
+		cout << "Rule name:" << endl;
+		itrb->first->PrintName();
+		cout << endl << endl;
+		cout << "Rule bodies:" << endl;
+		const list<NewMetaNode*>& mnodes = itrb->second;
+		for (ittv = mnodes.begin();ittv != mnodes.end();ittv++)
+		{
+			cout << "\t";
+			(*ittv)->PrintNode();
+			cout << endl;
+		}
+		cout << endl;
+	}
+	cout << endl;
+
+	cout << "Tuple node edges (outbound):" << endl;
+	map<NewMetaNode*, RuleListC>::const_iterator itti;
+	RuleListC::const_iterator itri;
+	for (itti = outEdgesMT.begin();itti != outEdgesMT.end();itti++)
+	{
+		itti->first->PrintNode();
+		cout << endl;
+		const RuleListC& rnodes = itti->second;
+		for (itri = rnodes.begin();itri != rnodes.end();itri++)
+		{
+			cout << "\t";
+			(*itri)->PrintName();
+			cout << endl;
+		}
+	}
+	cout << endl;
+
+	cout << "Tuple node edges (inbound):" << endl;
+	for (itti = inEdgesMT.begin();itti != inEdgesMT.end();itti++)
+	{
+		itti->first->PrintNode();
+		cout << endl;
+		const RuleListC& rnodes = itti->second;
+		for (itri = rnodes.begin();itri != rnodes.end();itri++)
+		{
+			cout << "\t";
+			(*itri)->PrintName();
+			cout << endl;
+		}
+	}
+	cout << endl;
+}

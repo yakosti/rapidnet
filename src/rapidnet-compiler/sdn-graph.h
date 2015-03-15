@@ -219,7 +219,6 @@ typedef map<MetaNode*, RuleListC> MTRMap;
 
 class DPGraph: public RefCountBase
 {
-	friend class MiniGraph;
 	friend class NewDPGraph;
 
 public:
@@ -290,6 +289,8 @@ private:
 //TODO: NewDPGraph will destroy the old DPGraph
 class NewDPGraph: public RefCountBase
 {
+	friend class MiniGraph;
+
 public:
 	NewDPGraph(Ptr<DPGraph>, const Invariant&);
 
@@ -308,29 +309,24 @@ private:
 	map<RuleNode*, list<NewMetaNode*> > inEdgesRM;
 };
 
-//class MiniGraph: public RefCountBase
-//{
-//public:
-//	MiniGraph(Ptr<DPGraph>, const Invariant&);
-//
-//	//Topological sorting on the dependency graph
-//	//in order to obtain an ordered list of rule nodes for processing.
-//	pair<RuleListC, RuleListC> TopoSort(const AnnotMap&) const;
-//
-//	MetaListC GetBaseTuples() const;
-//
-//	void PrintGraph() const;
-//
-//	~MiniGraph();
-//
-//private:
-//	list<CircleNode*> circList; //Copy of recursive tuple nodes
-//	list<NewMetaNode*> newMetaNodes; //Replace old metaNodes for recursive tuple nodes
-//
-//	map<const RuleNode*, const NewMetaNode*> outEdgeRM;	//Outbound edges of rules to head tuples
-//	map<const RuleNode*, list<NewMetaNode*> > inEdgesRM;	//Inbound edges of rules from body tuples
-//	map<const NewMetaNode*, RuleListC> outEdgesMT;	//Outbound edges of body tuples to rules
-//	map<const NewMetaNode*, RuleListC> inEdgesMT;	//Inbound edges of head tuples from rules
-//};
+class MiniGraph: public RefCountBase
+{
+public:
+	MiniGraph(Ptr<NewDPGraph>, const Invariant&);
+
+	//Topological sorting on the dependency graph
+	//in order to obtain an ordered list of rule nodes for processing.
+	RuleListC TopoSort(const Invariant&) const;
+
+	list<NewMetaNode*> GetBaseTuples() const;
+
+	void PrintGraph() const;
+
+private:
+	map<RuleNode*, NewMetaNode*> outEdgeRM;	//Outbound edges of rules to head tuples
+	map<RuleNode*, list<NewMetaNode*> > inEdgesRM;	//Inbound edges of rules from body tuples
+	map<NewMetaNode*, RuleListC> outEdgesMT;	//Outbound edges of body tuples to rules
+	map<NewMetaNode*, RuleListC> inEdgesMT;	//Inbound edges of head tuples from rules
+};
 
 #endif /* SDNCONTEXT_H_ */

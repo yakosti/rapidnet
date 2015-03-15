@@ -177,10 +177,17 @@ void compile (string overlogFile, bool provenanceEnabled)
   //Recursive invariant
   Invariant inv = Invariant();
   Ptr<NewDPGraph> newGraph (new NewDPGraph(graphNdlog, inv));
-  newGraph->Print();
+  //newGraph->Print();
 
-  //Ptr<MiniGraph> miniGraph (new MiniGraph(graphNdlog));
+  Ptr<MiniGraph> miniGraph (new MiniGraph(newGraph, inv));
   //miniGraph->PrintGraph();
+  RuleListC rlist = miniGraph->TopoSort(inv);
+  cout << endl << "Print topological sort results:" << endl;
+  for (RuleListC::iterator it = rlist.begin();it != rlist.end();it++)
+  {
+	  (*it)->PrintName();
+	  cout << endl;
+  }
 
   //Base properties
 //  BaseProperty baseProp = BaseProperty();
