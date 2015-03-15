@@ -16,6 +16,16 @@ using namespace ns3;
 using namespace ns3::rapidnet;
 using namespace ns3::rapidnet::firewall;
 
+const string Firewall::CONTROLLERCONNECTION = "controllerConnection";
+const string Firewall::OPENCONNECTIONTOCONTROLLER = "openConnectionToController";
+const string Firewall::PERFLOWRULE = "perFlowRule";
+const string Firewall::PERFLOWRULESEND = "perFlowRulesend";
+const string Firewall::PKTFROMSWITCH = "pktFromSwitch";
+const string Firewall::PKTIN = "pktIn";
+const string Firewall::PKTRECEIVED = "pktReceived";
+const string Firewall::R2TRUSTEDCONTROLLERMEMORYSEND = "r2trustedControllerMemorysend";
+const string Firewall::TRUSTEDCONTROLLERMEMORY = "trustedControllerMemory";
+const string Firewall::TRUSTEDCONTROLLERMEMORYSEND = "trustedControllerMemorysend";
 
 NS_LOG_COMPONENT_DEFINE ("Firewall");
 NS_OBJECT_ENSURE_REGISTERED (Firewall);
@@ -71,6 +81,26 @@ Firewall::InitDatabase ()
 {
   //RapidNetApplicationBase::InitDatabase ();
 
+  AddRelationWithKeys (OPENCONNECTIONTOCONTROLLER, attrdeflist (
+    attrdef ("openConnectionToController_attr1", IPV4)));
+
+  AddRelationWithKeys (PERFLOWRULE, attrdeflist (
+    attrdef ("perFlowRule_attr2", IPV4),
+    attrdef ("perFlowRule_attr3", IPV4),
+    attrdef ("perFlowRule_attr4", IPV4),
+    attrdef ("perFlowRule_attr5", IPV4)));
+
+  AddRelationWithKeys (PKTIN, attrdeflist (
+    attrdef ("pktIn_attr1", IPV4),
+    attrdef ("pktIn_attr2", IPV4),
+    attrdef ("pktIn_attr3", IPV4),
+    attrdef ("pktIn_attr4", IPV4)));
+
+  AddRelationWithKeys (TRUSTEDCONTROLLERMEMORY, attrdeflist (
+    attrdef ("trustedControllerMemory_attr1", IPV4),
+    attrdef ("trustedControllerMemory_attr2", IPV4),
+    attrdef ("trustedControllerMemory_attr3", IPV4)));
+
 }
 
 void
@@ -78,5 +108,413 @@ Firewall::DemuxRecv (Ptr<Tuple> tuple)
 {
   RapidNetApplicationBase::DemuxRecv (tuple);
 
+  if (IsInsertEvent (tuple, PKTIN))
+    {
+      R1Eca0Ins (tuple);
+    }
+  if (IsRecvEvent (tuple, R2TRUSTEDCONTROLLERMEMORYSEND))
+    {
+      R2ECAMat (tuple);
+    }
+  if (IsRecvEvent (tuple, PKTRECEIVED))
+    {
+      R2_eca (tuple);
+    }
+  if (IsRecvEvent (tuple, TRUSTEDCONTROLLERMEMORYSEND))
+    {
+      ECAMat (tuple);
+    }
+  if (IsRecvEvent (tuple, CONTROLLERCONNECTION))
+    {
+      _eca (tuple);
+    }
+  if (IsInsertEvent (tuple, PKTIN))
+    {
+      Eca0Ins (tuple);
+    }
+  if (IsInsertEvent (tuple, PERFLOWRULE))
+    {
+      Eca1Ins (tuple);
+    }
+  if (IsRecvEvent (tuple, CONTROLLERCONNECTION))
+    {
+      _eca (tuple);
+    }
+  if (IsRecvEvent (tuple, PERFLOWRULESEND))
+    {
+      ECAMat (tuple);
+    }
+  if (IsRecvEvent (tuple, PKTFROMSWITCH))
+    {
+      _eca (tuple);
+    }
+  if (IsInsertEvent (tuple, PERFLOWRULE))
+    {
+      Eca0Ins (tuple);
+    }
+  if (IsInsertEvent (tuple, PKTIN))
+    {
+      Eca1Ins (tuple);
+    }
+}
+
+void
+Firewall::R1Eca0Ins (Ptr<Tuple> pktIn)
+{
+  RAPIDNET_LOG_INFO ("R1Eca0Ins triggered");
+
+  Ptr<Tuple> result = pktIn;
+
+  result->Assign (Assignor::New ("Uport",
+    ValueExpr::New (Int32Value::New (2))));
+
+  result->Assign (Assignor::New ("pktIn_attr3",
+    ValueExpr::New (Int32Value::New (1))));
+
+  result = result->Project (
+    PKTRECEIVED,
+    strlist ("pktIn_attr4",
+      "Uport",
+      "pktIn_attr2",
+      "pktIn_attr3",
+      "pktIn_attr1",
+      "pktIn_attr4"),
+    strlist ("pktReceived_attr1",
+      "pktReceived_attr2",
+      "pktReceived_attr3",
+      "pktReceived_attr4",
+      "pktReceived_attr5",
+      RN_DEST));
+
+  Send (result);
+}
+
+void
+Firewall::R2ECAMat (Ptr<Tuple> r2trustedControllerMemorysend)
+{
+  RAPIDNET_LOG_INFO ("R2ECAMat triggered");
+
+  Ptr<Tuple> result = r2trustedControllerMemorysend;
+
+  result = result->Project (
+    TRUSTEDCONTROLLERMEMORY,
+    strlist ("r2trustedControllerMemorysend_attr1",
+      "r2trustedControllerMemorysend_attr2",
+      "r2trustedControllerMemorysend_attr3"),
+    strlist ("trustedControllerMemory_attr1",
+      "trustedControllerMemory_attr2",
+      "trustedControllerMemory_attr3"));
+
+  Insert (result);
+}
+
+void
+Firewall::R2_eca (Ptr<Tuple> pktReceived)
+{
+  RAPIDNET_LOG_INFO ("R2_eca triggered");
+
+  Ptr<RelationBase> result;
+
+  result = GetRelation (OPENCONNECTIONTOCONTROLLER)->Join (
+    pktReceived,
+    strlist ("openConnectionToController_attr1"),
+    strlist ("pktReceived_attr1"));
+
+  result->Assign (Assignor::New ("pktReceived_attr2",
+    ValueExpr::New (Int32Value::New (2))));
+
+  result->Assign (Assignor::New ("pktReceived_attr4",
+    ValueExpr::New (Int32Value::New (1))));
+
+  result = result->Project (
+    R2TRUSTEDCONTROLLERMEMORYSEND,
+    strlist ("openConnectionToController_attr2",
+      "pktReceived_attr5",
+      "pktReceived_attr1",
+      "openConnectionToController_attr2"),
+    strlist ("r2trustedControllerMemorysend_attr1",
+      "r2trustedControllerMemorysend_attr2",
+      "r2trustedControllerMemorysend_attr3",
+      RN_DEST));
+
+  Send (result);
+}
+
+void
+Firewall::ECAMat (Ptr<Tuple> trustedControllerMemorysend)
+{
+  RAPIDNET_LOG_INFO ("ECAMat triggered");
+
+  Ptr<Tuple> result = trustedControllerMemorysend;
+
+  result = result->Project (
+    TRUSTEDCONTROLLERMEMORY,
+    strlist ("trustedControllerMemorysend_attr1",
+      "trustedControllerMemorysend_attr2",
+      "trustedControllerMemorysend_attr3"),
+    strlist ("trustedControllerMemory_attr1",
+      "trustedControllerMemory_attr2",
+      "trustedControllerMemory_attr3"));
+
+  Insert (result);
+}
+
+void
+Firewall::_eca (Ptr<Tuple> controllerConnection)
+{
+  RAPIDNET_LOG_INFO ("_eca triggered");
+
+  Ptr<RelationBase> result;
+
+  result = GetRelation (PKTIN)->Join (
+    controllerConnection,
+    strlist ("pktIn_attr1"),
+    strlist ("controllerConnection_attr1"));
+
+  result->Assign (Assignor::New ("pktIn_attr3",
+    ValueExpr::New (Int32Value::New (1))));
+
+  result = result->Project (
+    TRUSTEDCONTROLLERMEMORYSEND,
+    strlist ("controllerConnection_attr2",
+      "controllerConnection_attr1",
+      "pktIn_attr4",
+      "controllerConnection_attr2"),
+    strlist ("trustedControllerMemorysend_attr1",
+      "trustedControllerMemorysend_attr2",
+      "trustedControllerMemorysend_attr3",
+      RN_DEST));
+
+  Send (result);
+}
+
+void
+Firewall::Eca0Ins (Ptr<Tuple> pktIn)
+{
+  RAPIDNET_LOG_INFO ("Eca0Ins triggered");
+
+  Ptr<RelationBase> result;
+
+  result = GetRelation (PERFLOWRULE)->Join (
+    pktIn,
+    strlist ("perFlowRule_attr4", "perFlowRule_attr2", "perFlowRule_attr1", "perFlowRule_attr3"),
+    strlist ("pktIn_attr4", "pktIn_attr2", "pktIn_attr1", "pktIn_attr3"));
+
+  result->Assign (Assignor::New ("pktIn_attr3",
+    ValueExpr::New (Int32Value::New (1))));
+
+  result = result->Project (
+    PKTRECEIVED,
+    strlist ("pktIn_attr4",
+      "perFlowRule_attr5",
+      "pktIn_attr2",
+      "pktIn_attr3",
+      "pktIn_attr1",
+      "pktIn_attr4"),
+    strlist ("pktReceived_attr1",
+      "pktReceived_attr2",
+      "pktReceived_attr3",
+      "pktReceived_attr4",
+      "pktReceived_attr5",
+      RN_DEST));
+
+  Send (result);
+}
+
+void
+Firewall::Eca1Ins (Ptr<Tuple> perFlowRule)
+{
+  RAPIDNET_LOG_INFO ("Eca1Ins triggered");
+
+  Ptr<RelationBase> result;
+
+  result = GetRelation (PKTIN)->Join (
+    perFlowRule,
+    strlist ("pktIn_attr4", "pktIn_attr2", "pktIn_attr1", "pktIn_attr3"),
+    strlist ("perFlowRule_attr4", "perFlowRule_attr2", "perFlowRule_attr1", "perFlowRule_attr3"));
+
+  result->Assign (Assignor::New ("perFlowRule_attr3",
+    ValueExpr::New (Int32Value::New (1))));
+
+  result = result->Project (
+    PKTRECEIVED,
+    strlist ("perFlowRule_attr4",
+      "perFlowRule_attr5",
+      "perFlowRule_attr2",
+      "perFlowRule_attr3",
+      "perFlowRule_attr1",
+      "perFlowRule_attr4"),
+    strlist ("pktReceived_attr1",
+      "pktReceived_attr2",
+      "pktReceived_attr3",
+      "pktReceived_attr4",
+      "pktReceived_attr5",
+      RN_DEST));
+
+  Send (result);
+}
+
+void
+Firewall::_eca (Ptr<Tuple> controllerConnection)
+{
+  RAPIDNET_LOG_INFO ("_eca triggered");
+
+  Ptr<RelationBase> result;
+
+  result = GetRelation (PKTIN)->Join (
+    controllerConnection,
+    strlist ("pktIn_attr1"),
+    strlist ("controllerConnection_attr1"));
+
+  result->Assign (Assignor::New ("pktIn_attr3",
+    ValueExpr::New (Int32Value::New (2))));
+
+  result = result->Project (
+    PKTFROMSWITCH,
+    strlist ("controllerConnection_attr2",
+      "controllerConnection_attr1",
+      "pktIn_attr2",
+      "pktIn_attr3",
+      "pktIn_attr4",
+      "controllerConnection_attr2"),
+    strlist ("pktFromSwitch_attr1",
+      "pktFromSwitch_attr2",
+      "pktFromSwitch_attr3",
+      "pktFromSwitch_attr4",
+      "pktFromSwitch_attr5",
+      RN_DEST));
+
+  Send (result);
+}
+
+void
+Firewall::ECAMat (Ptr<Tuple> perFlowRulesend)
+{
+  RAPIDNET_LOG_INFO ("ECAMat triggered");
+
+  Ptr<Tuple> result = perFlowRulesend;
+
+  result = result->Project (
+    PERFLOWRULE,
+    strlist ("perFlowRulesend_attr1",
+      "perFlowRulesend_attr2",
+      "perFlowRulesend_attr3",
+      "perFlowRulesend_attr4",
+      "perFlowRulesend_attr5"),
+    strlist ("perFlowRule_attr1",
+      "perFlowRule_attr2",
+      "perFlowRule_attr3",
+      "perFlowRule_attr4",
+      "perFlowRule_attr5"));
+
+  Insert (result);
+}
+
+void
+Firewall::_eca (Ptr<Tuple> pktFromSwitch)
+{
+  RAPIDNET_LOG_INFO ("_eca triggered");
+
+  Ptr<RelationBase> result;
+
+  result = GetRelation (TRUSTEDCONTROLLERMEMORY)->Join (
+    pktFromSwitch,
+    strlist ("trustedControllerMemory_attr1", "trustedControllerMemory_attr3", "trustedControllerMemory_attr2"),
+    strlist ("pktFromSwitch_attr1", "pktFromSwitch_attr3", "pktFromSwitch_attr2"));
+
+  result->Assign (Assignor::New ("pktFromSwitch_attr4",
+    ValueExpr::New (Int32Value::New (2))));
+
+  result->Assign (Assignor::New ("Tport",
+    ValueExpr::New (Int32Value::New (1))));
+
+  result = result->Project (
+    PERFLOWRULESEND,
+    strlist ("pktFromSwitch_attr2",
+      "pktFromSwitch_attr3",
+      "pktFromSwitch_attr4",
+      "pktFromSwitch_attr5",
+      "Tport",
+      "pktFromSwitch_attr2"),
+    strlist ("perFlowRulesend_attr1",
+      "perFlowRulesend_attr2",
+      "perFlowRulesend_attr3",
+      "perFlowRulesend_attr4",
+      "perFlowRulesend_attr5",
+      RN_DEST));
+
+  Send (result);
+}
+
+void
+Firewall::Eca0Ins (Ptr<Tuple> perFlowRule)
+{
+  RAPIDNET_LOG_INFO ("Eca0Ins triggered");
+
+  Ptr<RelationBase> result;
+
+  result = GetRelation (PKTIN)->Join (
+    perFlowRule,
+    strlist ("pktIn_attr4", "pktIn_attr2", "pktIn_attr1", "pktIn_attr3"),
+    strlist ("perFlowRule_attr4", "perFlowRule_attr2", "perFlowRule_attr1", "perFlowRule_attr3"));
+
+  result->Assign (Assignor::New ("perFlowRule_attr3",
+    ValueExpr::New (Int32Value::New (2))));
+
+  result->Assign (Assignor::New ("perFlowRule_attr5",
+    ValueExpr::New (Int32Value::New (1))));
+
+  result = result->Project (
+    PKTRECEIVED,
+    strlist ("perFlowRule_attr4",
+      "perFlowRule_attr5",
+      "perFlowRule_attr2",
+      "perFlowRule_attr3",
+      "perFlowRule_attr1",
+      "perFlowRule_attr4"),
+    strlist ("pktReceived_attr1",
+      "pktReceived_attr2",
+      "pktReceived_attr3",
+      "pktReceived_attr4",
+      "pktReceived_attr5",
+      RN_DEST));
+
+  Send (result);
+}
+
+void
+Firewall::Eca1Ins (Ptr<Tuple> pktIn)
+{
+  RAPIDNET_LOG_INFO ("Eca1Ins triggered");
+
+  Ptr<RelationBase> result;
+
+  result = GetRelation (PERFLOWRULE)->Join (
+    pktIn,
+    strlist ("perFlowRule_attr4", "perFlowRule_attr2", "perFlowRule_attr1", "perFlowRule_attr3"),
+    strlist ("pktIn_attr4", "pktIn_attr2", "pktIn_attr1", "pktIn_attr3"));
+
+  result->Assign (Assignor::New ("pktIn_attr3",
+    ValueExpr::New (Int32Value::New (2))));
+
+  result->Assign (Assignor::New ("perFlowRule_attr5",
+    ValueExpr::New (Int32Value::New (1))));
+
+  result = result->Project (
+    PKTRECEIVED,
+    strlist ("pktIn_attr4",
+      "perFlowRule_attr5",
+      "pktIn_attr2",
+      "pktIn_attr3",
+      "pktIn_attr1",
+      "pktIn_attr4"),
+    strlist ("pktReceived_attr1",
+      "pktReceived_attr2",
+      "pktReceived_attr3",
+      "pktReceived_attr4",
+      "pktReceived_attr5",
+      RN_DEST));
+
+  Send (result);
 }
 

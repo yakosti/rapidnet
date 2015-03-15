@@ -1,13 +1,13 @@
 ## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
 
 def build(bld):
-    module = bld.create_ns3_module('temp', ['internet-stack'])
+    module = bld.create_ns3_module('firewall', ['internet-stack'])
     module.source = [
-        'temp.cc',
+        'firewall.cc',
         ]
     headers = bld.new_task_gen('ns3header')
-    headers.module = 'temp'
+    headers.module = 'firewall'
     headers.source = [
-        'temp.h',
-        'temp-helper.h',
+        'firewall.h',
+        'firewall-helper.h',
         ]
