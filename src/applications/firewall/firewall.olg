@@ -3,8 +3,11 @@
 #define TRUSTED_PORT 1
 #define UNTRUSTED_PORT 2
 
-/* Tuples Definition
- * -----------------
+/* 
+ * ------------------------------------------------------------------------------------
+ *  -------------------
+ * | Tuples Definition |
+ *  -------------------
  * 
  * pktReceived(@Dst, DstPort, Src, SrcPort, Switch):
  *     Host Dst received a packet via DstPort from switch, that
@@ -24,14 +27,16 @@
  *     Switch stores in its memory table, that whenever packet from host Src
  *     appears via SrcPort, and is to be sent to host Dst, send it via DstPort.
  *     This is allowed because it has been done before at least once.
+ * ------------------------------------------------------------------------------------
+ * 
+ * Only one switch and one controller
  *
+ * ------------------------------------------------------------------------------------
  */
 
-materialize(trustedControllerMemory,infinity,infinity,keys(1,2,3)). 
-materialize(openConnectionToController,infinity,infinity,keys(1)).
-
-materialize(pktIn,infinity,infinity,keys(1,2,3,4)).
-
+materialize(trustedControllerMemory,infinity,infinity,keys(3)). 
+materialize(openConnectionToController,infinity,infinity,keys()).
+materialize(pktIn,infinity,infinity,keys(2,3,4)).
 materialize(perFlowRule,infinity,infinity,keys(2,3,4,5)).
 
 

@@ -82,8 +82,7 @@ Firewall::InitDatabase ()
 {
   //RapidNetApplicationBase::InitDatabase ();
 
-  AddRelationWithKeys (OPENCONNECTIONTOCONTROLLER, attrdeflist (
-    attrdef ("openConnectionToController_attr1", IPV4)));
+  AddRelationWithKeys (OPENCONNECTIONTOCONTROLLER, attrdeflist ();
 
   AddRelationWithKeys (PERFLOWRULE, attrdeflist (
     attrdef ("perFlowRule_attr2", IPV4),
@@ -92,14 +91,11 @@ Firewall::InitDatabase ()
     attrdef ("perFlowRule_attr5", IPV4)));
 
   AddRelationWithKeys (PKTIN, attrdeflist (
-    attrdef ("pktIn_attr1", IPV4),
     attrdef ("pktIn_attr2", IPV4),
     attrdef ("pktIn_attr3", IPV4),
     attrdef ("pktIn_attr4", IPV4)));
 
   AddRelationWithKeys (TRUSTEDCONTROLLERMEMORY, attrdeflist (
-    attrdef ("trustedControllerMemory_attr1", IPV4),
-    attrdef ("trustedControllerMemory_attr2", IPV4),
     attrdef ("trustedControllerMemory_attr3", IPV4)));
 
 }
