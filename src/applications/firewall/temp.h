@@ -29,12 +29,16 @@ namespace temp {
 class Temp : public RapidNetApplicationBase
 {
 public:
+  static const string CONTROLLERCONNECTION;
   static const string OPENCONNECTIONTOCONTROLLER;
   static const string PERFLOWRULE;
+  static const string PERFLOWRULESEND;
+  static const string PKTFROMSWITCH;
   static const string PKTIN;
   static const string PKTRECEIVED;
   static const string R2TRUSTEDCONTROLLERMEMORYSEND;
   static const string TRUSTEDCONTROLLERMEMORY;
+  static const string TRUSTEDCONTROLLERMEMORYSEND;
 
   static TypeId GetTypeId (void);
 
@@ -59,6 +63,24 @@ protected:
   virtual void R2ECAMat (Ptr<Tuple> r2trustedControllerMemorysend);
 
   virtual void R2_eca (Ptr<Tuple> pktReceived);
+
+  virtual void ECAMat (Ptr<Tuple> trustedControllerMemorysend);
+
+  virtual void _eca (Ptr<Tuple> controllerConnection);
+
+  virtual void Eca0Ins (Ptr<Tuple> pktIn);
+
+  virtual void Eca1Ins (Ptr<Tuple> perFlowRule);
+
+  virtual void _eca (Ptr<Tuple> controllerConnection);
+
+  virtual void ECAMat (Ptr<Tuple> perFlowRulesend);
+
+  virtual void _eca (Ptr<Tuple> pktFromSwitch);
+
+  virtual void Eca0Ins (Ptr<Tuple> perFlowRule);
+
+  virtual void Eca1Ins (Ptr<Tuple> pktIn);
 
 };
 

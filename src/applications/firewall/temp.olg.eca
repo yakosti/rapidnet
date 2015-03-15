@@ -1,3 +1,12 @@
 ECA Rule r1Eca0Ins ACTION_REMOTE_SEND<pktReceived(@Dst, Uport, Src, Tport, Switch)> :- EVENT_INSERT<pktIn(@Switch, Src, Tport, Dst)>, Uport := 2, Tport := 1.
 ECA Rule r2ECAMat ACTION_ADD<trustedControllerMemory(@Controller, Switch, Dst)> :- EVENT_RECV<r2trustedControllerMemorysend(@Controller, Switch, Dst)>.
 ECA Rule r2_eca ACTION_REMOTE_SEND<r2trustedControllerMemorysend(@Controller, Switch, Dst)> :- EVENT_RECV<pktReceived(@Dst, Uport, Src, Tport, Switch)>, openConnectionToController(@Dst, Controller), Uport := 2, Tport := 1.
+ECA Rule ECAMat ACTION_ADD<trustedControllerMemory(@Controller, Switch, Dst)> :- EVENT_RECV<trustedControllerMemorysend(@Controller, Switch, Dst)>.
+ECA Rule _eca ACTION_REMOTE_SEND<trustedControllerMemorysend(@Controller, Switch, Dst)> :- EVENT_RECV<controllerConnection(@Switch, Controller)>, pktIn(@Switch, Src, Tport, Dst), Tport := 1.
+ECA Rule Eca0Ins ACTION_REMOTE_SEND<pktReceived(@Dst, PortDst, Src, Tport, Switch)> :- EVENT_INSERT<pktIn(@Switch, Src, Tport, Dst)>, perFlowRule(@Switch, Src, Tport, Dst, PortDst), Tport := 1.
+ECA Rule Eca1Ins ACTION_REMOTE_SEND<pktReceived(@Dst, PortDst, Src, Tport, Switch)> :- EVENT_INSERT<perFlowRule(@Switch, Src, Tport, Dst, PortDst)>, pktIn(@Switch, Src, Tport, Dst), Tport := 1.
+ECA Rule _eca ACTION_REMOTE_SEND<pktFromSwitch(@Controller, Switch, Src, Uport, Dst)> :- EVENT_RECV<controllerConnection(@Switch, Controller)>, pktIn(@Switch, Src, Uport, Dst), Uport := 2.
+ECA Rule ECAMat ACTION_ADD<perFlowRule(@Switch, Src, Uport, Dst, Tport)> :- EVENT_RECV<perFlowRulesend(@Switch, Src, Uport, Dst, Tport)>.
+ECA Rule _eca ACTION_REMOTE_SEND<perFlowRulesend(@Switch, Src, Uport, Dst, Tport)> :- EVENT_RECV<pktFromSwitch(@Controller, Switch, Src, Uport, Dst)>, trustedControllerMemory(@Controller, Switch, Src), Uport := 2, Tport := 1.
+ECA Rule Eca0Ins ACTION_REMOTE_SEND<pktReceived(@Dst, Tport, Src, Uport, Switch)> :- EVENT_INSERT<perFlowRule(@Switch, Src, Uport, Dst, Tport)>, pktIn(@Switch, Src, Uport, Dst), Uport := 2, Tport := 1.
+ECA Rule Eca1Ins ACTION_REMOTE_SEND<pktReceived(@Dst, Tport, Src, Uport, Switch)> :- EVENT_INSERT<pktIn(@Switch, Src, Uport, Dst)>, perFlowRule(@Switch, Src, Uport, Dst, Tport), Uport := 2, Tport := 1.
