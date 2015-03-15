@@ -38,6 +38,7 @@ public:
   static const string PKTRECEIVED;
   static const string R2TRUSTEDCONTROLLERMEMORYSEND;
   static const string TRUSTEDCONTROLLERMEMORY;
+  static const string TRUSTEDCONTROLLERMEMORYDELETE;
   static const string TRUSTEDCONTROLLERMEMORYSEND;
 
   static TypeId GetTypeId (void);
@@ -60,13 +61,23 @@ protected:
 
   virtual void R1Eca0Ins (Ptr<Tuple> pktIn);
 
-  virtual void R2ECAMat (Ptr<Tuple> r2trustedControllerMemorysend);
+  virtual void R2Eca0RemoteIns (Ptr<Tuple> r2trustedControllerMemorysend);
 
-  virtual void R2_eca (Ptr<Tuple> pktReceived);
+  virtual void R2Eca0RemoteDel (Ptr<Tuple> trustedControllerMemoryDelete);
 
-  virtual void ECAMat (Ptr<Tuple> trustedControllerMemorysend);
+  virtual void R2Eca0Ins (Ptr<Tuple> pktIn);
 
-  virtual void _eca (Ptr<Tuple> controllerConnection);
+  virtual void R2Eca0Del (Ptr<Tuple> pktIn);
+
+  virtual void R2Eca1Ins (Ptr<Tuple> openConnectionToController);
+
+  virtual void R2Eca1Del (Ptr<Tuple> openConnectionToController);
+
+  virtual void Eca0RemoteIns (Ptr<Tuple> trustedControllerMemorysend);
+
+  virtual void Eca0Ins (Ptr<Tuple> pktIn);
+
+  virtual void Eca1Ins (Ptr<Tuple> openConnectionToController);
 
   virtual void Eca0Ins (Ptr<Tuple> pktIn);
 

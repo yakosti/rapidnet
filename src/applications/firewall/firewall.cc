@@ -25,6 +25,7 @@ const string Firewall::PKTIN = "pktIn";
 const string Firewall::PKTRECEIVED = "pktReceived";
 const string Firewall::R2TRUSTEDCONTROLLERMEMORYSEND = "r2trustedControllerMemorysend";
 const string Firewall::TRUSTEDCONTROLLERMEMORY = "trustedControllerMemory";
+const string Firewall::TRUSTEDCONTROLLERMEMORYDELETE = "trustedControllerMemoryDelete";
 const string Firewall::TRUSTEDCONTROLLERMEMORYSEND = "trustedControllerMemorysend";
 
 NS_LOG_COMPONENT_DEFINE ("Firewall");
@@ -114,19 +115,39 @@ Firewall::DemuxRecv (Ptr<Tuple> tuple)
     }
   if (IsRecvEvent (tuple, R2TRUSTEDCONTROLLERMEMORYSEND))
     {
-      R2ECAMat (tuple);
+      R2Eca0RemoteIns (tuple);
     }
-  if (IsRecvEvent (tuple, PKTRECEIVED))
+  if (IsRecvEvent (tuple, TRUSTEDCONTROLLERMEMORYDELETE))
     {
-      R2_eca (tuple);
+      R2Eca0RemoteDel (tuple);
+    }
+  if (IsInsertEvent (tuple, PKTIN))
+    {
+      R2Eca0Ins (tuple);
+    }
+  if (IsDeleteEvent (tuple, PKTIN))
+    {
+      R2Eca0Del (tuple);
+    }
+  if (IsInsertEvent (tuple, OPENCONNECTIONTOCONTROLLER))
+    {
+      R2Eca1Ins (tuple);
+    }
+  if (IsDeleteEvent (tuple, OPENCONNECTIONTOCONTROLLER))
+    {
+      R2Eca1Del (tuple);
     }
   if (IsRecvEvent (tuple, TRUSTEDCONTROLLERMEMORYSEND))
     {
-      ECAMat (tuple);
+      Eca0RemoteIns (tuple);
     }
-  if (IsRecvEvent (tuple, CONTROLLERCONNECTION))
+  if (IsInsertEvent (tuple, PKTIN))
     {
-      _eca (tuple);
+      Eca0Ins (tuple);
+    }
+  if (IsInsertEvent (tuple, OPENCONNECTIONTOCONTROLLER))
+    {
+      Eca1Ins (tuple);
     }
   if (IsInsertEvent (tuple, PKTIN))
     {
@@ -190,9 +211,9 @@ Firewall::R1Eca0Ins (Ptr<Tuple> pktIn)
 }
 
 void
-Firewall::R2ECAMat (Ptr<Tuple> r2trustedControllerMemorysend)
+Firewall::R2Eca0RemoteIns (Ptr<Tuple> r2trustedControllerMemorysend)
 {
-  RAPIDNET_LOG_INFO ("R2ECAMat triggered");
+  RAPIDNET_LOG_INFO ("R2Eca0RemoteIns triggered");
 
   Ptr<Tuple> result = r2trustedControllerMemorysend;
 
@@ -209,28 +230,44 @@ Firewall::R2ECAMat (Ptr<Tuple> r2trustedControllerMemorysend)
 }
 
 void
-Firewall::R2_eca (Ptr<Tuple> pktReceived)
+Firewall::R2Eca0RemoteDel (Ptr<Tuple> trustedControllerMemoryDelete)
 {
-  RAPIDNET_LOG_INFO ("R2_eca triggered");
+  RAPIDNET_LOG_INFO ("R2Eca0RemoteDel triggered");
+
+  Ptr<Tuple> result = trustedControllerMemoryDelete;
+
+  result = result->Project (
+    TRUSTEDCONTROLLERMEMORY,
+    strlist ("trustedControllerMemoryDelete_attr1",
+      "trustedControllerMemoryDelete_attr2",
+      "trustedControllerMemoryDelete_attr3"),
+    strlist ("trustedControllerMemory_attr1",
+      "trustedControllerMemory_attr2",
+      "trustedControllerMemory_attr3"));
+
+  Delete (result);
+}
+
+void
+Firewall::R2Eca0Ins (Ptr<Tuple> pktIn)
+{
+  RAPIDNET_LOG_INFO ("R2Eca0Ins triggered");
 
   Ptr<RelationBase> result;
 
   result = GetRelation (OPENCONNECTIONTOCONTROLLER)->Join (
-    pktReceived,
+    pktIn,
     strlist ("openConnectionToController_attr1"),
-    strlist ("pktReceived_attr1"));
+    strlist ("pktIn_attr1"));
 
-  result->Assign (Assignor::New ("pktReceived_attr2",
-    ValueExpr::New (Int32Value::New (2))));
-
-  result->Assign (Assignor::New ("pktReceived_attr4",
+  result->Assign (Assignor::New ("pktIn_attr3",
     ValueExpr::New (Int32Value::New (1))));
 
   result = result->Project (
     R2TRUSTEDCONTROLLERMEMORYSEND,
     strlist ("openConnectionToController_attr2",
-      "pktReceived_attr5",
-      "pktReceived_attr1",
+      "pktIn_attr1",
+      "pktIn_attr4",
       "openConnectionToController_attr2"),
     strlist ("r2trustedControllerMemorysend_attr1",
       "r2trustedControllerMemorysend_attr2",
@@ -241,9 +278,96 @@ Firewall::R2_eca (Ptr<Tuple> pktReceived)
 }
 
 void
-Firewall::ECAMat (Ptr<Tuple> trustedControllerMemorysend)
+Firewall::R2Eca0Del (Ptr<Tuple> pktIn)
 {
-  RAPIDNET_LOG_INFO ("ECAMat triggered");
+  RAPIDNET_LOG_INFO ("R2Eca0Del triggered");
+
+  Ptr<RelationBase> result;
+
+  result = GetRelation (OPENCONNECTIONTOCONTROLLER)->Join (
+    pktIn,
+    strlist ("openConnectionToController_attr1"),
+    strlist ("pktIn_attr1"));
+
+  result->Assign (Assignor::New ("pktIn_attr3",
+    ValueExpr::New (Int32Value::New (1))));
+
+  result = result->Project (
+    TRUSTEDCONTROLLERMEMORYDELETE,
+    strlist ("openConnectionToController_attr2",
+      "pktIn_attr1",
+      "pktIn_attr4",
+      "openConnectionToController_attr2"),
+    strlist ("trustedControllerMemoryDelete_attr1",
+      "trustedControllerMemoryDelete_attr2",
+      "trustedControllerMemoryDelete_attr3",
+      RN_DEST));
+
+  Send (result);
+}
+
+void
+Firewall::R2Eca1Ins (Ptr<Tuple> openConnectionToController)
+{
+  RAPIDNET_LOG_INFO ("R2Eca1Ins triggered");
+
+  Ptr<RelationBase> result;
+
+  result = GetRelation (PKTIN)->Join (
+    openConnectionToController,
+    strlist ("pktIn_attr1"),
+    strlist ("openConnectionToController_attr1"));
+
+  result->Assign (Assignor::New ("pktIn_attr3",
+    ValueExpr::New (Int32Value::New (1))));
+
+  result = result->Project (
+    R2TRUSTEDCONTROLLERMEMORYSEND,
+    strlist ("openConnectionToController_attr2",
+      "openConnectionToController_attr1",
+      "pktIn_attr4",
+      "openConnectionToController_attr2"),
+    strlist ("r2trustedControllerMemorysend_attr1",
+      "r2trustedControllerMemorysend_attr2",
+      "r2trustedControllerMemorysend_attr3",
+      RN_DEST));
+
+  Send (result);
+}
+
+void
+Firewall::R2Eca1Del (Ptr<Tuple> openConnectionToController)
+{
+  RAPIDNET_LOG_INFO ("R2Eca1Del triggered");
+
+  Ptr<RelationBase> result;
+
+  result = GetRelation (PKTIN)->Join (
+    openConnectionToController,
+    strlist ("pktIn_attr1"),
+    strlist ("openConnectionToController_attr1"));
+
+  result->Assign (Assignor::New ("pktIn_attr3",
+    ValueExpr::New (Int32Value::New (1))));
+
+  result = result->Project (
+    TRUSTEDCONTROLLERMEMORYDELETE,
+    strlist ("openConnectionToController_attr2",
+      "openConnectionToController_attr1",
+      "pktIn_attr4",
+      "openConnectionToController_attr2"),
+    strlist ("trustedControllerMemoryDelete_attr1",
+      "trustedControllerMemoryDelete_attr2",
+      "trustedControllerMemoryDelete_attr3",
+      RN_DEST));
+
+  Send (result);
+}
+
+void
+Firewall::Eca0RemoteIns (Ptr<Tuple> trustedControllerMemorysend)
+{
+  RAPIDNET_LOG_INFO ("Eca0RemoteIns triggered");
 
   Ptr<Tuple> result = trustedControllerMemorysend;
 
@@ -260,26 +384,55 @@ Firewall::ECAMat (Ptr<Tuple> trustedControllerMemorysend)
 }
 
 void
-Firewall::_eca (Ptr<Tuple> controllerConnection)
+Firewall::Eca0Ins (Ptr<Tuple> pktIn)
 {
-  RAPIDNET_LOG_INFO ("_eca triggered");
+  RAPIDNET_LOG_INFO ("Eca0Ins triggered");
 
   Ptr<RelationBase> result;
 
-  result = GetRelation (PKTIN)->Join (
-    controllerConnection,
-    strlist ("pktIn_attr1"),
-    strlist ("controllerConnection_attr1"));
+  result = GetRelation (OPENCONNECTIONTOCONTROLLER)->Join (
+    pktIn,
+    strlist ("openConnectionToController_attr1"),
+    strlist ("pktIn_attr1"));
 
   result->Assign (Assignor::New ("pktIn_attr3",
     ValueExpr::New (Int32Value::New (1))));
 
   result = result->Project (
     TRUSTEDCONTROLLERMEMORYSEND,
-    strlist ("controllerConnection_attr2",
-      "controllerConnection_attr1",
+    strlist ("openConnectionToController_attr2",
+      "pktIn_attr1",
       "pktIn_attr4",
-      "controllerConnection_attr2"),
+      "openConnectionToController_attr2"),
+    strlist ("trustedControllerMemorysend_attr1",
+      "trustedControllerMemorysend_attr2",
+      "trustedControllerMemorysend_attr3",
+      RN_DEST));
+
+  Send (result);
+}
+
+void
+Firewall::Eca1Ins (Ptr<Tuple> openConnectionToController)
+{
+  RAPIDNET_LOG_INFO ("Eca1Ins triggered");
+
+  Ptr<RelationBase> result;
+
+  result = GetRelation (PKTIN)->Join (
+    openConnectionToController,
+    strlist ("pktIn_attr1"),
+    strlist ("openConnectionToController_attr1"));
+
+  result->Assign (Assignor::New ("pktIn_attr3",
+    ValueExpr::New (Int32Value::New (1))));
+
+  result = result->Project (
+    TRUSTEDCONTROLLERMEMORYSEND,
+    strlist ("openConnectionToController_attr2",
+      "openConnectionToController_attr1",
+      "pktIn_attr4",
+      "openConnectionToController_attr2"),
     strlist ("trustedControllerMemorysend_attr1",
       "trustedControllerMemorysend_attr2",
       "trustedControllerMemorysend_attr3",
