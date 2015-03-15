@@ -174,24 +174,30 @@ void compile (string overlogFile, bool provenanceEnabled)
   Ptr<DPGraph> graphNdlog (new DPGraph(ctxt));
   //graphNdlog->PrintGraph();
 
+  //Recursive invariant
+  Invariant inv = Invariant();
+  Ptr<NewDPGraph> newGraph (new NewDPGraph(graphNdlog, inv));
+  newGraph->Print();
+
   //Ptr<MiniGraph> miniGraph (new MiniGraph(graphNdlog));
   //miniGraph->PrintGraph();
 
   //Base properties
-  BaseProperty baseProp = BaseProperty();
-  //Recursive invariant
-  Invariant inv = Invariant();
-  Ptr<Dpool> dpool (new Dpool(graphNdlog, baseProp, inv));
-  //dpool->PrintDpool();
-  //dpool->PrintDeriv("ePingPongFinish");
-  //User-defined property
-  Property p = Property();
-
-  NS_LOG_DEBUG("Property constructed.");
-  //Verify the property
-  map<Variable*, int> assignment;
-  bool res = CheckProperty(*dpool, p, assignment);
-  cout << "The property is valid: " << res << endl;
+//  BaseProperty baseProp = BaseProperty();
+//  //Recursive invariant
+//  Invariant inv = Invariant();
+//  Ptr<Dpool> dpool (new Dpool(graphNdlog, baseProp, inv));
+//  dpool->VerifyInvariants(inv);
+//  //dpool->PrintDpool();
+//  //dpool->PrintDeriv("ePingPongFinish");
+//  //User-defined property
+//  Property p = Property();
+//
+//  NS_LOG_DEBUG("Property constructed.");
+//  //Verify the property
+//  map<Variable*, int> assignment;
+//  bool res = CheckProperty(*dpool, p, assignment);
+//  cout << "The property is valid: " << res << endl;
 
   /* adding smt solver part */
   //const DerivNodeList& dlist = dpool->GetDerivList("advertisements");
@@ -208,7 +214,7 @@ void compile (string overlogFile, bool provenanceEnabled)
 int main (int argc, char** argv)
 {
   LogComponentEnable ("RapidNetDPGraph", LOG_LEVEL_FUNCTION);
-//  LogComponentEnable ("DPGraph", LOG_LEVEL_FUNCTION);
+  LogComponentEnable ("DPGraph", LOG_LEVEL_FUNCTION);
   LogComponentEnable ("Formula", LOG_LEVEL_FUNCTION);
   LogComponentEnable ("Dpool", LOG_LEVEL_FUNCTION);
   LogComponentEnable ("Property", LOG_LEVEL_FUNCTION);
@@ -217,7 +223,7 @@ int main (int argc, char** argv)
 //  LogComponentEnable ("Formula", LOG_INFO);
 //  LogComponentEnable ("Property", LOG_INFO);
 
-  test_parsing();
+  //test_parsing();
 
   string overlogFile;
   string baseoverlogFile = DEFAULT_RN_APP_BASE;

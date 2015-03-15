@@ -132,14 +132,14 @@ public:
 	Dpool(const Ptr<DPGraph>, const BaseProperty&, const Invariant&);
 
 	void ProcessRuleNode(Tuple*,
-		   	   	   	   	 const RuleNode*,
+		   	   	   	   	 RuleNode*,
 						 const TupleListC&,
 						 TupleListC::const_iterator,
 						 vector<DerivNodeList::const_iterator>,
 						 VarMap vmap);
 
 	void CreateDerivNode(Tuple*,
-	 	 	   	   	   	 const RuleNode*,
+	 	 	   	   	   	 RuleNode*,
 						 vector<DerivNodeList::const_iterator>&,
 						 VarMap& vmap);
 

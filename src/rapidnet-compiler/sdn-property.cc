@@ -20,14 +20,14 @@ Property::Property()
 	existPredList = list<PredicateInstance*>();
 	existConsList = new ConstraintsTemplate();
 
-	ProcessUniPred("ePingPongFinish(a)", varMap);
+	//ProcessUniPred("reachable(src,dest,cost)", varMap);
 	//ProcessUniPred("verifyPath(m,n,l)", varMap);
 
 	//ProcessUniCons(varMap);
 
-	ProcessExistPred("ePing(o,p)", varMap);
+	//ProcessExistPred("ePing(o,p)", varMap);
 	//ProcessExistPred("link(r,s,t)", varMap);
-	ProcessExistCons(varMap);
+	//ProcessExistCons(varMap);
 }
 
 //TODO: Parse constraints from user input
@@ -86,12 +86,12 @@ Property::ProcessExistCons(const map<string, Variable*>& varMap)
 //
 //	existConsList->AddConstraint(newCons);
 
-	string var1 = "p";
+	string var1 = "cost";
 	Variable* varPtr = varMap.find(var1)->second;
 
 	Constraint* newCons = new Constraint(Constraint::GT,
 										 varPtr,
-										 new IntVal(3));
+										 new IntVal(0));
 
 	existConsList->AddConstraint(newCons);
 }
@@ -285,28 +285,45 @@ BaseProperty::~BaseProperty()
 		delete cat.second;
 		delete cat.first;
 	}
-
 }
 
 Invariant::Invariant()
 {
 	invs = AnnotMap();
 
-//	string predName = "";
+//	NS_LOG_FUNCTION("Generate invariant...");
+//	string predName = "reachable";
 //	int argNum = 3;
 //	PredicateSchema* scheme = new PredicateSchema(predName, argNum);
 //	vector<Term*> args;
-//	vector<Term*>::iterator ita;
-//	for (ita = args.begin();ita != args.end();ita++)
+//	for (int i = 0;i < argNum;i++)
 //	{
 //		Variable* newVar = new Variable(Variable::STRING, true);
 //		args.push_back(newVar);
 //	}
 //	//Use index to create formulas;
-//	Formula* form;
+//	IntVal* value = new IntVal(0);
+//	Formula* form = new Constraint(Constraint::GT, args[2], value);
 //	PredicateInstance* pInst = new PredicateInstance(scheme, args);
 //	Annotation newAnnot = Annotation(pInst, form);
 //	invs.insert(AnnotMap::value_type(predName, newAnnot));
+
+	NS_LOG_FUNCTION("Generate invariant...");
+	string predName = "verifyPath";
+	int argNum = 9;
+	PredicateSchema* scheme = new PredicateSchema(predName, argNum);
+	vector<Term*> args;
+	for (int i = 0;i < argNum;i++)
+	{
+		Variable* newVar = new Variable(Variable::STRING, true);
+		args.push_back(newVar);
+	}
+	//Use index to create formulas;
+	IntVal* value = new IntVal(0);
+	Formula* form = new Constraint(Constraint::GT, args[0], value);
+	PredicateInstance* pInst = new PredicateInstance(scheme, args);
+	Annotation newAnnot = Annotation(pInst, form);
+	invs.insert(AnnotMap::value_type(predName, newAnnot));
 
 	//  AnnotMap testMap;
 	//  list<Variable::TypeCode> tlist (9, Variable::STRING);
@@ -318,6 +335,7 @@ Invariant::Invariant()
 	//  Quantifier qtf (Quantifier::EXISTS, quantArg, ct);
 	//  Annotation anno (&tp, &qtf);
 	//  testMap.insert(AnnotMap::value_type("verifyPath", &anno));
+	NS_LOG_FUNCTION("Invariant generated.");
 }
 
 Invariant::~Invariant()

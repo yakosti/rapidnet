@@ -286,9 +286,11 @@ Dpool::Dpool(const Ptr<DPGraph> dpgraph,
 	//Perform topological sorting on the dependency graph
 	const AnnotMap& invariants = inv.GetInv();
 	const TupleNode* head = NULL;
-	Ptr<MiniGraph> mGraph (new MiniGraph(dpgraph));
-	pair<RuleListC, RuleListC> topoOrder = mGraph->TopoSort(invariants);
-	MetaListC btlist = mGraph->GetBaseTuples();
+	//Ptr<MiniGraph> mGraph (new MiniGraph(dpgraph, inv));
+	NS_LOG_DEBUG("Construct Mini Graph.");
+	//pair<RuleListC, RuleListC> topoOrder = mGraph->TopoSort(invariants);
+	NS_LOG_DEBUG("Mini Graph constructed.");
+	//MetaListC btlist = mGraph->GetBaseTuples();
 
 	//Create a key in derivations for each tuple node in dpgraph
 	const TupleList& tnlist = dpgraph->GetTupleList();
@@ -302,10 +304,10 @@ Dpool::Dpool(const Ptr<DPGraph> dpgraph,
 
 	//Process base tuples
 	NS_LOG_INFO("Process base tuples...");
-	NS_LOG_DEBUG("Size of MetaList:" << btlist.size());
+	//NS_LOG_DEBUG("Size of MetaList:" << btlist.size());
 	const ConsAnnotMap& baseAnnot = baseProp.GetProp();
 	MetaListC::const_iterator itti;
-	for (itti = btlist.begin();itti != btlist.end();itti++)
+	//for (itti = btlist.begin();itti != btlist.end();itti++)
 	{
 		list<Variable::TypeCode> tlist = (*itti)->GetSchema();
 		string tpName = (*itti)->GetName();
@@ -333,7 +335,12 @@ Dpool::Dpool(const Ptr<DPGraph> dpgraph,
 	//Process rule nodes that cause loops
 	//Add the invariant of the head to the created RecurNode
 	NS_LOG_INFO("Process rules that cause loops...");
-	RuleListC& loopList = topoOrder.second;
+	//RuleListC& loopList = topoOrder.second;
+
+
+
+	//ERROR: The following line should be deleted
+	RuleListC loopList;
 	RuleListC::const_iterator itl;
 	for (itl = loopList.begin();itl != loopList.end();itl++)
 	{
@@ -380,7 +387,10 @@ Dpool::Dpool(const Ptr<DPGraph> dpgraph,
 
 	//Process rule nodes based on topological order
 	NS_LOG_INFO("Process rules based on topological sorting...");
-	RuleListC& rlist = topoOrder.first;
+	//RuleListC& rlist = topoOrder.first;
+
+	//ERROR: Following line should be deleted
+	RuleListC rlist;
 	RuleListC::const_iterator itr;
 	for (itr = rlist.begin();itr != rlist.end();itr++)
 	{
@@ -397,11 +407,12 @@ Dpool::Dpool(const Ptr<DPGraph> dpgraph,
 		//Recursively create DerivNode
 		ProcessRuleNode(headInst, (*itr), tblist, tblist.begin(), itv, unifMap);
 	}
+	NS_LOG_INFO("Dpool Constructed!");
 }
 
 void
 Dpool::ProcessRuleNode(Tuple* head,
-				   	   const RuleNode* rnode,
+				   	   RuleNode* rnode,
 					   const TupleListC& bodyList,
 					   TupleListC::const_iterator curPos,
 					   vector<DerivNodeList::const_iterator> bodyDerivs,
@@ -440,7 +451,7 @@ Dpool::ProcessRuleNode(Tuple* head,
 
 void
 Dpool::CreateDerivNode(Tuple* head,
-		 	 	 	   const RuleNode* rnode,
+		 	 	 	   RuleNode* rnode,
 					   vector<DerivNodeList::const_iterator>& bodyDerivs,
 					   VarMap& vmap)
 {
@@ -506,6 +517,7 @@ Dpool::VerifyInvariants(const Invariant& inv) const
 {
 	const AnnotMap& invariant = inv.GetInv();
 	AnnotMap::const_iterator ita;
+	//Check each invariant in the annotation
 	for (ita = invariant.begin();ita != invariant.end();ita++)
 	{
 		string tpName = ita->first;
@@ -513,6 +525,7 @@ Dpool::VerifyInvariants(const Invariant& inv) const
 		PredicateInstance* predInst = annot.first;
 		Formula* tupleInv = annot.second;
 
+		//Check soundness and completeness
 		const DerivNodeList& dlist = derivations.at(tpName);
 		DerivNodeList::const_iterator itd;
 		for (itd = dlist.begin();itd != dlist.end();itd++)
