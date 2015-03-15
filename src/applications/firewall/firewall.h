@@ -32,14 +32,14 @@ public:
   static const string CONTROLLERCONNECTION;
   static const string OPENCONNECTIONTOCONTROLLER;
   static const string PERFLOWRULE;
-  static const string PERFLOWRULESEND;
   static const string PKTFROMSWITCH;
   static const string PKTIN;
   static const string PKTRECEIVED;
   static const string R2TRUSTEDCONTROLLERMEMORYSEND;
+  static const string R3TRUSTEDCONTROLLERMEMORYSEND;
+  static const string R6PERFLOWRULESEND;
   static const string TRUSTEDCONTROLLERMEMORY;
   static const string TRUSTEDCONTROLLERMEMORYDELETE;
-  static const string TRUSTEDCONTROLLERMEMORYSEND;
 
   static TypeId GetTypeId (void);
 
@@ -73,25 +73,25 @@ protected:
 
   virtual void R2Eca1Del (Ptr<Tuple> openConnectionToController);
 
-  virtual void Eca0RemoteIns (Ptr<Tuple> trustedControllerMemorysend);
+  virtual void R3Eca0RemoteIns (Ptr<Tuple> r3trustedControllerMemorysend);
 
-  virtual void Eca0Ins (Ptr<Tuple> pktIn);
+  virtual void R3Eca0Ins (Ptr<Tuple> pktIn);
 
-  virtual void Eca1Ins (Ptr<Tuple> openConnectionToController);
+  virtual void R3Eca1Ins (Ptr<Tuple> openConnectionToController);
 
-  virtual void Eca0Ins (Ptr<Tuple> pktIn);
+  virtual void R4Eca0Ins (Ptr<Tuple> pktIn);
 
-  virtual void Eca1Ins (Ptr<Tuple> perFlowRule);
+  virtual void R4Eca1Ins (Ptr<Tuple> perFlowRule);
 
-  virtual void _eca (Ptr<Tuple> controllerConnection);
+  virtual void R5_eca (Ptr<Tuple> controllerConnection);
 
-  virtual void ECAMat (Ptr<Tuple> perFlowRulesend);
+  virtual void R6ECAMat (Ptr<Tuple> r6perFlowRulesend);
 
-  virtual void _eca (Ptr<Tuple> pktFromSwitch);
+  virtual void R6_eca (Ptr<Tuple> pktFromSwitch);
 
-  virtual void Eca0Ins (Ptr<Tuple> perFlowRule);
+  virtual void R7Eca0Ins (Ptr<Tuple> perFlowRule);
 
-  virtual void Eca1Ins (Ptr<Tuple> pktIn);
+  virtual void R7Eca1Ins (Ptr<Tuple> pktIn);
 
 };
 
