@@ -1,12 +1,41 @@
 REACHABLE
 ---------
 
-Property 1 (true)
-	// assuming that we define all links to have Cost > 0
-	forall Src Dest Cost (reachable(Src,Dest,Cost) -> Cost>0)
+Properties
+------ 
+// assuming that we add Cost > 0 to d1
+forall Src Dest Cost
+reachable(Src,Dest,Cost) -> 
+Cost>0.
 
-Property 2 (true)
-	forall Src Dest Cost (reachable(Src,Dest,Cost) -> exists Cost1 Mid ( link(Src, Mid, Cost1)) )
+Manual inspection: false
+Tool result: Wrong result
+Cause: The invariant is not correct.
 
-Property 3 (False)
-	forall Src Dest Cost ( reachable(Src,Dest,Cost) -> exists Cost1 (link(Src, Dest, Cost1)) )
+------ 
+// We define all links to have Cost > 0
+forall Src Dest Cost
+reachable(Src,Dest,Cost) -> 
+Cost>0.
+
+Manual inspection: true
+Tool result: 
+Running time:
+
+------
+forall Src Dest Cost
+reachable(Src,Dest,Cost) -> 
+exists Cost1 Mid link(Src, Mid, Cost1).
+
+Manual inspection: true
+Tool result:
+Running time:
+
+------
+forall Src Dest Cost 
+reachable(Src,Dest,Cost) -> 
+exists Cost1 link(Src, Dest, Cost1)
+
+Manual inspection: false
+Tool result: 
+Running time:
