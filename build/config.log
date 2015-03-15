@@ -1,6 +1,6 @@
-# project ns (3.5) configured on Sun Mar 15 18:03:54 2015 by
+# project ns (3.5) configured on Sun Mar 15 18:43:20 2015 by
 # waf 1.5.8 (abi 7, python 20709f0 on darwin)
-# using ./waf --run rapidnet-compiler --command-template= %s --ndlog=/Users/lkloh/rapidnet/src/applications/firewall/firewall.olg --base-ndlog=RapidNetApplicationBase --provenance=0
+# using ./waf
 #
 Checking for program cpp
 
