@@ -82,7 +82,8 @@ Firewall::InitDatabase ()
 {
   //RapidNetApplicationBase::InitDatabase ();
 
-  AddRelationWithKeys (OPENCONNECTIONTOCONTROLLER, attrdeflist ();
+  AddRelationWithKeys (OPENCONNECTIONTOCONTROLLER, attrdeflist (
+    attrdef ("openConnectionToController_attr1", IPV4)));
 
   AddRelationWithKeys (PERFLOWRULE, attrdeflist (
     attrdef ("perFlowRule_attr2", IPV4),
@@ -182,16 +183,20 @@ Firewall::R1Eca0Ins (Ptr<Tuple> pktIn)
 
   Ptr<Tuple> result = pktIn;
 
-  result->Assign (Assignor::New ("Uport",
-    ValueExpr::New (Int32Value::New (2))));
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("Uport"),
+      ValueExpr::New (Int32Value::New (2)))));
 
-  result->Assign (Assignor::New ("pktIn_attr3",
-    ValueExpr::New (Int32Value::New (1))));
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("pktIn_attr3"),
+      ValueExpr::New (Int32Value::New (1)))));
 
   result = result->Project (
     PKTRECEIVED,
     strlist ("pktIn_attr4",
-      "Uport",
+      VariableNotFoundError,
       "pktIn_attr2",
       "pktIn_attr3",
       "pktIn_attr1",
@@ -256,8 +261,10 @@ Firewall::R2Eca0Ins (Ptr<Tuple> pktIn)
     strlist ("openConnectionToController_attr1"),
     strlist ("pktIn_attr1"));
 
-  result->Assign (Assignor::New ("pktIn_attr3",
-    ValueExpr::New (Int32Value::New (1))));
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("pktIn_attr3"),
+      ValueExpr::New (Int32Value::New (1)))));
 
   result = result->Project (
     R2TRUSTEDCONTROLLERMEMORYSEND,
@@ -285,8 +292,10 @@ Firewall::R2Eca0Del (Ptr<Tuple> pktIn)
     strlist ("openConnectionToController_attr1"),
     strlist ("pktIn_attr1"));
 
-  result->Assign (Assignor::New ("pktIn_attr3",
-    ValueExpr::New (Int32Value::New (1))));
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("pktIn_attr3"),
+      ValueExpr::New (Int32Value::New (1)))));
 
   result = result->Project (
     TRUSTEDCONTROLLERMEMORYDELETE,
@@ -314,8 +323,10 @@ Firewall::R2Eca1Ins (Ptr<Tuple> openConnectionToController)
     strlist ("pktIn_attr1"),
     strlist ("openConnectionToController_attr1"));
 
-  result->Assign (Assignor::New ("pktIn_attr3",
-    ValueExpr::New (Int32Value::New (1))));
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("pktIn_attr3"),
+      ValueExpr::New (Int32Value::New (1)))));
 
   result = result->Project (
     R2TRUSTEDCONTROLLERMEMORYSEND,
@@ -343,8 +354,10 @@ Firewall::R2Eca1Del (Ptr<Tuple> openConnectionToController)
     strlist ("pktIn_attr1"),
     strlist ("openConnectionToController_attr1"));
 
-  result->Assign (Assignor::New ("pktIn_attr3",
-    ValueExpr::New (Int32Value::New (1))));
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("pktIn_attr3"),
+      ValueExpr::New (Int32Value::New (1)))));
 
   result = result->Project (
     TRUSTEDCONTROLLERMEMORYDELETE,
@@ -391,8 +404,10 @@ Firewall::Eca0Ins (Ptr<Tuple> pktIn)
     strlist ("openConnectionToController_attr1"),
     strlist ("pktIn_attr1"));
 
-  result->Assign (Assignor::New ("pktIn_attr3",
-    ValueExpr::New (Int32Value::New (1))));
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("pktIn_attr3"),
+      ValueExpr::New (Int32Value::New (1)))));
 
   result = result->Project (
     TRUSTEDCONTROLLERMEMORYSEND,
@@ -420,8 +435,10 @@ Firewall::Eca1Ins (Ptr<Tuple> openConnectionToController)
     strlist ("pktIn_attr1"),
     strlist ("openConnectionToController_attr1"));
 
-  result->Assign (Assignor::New ("pktIn_attr3",
-    ValueExpr::New (Int32Value::New (1))));
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("pktIn_attr3"),
+      ValueExpr::New (Int32Value::New (1)))));
 
   result = result->Project (
     TRUSTEDCONTROLLERMEMORYSEND,
@@ -449,8 +466,10 @@ Firewall::Eca0Ins (Ptr<Tuple> pktIn)
     strlist ("perFlowRule_attr4", "perFlowRule_attr2", "perFlowRule_attr1", "perFlowRule_attr3"),
     strlist ("pktIn_attr4", "pktIn_attr2", "pktIn_attr1", "pktIn_attr3"));
 
-  result->Assign (Assignor::New ("pktIn_attr3",
-    ValueExpr::New (Int32Value::New (1))));
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("pktIn_attr3"),
+      ValueExpr::New (Int32Value::New (1)))));
 
   result = result->Project (
     PKTRECEIVED,
@@ -482,8 +501,10 @@ Firewall::Eca1Ins (Ptr<Tuple> perFlowRule)
     strlist ("pktIn_attr4", "pktIn_attr2", "pktIn_attr1", "pktIn_attr3"),
     strlist ("perFlowRule_attr4", "perFlowRule_attr2", "perFlowRule_attr1", "perFlowRule_attr3"));
 
-  result->Assign (Assignor::New ("perFlowRule_attr3",
-    ValueExpr::New (Int32Value::New (1))));
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("perFlowRule_attr3"),
+      ValueExpr::New (Int32Value::New (1)))));
 
   result = result->Project (
     PKTRECEIVED,
@@ -515,8 +536,10 @@ Firewall::_eca (Ptr<Tuple> controllerConnection)
     strlist ("pktIn_attr1"),
     strlist ("controllerConnection_attr1"));
 
-  result->Assign (Assignor::New ("pktIn_attr3",
-    ValueExpr::New (Int32Value::New (2))));
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("pktIn_attr3"),
+      ValueExpr::New (Int32Value::New (2)))));
 
   result = result->Project (
     PKTFROMSWITCH,
@@ -571,11 +594,15 @@ Firewall::_eca (Ptr<Tuple> pktFromSwitch)
     strlist ("trustedControllerMemory_attr1", "trustedControllerMemory_attr3", "trustedControllerMemory_attr2"),
     strlist ("pktFromSwitch_attr1", "pktFromSwitch_attr3", "pktFromSwitch_attr2"));
 
-  result->Assign (Assignor::New ("pktFromSwitch_attr4",
-    ValueExpr::New (Int32Value::New (2))));
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("pktFromSwitch_attr4"),
+      ValueExpr::New (Int32Value::New (2)))));
 
-  result->Assign (Assignor::New ("Tport",
-    ValueExpr::New (Int32Value::New (1))));
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("Tport"),
+      ValueExpr::New (Int32Value::New (1)))));
 
   result = result->Project (
     PERFLOWRULESEND,
@@ -583,7 +610,7 @@ Firewall::_eca (Ptr<Tuple> pktFromSwitch)
       "pktFromSwitch_attr3",
       "pktFromSwitch_attr4",
       "pktFromSwitch_attr5",
-      "Tport",
+      VariableNotFoundError,
       "pktFromSwitch_attr2"),
     strlist ("perFlowRulesend_attr1",
       "perFlowRulesend_attr2",
@@ -607,11 +634,15 @@ Firewall::Eca0Ins (Ptr<Tuple> perFlowRule)
     strlist ("pktIn_attr4", "pktIn_attr2", "pktIn_attr1", "pktIn_attr3"),
     strlist ("perFlowRule_attr4", "perFlowRule_attr2", "perFlowRule_attr1", "perFlowRule_attr3"));
 
-  result->Assign (Assignor::New ("perFlowRule_attr3",
-    ValueExpr::New (Int32Value::New (2))));
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("perFlowRule_attr3"),
+      ValueExpr::New (Int32Value::New (2)))));
 
-  result->Assign (Assignor::New ("perFlowRule_attr5",
-    ValueExpr::New (Int32Value::New (1))));
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("perFlowRule_attr5"),
+      ValueExpr::New (Int32Value::New (1)))));
 
   result = result->Project (
     PKTRECEIVED,
@@ -643,11 +674,15 @@ Firewall::Eca1Ins (Ptr<Tuple> pktIn)
     strlist ("perFlowRule_attr4", "perFlowRule_attr2", "perFlowRule_attr1", "perFlowRule_attr3"),
     strlist ("pktIn_attr4", "pktIn_attr2", "pktIn_attr1", "pktIn_attr3"));
 
-  result->Assign (Assignor::New ("pktIn_attr3",
-    ValueExpr::New (Int32Value::New (2))));
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("pktIn_attr3"),
+      ValueExpr::New (Int32Value::New (2)))));
 
-  result->Assign (Assignor::New ("perFlowRule_attr5",
-    ValueExpr::New (Int32Value::New (1))));
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("perFlowRule_attr5"),
+      ValueExpr::New (Int32Value::New (1)))));
 
   result = result->Project (
     PKTRECEIVED,

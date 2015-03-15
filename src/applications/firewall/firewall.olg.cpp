@@ -1,8 +1,3 @@
-
-
-
-
-
 /* 
  * ------------------------------------------------------------------------------------
  *  -------------------
@@ -34,8 +29,11 @@
  * ------------------------------------------------------------------------------------
  */
 
+
+
+
 materialize(trustedControllerMemory,infinity,infinity,keys(3)). 
-materialize(openConnectionToController,infinity,infinity,keys()).
+materialize(openConnectionToController,infinity,infinity,keys(1)).
 materialize(pktIn,infinity,infinity,keys(2,3,4)).
 materialize(perFlowRule,infinity,infinity,keys(2,3,4,5)).
 
@@ -49,8 +47,8 @@ materialize(perFlowRule,infinity,infinity,keys(2,3,4,5)).
  */
 r1 pktReceived(@Dst, Uport, Src, Tport, Switch)  :- 
 	pktIn(@Switch, Src, Tport, Dst),
-	Uport := 2,
-	Tport := 1 .
+	Uport == 2,
+	Tport == 1 .
 
 /* 
  * a packet from a trusted host appeared on switch without a forwarding rule
@@ -60,7 +58,7 @@ r1 pktReceived(@Dst, Uport, Src, Tport, Switch)  :-
 r2 trustedControllerMemory(@Controller, Switch, Dst) :-
 	pktIn(@Switch, Src, Tport, Dst),
 	openConnectionToController(@Switch, Controller),
-	Tport := 1 .
+	Tport == 1 .
 
 /* ************************************************* */
 
@@ -72,7 +70,7 @@ r2 trustedControllerMemory(@Controller, Switch, Dst) :-
 trustedControllerMemory(@Controller, Switch, Dst) :-
 	pktIn(@Switch, Src, Tport, Dst),
 	openConnectionToController(@Switch, Controller),
-	Tport := 1 .
+	Tport == 1 .
 
 /* ************************************************* */
 
@@ -82,7 +80,7 @@ trustedControllerMemory(@Controller, Switch, Dst) :-
 pktReceived(@Dst, PortDst, Src, Tport, Switch) :- 
  	pktIn(@Switch, Src, Tport, Dst),
 	perFlowRule(@Switch, Src, Tport, Dst, PortDst),
-	Tport := 1 .
+	Tport == 1 .
 
 
 /* ************************************************* */
@@ -94,7 +92,7 @@ pktReceived(@Dst, PortDst, Src, Tport, Switch) :-
 pktFromSwitch(@Controller, Switch, Src, Uport, Dst) :- 
 	pktIn(@Switch, Src, Uport, Dst),
 	controllerConnection(@Switch, Controller),
-	Uport := 2 .
+	Uport == 2 .
 
 /*
  * Packet from untrusted host appeared on switch
@@ -105,8 +103,8 @@ pktFromSwitch(@Controller, Switch, Src, Uport, Dst) :-
 perFlowRule(@Switch, Src, Uport, Dst, Tport) :-  
 	pktFromSwitch(@Controller, Switch, Src, Uport, Dst), 
 	trustedControllerMemory(@Controller, Switch, Src),
-	Uport := 2,
-	Tport := 1 .
+	Uport == 2,
+	Tport == 1 .
 
 /* ************************************************* */
 
@@ -118,8 +116,8 @@ perFlowRule(@Switch, Src, Uport, Dst, Tport) :-
 pktReceived(@Dst, Tport, Src, Uport, Switch) :-
 	perFlowRule(@Switch, Src, Uport, Dst, Tport),
  	pktIn(@Switch, Src, Uport, Dst),
- 	Uport := 2,
-	Tport := 1 .
+ 	Uport == 2,
+	Tport == 1 .
 
 /* ************************************************* */
 
