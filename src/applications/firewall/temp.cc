@@ -17,10 +17,11 @@ using namespace ns3::rapidnet;
 using namespace ns3::rapidnet::temp;
 
 const string Temp::OPENCONNECTIONTOCONTROLLER = "openConnectionToController";
+const string Temp::PERFLOWRULE = "perFlowRule";
 const string Temp::PKTIN = "pktIn";
 const string Temp::PKTRECEIVED = "pktReceived";
+const string Temp::R2TRUSTEDCONTROLLERMEMORYSEND = "r2trustedControllerMemorysend";
 const string Temp::TRUSTEDCONTROLLERMEMORY = "trustedControllerMemory";
-const string Temp::TRUSTEDCONTROLLERMEMORYSEND = "trustedControllerMemorysend";
 
 NS_LOG_COMPONENT_DEFINE ("Temp");
 NS_OBJECT_ENSURE_REGISTERED (Temp);
@@ -77,8 +78,13 @@ Temp::InitDatabase ()
   //RapidNetApplicationBase::InitDatabase ();
 
   AddRelationWithKeys (OPENCONNECTIONTOCONTROLLER, attrdeflist (
-    attrdef ("openConnectionToController_attr1", IPV4),
-    attrdef ("openConnectionToController_attr2", IPV4)));
+    attrdef ("openConnectionToController_attr1", IPV4)));
+
+  AddRelationWithKeys (PERFLOWRULE, attrdeflist (
+    attrdef ("perFlowRule_attr2", IPV4),
+    attrdef ("perFlowRule_attr3", IPV4),
+    attrdef ("perFlowRule_attr4", IPV4),
+    attrdef ("perFlowRule_attr5", IPV4)));
 
   AddRelationWithKeys (PKTIN, attrdeflist (
     attrdef ("pktIn_attr1", IPV4),
@@ -100,39 +106,39 @@ Temp::DemuxRecv (Ptr<Tuple> tuple)
 
   if (IsInsertEvent (tuple, PKTIN))
     {
-      Eca2Ins (tuple);
+      R1Eca0Ins (tuple);
     }
-  if (IsRecvEvent (tuple, TRUSTEDCONTROLLERMEMORYSEND))
+  if (IsRecvEvent (tuple, R2TRUSTEDCONTROLLERMEMORYSEND))
     {
-      ECAMat (tuple);
+      R2ECAMat (tuple);
     }
   if (IsRecvEvent (tuple, PKTRECEIVED))
     {
-      _eca (tuple);
+      R2_eca (tuple);
     }
 }
 
 void
-Temp::Eca2Ins (Ptr<Tuple> pktIn)
+Temp::R1Eca0Ins (Ptr<Tuple> pktIn)
 {
-  RAPIDNET_LOG_INFO ("Eca2Ins triggered");
+  RAPIDNET_LOG_INFO ("R1Eca0Ins triggered");
 
   Ptr<Tuple> result = pktIn;
 
-  result->Assign (Assignor::New ("$1",
+  result->Assign (Assignor::New ("Uport",
     ValueExpr::New (Int32Value::New (2))));
 
-  result->Assign (Assignor::New ("$2",
+  result->Assign (Assignor::New ("pktIn_attr3",
     ValueExpr::New (Int32Value::New (1))));
 
   result = result->Project (
     PKTRECEIVED,
-    strlist ("pktIn_attr3",
-      "$1",
+    strlist ("pktIn_attr4",
+      "Uport",
       "pktIn_attr2",
-      "$2",
+      "pktIn_attr3",
       "pktIn_attr1",
-      "pktIn_attr3"),
+      "pktIn_attr4"),
     strlist ("pktReceived_attr1",
       "pktReceived_attr2",
       "pktReceived_attr3",
@@ -144,17 +150,17 @@ Temp::Eca2Ins (Ptr<Tuple> pktIn)
 }
 
 void
-Temp::ECAMat (Ptr<Tuple> trustedControllerMemorysend)
+Temp::R2ECAMat (Ptr<Tuple> r2trustedControllerMemorysend)
 {
-  RAPIDNET_LOG_INFO ("ECAMat triggered");
+  RAPIDNET_LOG_INFO ("R2ECAMat triggered");
 
-  Ptr<Tuple> result = trustedControllerMemorysend;
+  Ptr<Tuple> result = r2trustedControllerMemorysend;
 
   result = result->Project (
     TRUSTEDCONTROLLERMEMORY,
-    strlist ("trustedControllerMemorysend_attr1",
-      "trustedControllerMemorysend_attr2",
-      "trustedControllerMemorysend_attr3"),
+    strlist ("r2trustedControllerMemorysend_attr1",
+      "r2trustedControllerMemorysend_attr2",
+      "r2trustedControllerMemorysend_attr3"),
     strlist ("trustedControllerMemory_attr1",
       "trustedControllerMemory_attr2",
       "trustedControllerMemory_attr3"));
@@ -163,9 +169,9 @@ Temp::ECAMat (Ptr<Tuple> trustedControllerMemorysend)
 }
 
 void
-Temp::_eca (Ptr<Tuple> pktReceived)
+Temp::R2_eca (Ptr<Tuple> pktReceived)
 {
-  RAPIDNET_LOG_INFO ("_eca triggered");
+  RAPIDNET_LOG_INFO ("R2_eca triggered");
 
   Ptr<RelationBase> result;
 
@@ -174,15 +180,21 @@ Temp::_eca (Ptr<Tuple> pktReceived)
     strlist ("openConnectionToController_attr1"),
     strlist ("pktReceived_attr1"));
 
+  result->Assign (Assignor::New ("pktReceived_attr2",
+    ValueExpr::New (Int32Value::New (2))));
+
+  result->Assign (Assignor::New ("pktReceived_attr4",
+    ValueExpr::New (Int32Value::New (1))));
+
   result = result->Project (
-    TRUSTEDCONTROLLERMEMORYSEND,
+    R2TRUSTEDCONTROLLERMEMORYSEND,
     strlist ("openConnectionToController_attr2",
       "pktReceived_attr5",
       "pktReceived_attr1",
       "openConnectionToController_attr2"),
-    strlist ("trustedControllerMemorysend_attr1",
-      "trustedControllerMemorysend_attr2",
-      "trustedControllerMemorysend_attr3",
+    strlist ("r2trustedControllerMemorysend_attr1",
+      "r2trustedControllerMemorysend_attr2",
+      "r2trustedControllerMemorysend_attr3",
       RN_DEST));
 
   Send (result);

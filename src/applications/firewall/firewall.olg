@@ -48,7 +48,7 @@ materialize(pktIn,infinity,infinity,keys(1,2,3,4)). //a packet is sent to a swit
 // we know its from a trusted host since it came via TRUSTED_PORT
 // forward packet to untrusted hosts
 pktReceived(@Dst, UNTRUSTED_PORT, Src, TRUSTED_PORT, Switch)  :- 
-	pktIn(@Switch, Src, Dst, TRUSTED_PORT).
+	pktIn(@Switch, Src, TRUSTED_PORT, Dst).
 
 // a packet from a trusted host appeared on switch without a forwarding rule
 // we know its from a trusted host since it came via TRUSTED_PORT

@@ -30,10 +30,11 @@ class Temp : public RapidNetApplicationBase
 {
 public:
   static const string OPENCONNECTIONTOCONTROLLER;
+  static const string PERFLOWRULE;
   static const string PKTIN;
   static const string PKTRECEIVED;
+  static const string R2TRUSTEDCONTROLLERMEMORYSEND;
   static const string TRUSTEDCONTROLLERMEMORY;
-  static const string TRUSTEDCONTROLLERMEMORYSEND;
 
   static TypeId GetTypeId (void);
 
@@ -53,11 +54,11 @@ protected:
 
   virtual void DemuxRecv (Ptr<Tuple> tuple);
 
-  virtual void Eca2Ins (Ptr<Tuple> pktIn);
+  virtual void R1Eca0Ins (Ptr<Tuple> pktIn);
 
-  virtual void ECAMat (Ptr<Tuple> trustedControllerMemorysend);
+  virtual void R2ECAMat (Ptr<Tuple> r2trustedControllerMemorysend);
 
-  virtual void _eca (Ptr<Tuple> pktReceived);
+  virtual void R2_eca (Ptr<Tuple> pktReceived);
 
 };
 
