@@ -1,0 +1,18 @@
+ECA Rule rc1_eca ACTION_ADD<macPort(@C, Switch, InPort, SrcMac)> :- EVENT_RECV<ofPacket(@C, Switch, InPort, SrcMac, DstMac)>, ofconn(@C, Switch).
+ECA Rule rc2_eca ACTION_REMOTE_SEND<flowMod(@Switch, DstMac, OutPort)> :- EVENT_RECV<ofPacket(@C, Switch, Inport, SrcMac, DstMac)>, ofconn(@C, Switch), macPort(@C, Switch, OutPort, DstMac).
+ECA Rule rs1Eca0Ins ACTION_REMOTE_SEND<ofPacket(@C, S, InPort, SrcMac, DstMac)> :- EVENT_INSERT<ofconn(@S, C)>, packet(@S, Nei, SrcMac, DstMac), inPort(@S, Nei, InPort), missEntry(@S, DstMac).
+ECA Rule rs1Eca1Ins ACTION_REMOTE_SEND<ofPacket(@C, S, InPort, SrcMac, DstMac)> :- EVENT_INSERT<packet(@S, Nei, SrcMac, DstMac)>, ofconn(@S, C), inPort(@S, Nei, InPort), missEntry(@S, DstMac).
+ECA Rule rs1Eca2Ins ACTION_REMOTE_SEND<ofPacket(@C, S, InPort, SrcMac, DstMac)> :- EVENT_INSERT<inPort(@S, Nei, InPort)>, ofconn(@S, C), packet(@S, Nei, SrcMac, DstMac), missEntry(@S, DstMac).
+ECA Rule rs1Eca3Ins ACTION_REMOTE_SEND<ofPacket(@C, S, InPort, SrcMac, DstMac)> :- EVENT_INSERT<missEntry(@S, DstMac)>, ofconn(@S, C), packet(@S, Nei, SrcMac, DstMac), inPort(@S, Nei, InPort).
+ECA Rule rs2_eca ACTION_ADD<flowEntry(@S, Mac, OutPort)> :- EVENT_RECV<flowMod(@S, Mac, OutPort)>.
+ECA Rule rs3_eca ACTION_DELETE<missEntry(@S, Mac)> :- EVENT_RECV<flowMod(@S, Mac, OutPort)>.
+ECA Rule rs4Eca0RemoteIns ACTION_ADD<packet(@OutNei, S, SrcMac, DstMac)> :- EVENT_RECV<rs4packetsend(@OutNei, S, SrcMac, DstMac)>.
+ECA Rule rs4Eca0RemoteDel ACTION_DELETE<packet(@OutNei, S, SrcMac, DstMac)> :- EVENT_RECV<packetDelete(@OutNei, S, SrcMac, DstMac)>.
+ECA Rule rs4Eca0Ins ACTION_REMOTE_SEND<rs4packetsend(@OutNei, S, SrcMac, DstMac)> :- EVENT_INSERT<packet(@S, InNei, SrcMac, DstMac)>, inPort(@S, InNei, InPort), outPort(@S, OutNei, OutPort), flowEntry(@S, DstMac, OutPort).
+ECA Rule rs4Eca0Del ACTION_REMOTE_SEND<packetDelete(@OutNei, S, SrcMac, DstMac)> :- EVENT_DELETE<packet(@S, InNei, SrcMac, DstMac)>, inPort(@S, InNei, InPort), outPort(@S, OutNei, OutPort), flowEntry(@S, DstMac, OutPort).
+ECA Rule rs4Eca1Ins ACTION_REMOTE_SEND<rs4packetsend(@OutNei, S, SrcMac, DstMac)> :- EVENT_INSERT<inPort(@S, InNei, InPort)>, packet(@S, InNei, SrcMac, DstMac), outPort(@S, OutNei, OutPort), flowEntry(@S, DstMac, OutPort).
+ECA Rule rs4Eca1Del ACTION_REMOTE_SEND<packetDelete(@OutNei, S, SrcMac, DstMac)> :- EVENT_DELETE<inPort(@S, InNei, InPort)>, packet(@S, InNei, SrcMac, DstMac), outPort(@S, OutNei, OutPort), flowEntry(@S, DstMac, OutPort).
+ECA Rule rs4Eca2Ins ACTION_REMOTE_SEND<rs4packetsend(@OutNei, S, SrcMac, DstMac)> :- EVENT_INSERT<outPort(@S, OutNei, OutPort)>, packet(@S, InNei, SrcMac, DstMac), inPort(@S, InNei, InPort), flowEntry(@S, DstMac, OutPort).
+ECA Rule rs4Eca2Del ACTION_REMOTE_SEND<packetDelete(@OutNei, S, SrcMac, DstMac)> :- EVENT_DELETE<outPort(@S, OutNei, OutPort)>, packet(@S, InNei, SrcMac, DstMac), inPort(@S, InNei, InPort), flowEntry(@S, DstMac, OutPort).
+ECA Rule rs4Eca3Ins ACTION_REMOTE_SEND<rs4packetsend(@OutNei, S, SrcMac, DstMac)> :- EVENT_INSERT<flowEntry(@S, DstMac, OutPort)>, packet(@S, InNei, SrcMac, DstMac), inPort(@S, InNei, InPort), outPort(@S, OutNei, OutPort).
+ECA Rule rs4Eca3Del ACTION_REMOTE_SEND<packetDelete(@OutNei, S, SrcMac, DstMac)> :- EVENT_DELETE<flowEntry(@S, DstMac, OutPort)>, packet(@S, InNei, SrcMac, DstMac), inPort(@S, InNei, InPort), outPort(@S, OutNei, OutPort).
