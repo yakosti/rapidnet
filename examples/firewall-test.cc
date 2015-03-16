@@ -17,24 +17,77 @@
 #include "ns3/core-module.h"
 #include "ns3/simulator-module.h"
 #include "ns3/node-module.h"
-#include "ns3/pingpong-module.h"
+#include "ns3/helper-module.h"
+
+#include "ns3/firewall-module.h"
 #include "ns3/rapidnet-module.h"
 #include "ns3/values-module.h"
+#include "ns3/ipv4-address.h"
+#include <stdlib.h>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
+#include <stdio.h>
+
+/*
+ * Representation in NS3
+ * ---------------------
+ * Host: Ipv4Value
+ * Controller: Ipv4Value
+ * Switch: Ipv4Value
+ * Port: Int32Value
+ * 
+ * Primary Key
+ * ----------- 
+ * pktIn(@Switch, Src, SrcPort, Dst) => key(1,2,3,4)
+ * perFlowRule(@Switch, Src, SrcPort, Dst, DstPort) => key(1,2,3,4,5)
+ * openConnectionToController(@Switch, Controller) => key(1) 
+ * trustedControllerMemory(@Controller, Switch, Host) => key(1,2)
+ */
+
+/* 
+ * ***************************************************************************** *
+ *                                                                               *
+ *                                  DEFINITIONS                                  *
+ *                                                                               *
+ * ***************************************************************************** *
+ */
 
 #define pktIn(Switch, Src, SrcPort, Dst) \
   tuple (Firewall::PKTIN, \
     attr ("pktIn_attr1", Ipv4Value, Switch), \
     attr ("pktIn_attr2", Ipv4Value, Src), \
-    attr ("pktIn_attr3", Ipv4Value, SrcPort), \
+    attr ("pktIn_attr3", Int32Value, SrcPort), \
     attr ("pktIn_attr4", Ipv4Value, Dst))
 
-#define insert_PktIn() \
-  app(from)->Insert (tlink (addr (from), addr (to))); \
-  app(to)->Insert (tlink (addr (to), addr (from)));
+#define insert_pktIn(Switch, Src, SrcPort, Dst) \
+  app(Switch) -> Insert(pktIn(addr(Switch), addr(Src), SrcPort, addr(Dst)));
 
-#define delete_PktIn(from, to) \
-  app(from)->Delete (tlink (addr (from), addr (to))); \
-  app(to)->Delete (tlink (addr (to), addr (from)));
+/* 
+ * ***************************************************************************** *
+ *                                                                               *
+ *                                  DEFINITIONS                                  *
+ *                                                                               *
+ * ***************************************************************************** *
+ */
+
+
+
+
+
+
+
+
+
+
+/* 
+ * ***************************************************************************** *
+ *                                                                               *
+ *                           RUNNING SIMULATION                                  *
+ *                                                                               *
+ * ***************************************************************************** *
+ */
 
 using namespace std;
 using namespace ns3;
@@ -45,9 +98,9 @@ ApplicationContainer apps;
 
 /** Create a 2 nodes */
 void
-UpdateIncomingPackets1 ()
+InitPktIn ()
 {
-  insert_PktIn (1, 2);
+  insert_pktIn(1, 1, 1, 1);
 }
 
 int
@@ -60,10 +113,19 @@ main (int argc, char *argv[])
   apps.Start (Seconds (0.0));
   apps.Stop (Seconds (10.0));
 
-  schedule (0.0001, UpdateIncomingPackets1);
+  schedule (0.0001, InitPktIn);
 
   Simulator::Run ();
   Simulator::Destroy ();
   return 0;
 }
+
+/* 
+ * ***************************************************************************** *
+ *                                                                               *
+ *                           RUNNING SIMULATION                                  *
+ *                                                                               *
+ * ***************************************************************************** *
+ */
+
 
