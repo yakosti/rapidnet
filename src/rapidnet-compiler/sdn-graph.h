@@ -82,6 +82,10 @@ class Node
 public:
 	virtual string GetName() const =0;
 
+	virtual const Tuple* GetTuple() const {return NULL;}
+
+	virtual int GetArgLength() const{return 0;}
+
 	virtual void PrintNode() const =0;
 
 	virtual ~Node(){}
@@ -120,7 +124,7 @@ public:
 
 	TupleNode(string, vector<Variable*>);
 
-	int GetArgLength() const {return tuple->GetArgLength();}
+	int GetArgLength() const;
 
 	const Tuple* GetTuple() const {return tuple;}
 
@@ -147,7 +151,9 @@ public:
 
 	string GetName() const {return tuple->GetName();}
 
-	Tuple* GetTuple() {return tuple;}
+	const Tuple* GetTuple() const {return tuple;}
+
+	int GetArgLength() const;
 
 	virtual void PrintNode() const;
 
@@ -191,6 +197,10 @@ public:
 
 	string GetName() const {return predName;}
 
+	int GetArgLength() const;
+
+	bool IsCircleNode();
+
 	void AddHeadTuple(Node*);
 
 	void AddBodyTuple(Node*);
@@ -199,8 +209,8 @@ public:
 
 public:
 	string predName;
-	list<Node*> headTuples; //Allow CircleNode
-	list<Node*> bodyTuples;
+	list<Node*> headTuples;
+	list<Node*> bodyTuples;	//Allow CircleNode
 };
 
 //TODO: Convert TupleListC back to const
@@ -293,6 +303,10 @@ class NewDPGraph: public RefCountBase
 
 public:
 	NewDPGraph(Ptr<DPGraph>, const Invariant&);
+
+	const list<Node*>& GetBodies(RuleNode*) const;
+
+	const Node* GetHeadTuple(RuleNode*) const;
 
 	void Print();
 

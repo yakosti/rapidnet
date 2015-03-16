@@ -9,26 +9,35 @@
 
 NS_LOG_COMPONENT_DEFINE ("Dpool");
 
-DerivNode::DerivNode(const Tuple* tp)
+DpoolNode::DpoolNode(string tpName, int argSize)
 {
-	head = new Tuple(tp->GetName(),tp->GetSchema());
-	ruleName = "";
-	ruleConstraints = NULL;
-	bodyDerivs = DerivNodeList();
-	bodyAnnotations = DerivAnnoList();
-	allConstraints = ConsList();
-	allInvs = FormList();
+	head = new Tuple(tpName, argSize);
 }
 
-DerivNode::DerivNode(string tpName, list<Variable::TypeCode>& tlist)
+DpoolNode::DpoolNode(const Tuple* tp)
 {
-	head = new Tuple(tpName,tlist);
-	ruleName = "";
-	ruleConstraints = NULL;
-	bodyDerivs = DerivNodeList();
-	bodyAnnotations = DerivAnnoList();
-	allConstraints = ConsList();
-	allInvs = FormList();
+	string tpName = tp->GetName();
+	int argSize = tp->GetArgLength();
+	head = new Tuple(tpName, argSize);
+}
+
+DpoolNode::DpoolNode(const PredicateInstance* pred)
+{
+	string predName = pred->GetName();
+	int argSize = pred->GetArgs().size();
+	head = new Tuple(predName, argSize);
+}
+
+void
+DpoolNode::PrintHead() const
+{
+	head->PrintTuple();
+}
+
+void
+DpoolNode::PrintHeadInst(const map<Variable*, int>& valueMap) const
+{
+	head->PrintInstance(valueMap);
 }
 
 void
@@ -61,44 +70,26 @@ DerivNode::GetAllObligs() const
 	return Obligation(allConstraints, allInvs);
 }
 
-void
-DerivNode::FindSubTuple(const list<PredicateInstance*>& plist,
-					    map<string, list<const Tuple*> >& tlist) const
-{
-	//Assume tlist has been initialized according to plist
-	string tpName = head->GetName();
-	map<string, list<const Tuple*> >::iterator itm;
-	itm = tlist.find(tpName);
-	if (itm != tlist.end())
-	{
-		//The tuple needs to be registered
-		itm->second.push_back(head);
-	}
-
-	DerivNodeList::const_iterator itd;
-	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
-	{
-		(*itd)->FindSubTuple(plist, tlist);
-	}
-
-	DerivAnnoList::const_iterator ita;
-	for (ita = bodyAnnotations.begin();ita != bodyAnnotations.end();ita++)
-	{
-		(*ita)->FindSubTuple(plist, tlist);
-	}
-}
-
-void
-DerivNode::PrintHead() const
-{
-	head->PrintTuple();
-}
-
-void
-DerivNode::PrintHeadInst(const map<Variable*, int>& valueMap) const
-{
-	head->PrintInstance(valueMap);
-}
+//void
+//DerivNode::FindSubTuple(const list<PredicateInstance*>& plist,
+//					    map<string, list<const Tuple*> >& tlist) const
+//{
+//	//Assume tlist has been initialized according to plist
+//	string tpName = head->GetName();
+//	map<string, list<const Tuple*> >::iterator itm;
+//	itm = tlist.find(tpName);
+//	if (itm != tlist.end())
+//	{
+//		//The tuple needs to be registered
+//		itm->second.push_back(head);
+//	}
+//
+//	DpoolNodeList::const_iterator itd;
+//	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
+//	{
+//		(*itd)->FindSubTuple(plist, tlist);
+//	}
+//}
 
 void
 DerivNode::PrintCumuCons() const
@@ -122,17 +113,10 @@ DerivNode::PrintDerivNode() const
 	cout << endl;
 	cout << "Body tuples:" << endl;
 	NS_LOG_DEBUG("Number of bodies: " << bodyDerivs.size());
-	NS_LOG_DEBUG("Number of anno bodies: " << bodyAnnotations.size());
-	DerivNodeList::const_iterator itd;
+	DpoolNodeList::const_iterator itd;
 	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
 	{
 		(*itd)->PrintHead();
-		cout << endl;
-	}
-	DerivAnnoList::const_iterator ita;
-	for (ita = bodyAnnotations.begin();ita != bodyAnnotations.end();ita++)
-	{
-		(*ita)->PrintHead();
 		cout << endl;
 	}
 	if (ruleConstraints != NULL)
@@ -162,17 +146,10 @@ DerivNode::PrintInstance(const map<Variable*, int>& valueMap) const
 	cout << endl;
 	cout << "Body tuples:" << endl;
 	NS_LOG_DEBUG("Number of bodies: " << bodyDerivs.size());
-	NS_LOG_DEBUG("Number of anno bodies: " << bodyAnnotations.size());
-	DerivNodeList::const_iterator itd;
+	DpoolNodeList::const_iterator itd;
 	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
 	{
 		(*itd)->PrintHeadInst(valueMap);
-		cout << endl;
-	}
-	DerivAnnoList::const_iterator ita;
-	for (ita = bodyAnnotations.begin();ita != bodyAnnotations.end();ita++)
-	{
-		(*ita)->PrintHeadInst(valueMap);
 		cout << endl;
 	}
 	if (ruleConstraints != NULL)
@@ -190,35 +167,23 @@ DerivNode::PrintDerivation() const
 	PrintDerivNode();
 	PrintCumuCons();
 
-	DerivNodeList::const_iterator itd;
+	DpoolNodeList::const_iterator itd;
 	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
 	{
 		(*itd)->PrintDerivation();
 		cout << endl;
 	}
-	DerivAnnoList::const_iterator ita;
-	for (ita = bodyAnnotations.begin();ita != bodyAnnotations.end();ita++)
-	{
-		(*ita)->PrintDerivation();
-		cout << endl;
-	}
 }
 
 void
-DerivNode::PrintExecution(map<Variable*, int> valueMap) const
+DerivNode::PrintExecution(map<Variable*, int>& valueMap) const
 {
 	PrintInstance(valueMap);
 
-	DerivNodeList::const_iterator itd;
+	DpoolNodeList::const_iterator itd;
 	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
 	{
 		(*itd)->PrintExecution(valueMap);
-		cout << endl;
-	}
-	DerivAnnoList::const_iterator ita;
-	for (ita = bodyAnnotations.begin();ita != bodyAnnotations.end();ita++)
-	{
-		(*ita)->PrintExecution(valueMap);
 		cout << endl;
 	}
 }
@@ -229,177 +194,232 @@ DerivNode::~DerivNode()
 	delete ruleConstraints;
 }
 
-RecurNode::RecurNode(const Tuple* tp):
-		DerivNode(tp)
+BaseNode::BaseNode(const PredicateInstance* pred, const ConstraintsTemplate& ctemp):
+		DpoolNode(pred)
 {
-	invariant = NULL;
+	cts = new ConstraintsTemplate(ctemp);
+	VarMap vmap = head->CreateVarMap(pred);
+	cts->ReplaceVar(vmap);
+}
+
+BaseNode::BaseNode(const Tuple* tp):
+		DpoolNode(tp)
+{
+	cts = NULL;
+}
+
+BaseNode::BaseNode(string tpName, int argSize):
+		DpoolNode(tpName, argSize)
+{
+	cts = NULL;
+}
+
+
+void
+BaseNode::PrintCumuCons() const
+{
+	cout << endl;
+	cout << "+++++++ BaseNode Constraints ++++++" << endl;
+	if (cts != NULL)
+	{
+		cts->PrintTemplate();
+	}
+	cout << "++++++++++++++++++++++++" << endl;
 }
 
 void
-RecurNode::AddInvariant(Formula* inv)
-{
-	invariant = inv;
-}
-
-void
-RecurNode::PrintDerivNode() const
+BaseNode::PrintDerivNode() const
 {
 	cout << endl;
-	cout << "++++++++++++ Recursive Node +++++++++++" << endl;
-	DerivNode::PrintDerivNode();
-
-	cout << "User-annotated formula:" << endl;
-	invariant->Print();
-	cout << "+++++++++++++++++++++++";
+	cout << "******* Base Node ********" << endl;
+	cout << "Head: ";
+	head->PrintTuple();
+	cout << endl;
+	if (cts != NULL)
+	{
+		cts->PrintTemplate();
+	}
 	cout << endl;
 }
 
 void
-RecurNode::PrintInstance(const map<Variable*, int>& valueMap) const
+BaseNode::PrintInstance(const map<Variable*, int>& valueMap) const
 {
 	cout << endl;
-	cout << "++++++++++++ Recursive Instance +++++++++++" << endl;
-	DerivNode::PrintInstance(valueMap);
-
-	cout << "User-annotated formula:" << endl;
-	invariant->Print();
-	cout << "+++++++++++++++++++++++";
+	cout << "@@@@@@@@@@ Base Instance @@@@@@@@@" << endl;
+	cout << "Head instance: " << endl;
+	head->PrintInstance(valueMap);
 	cout << endl;
+	if (cts != NULL)
+	{
+		cts->PrintInstance(valueMap);
+	}
+	cout << "@@@@@@@@@@@@@@@@@@@@@" << endl;
 }
 
-RecurNode::~RecurNode()
+void
+BaseNode::PrintDerivation() const
+{
+	PrintDerivNode();
+}
+
+void
+BaseNode::PrintExecution(map<Variable*, int>& valueMap) const
+{
+	PrintInstance(valueMap);
+}
+
+BaseNode::~BaseNode()
 {
 	delete head;
-	delete ruleConstraints;
-	DerivNodeList::iterator itd;
-	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
+	delete cts;
+}
+
+PropNode::PropNode(const PredicateInstance* pred, Formula* fm = NULL):
+		DpoolNode(pred)
+{
+	if (fm != NULL)
 	{
-		delete(*itd);
+		prop = fm->Clone();
+		VarMap vmap = head->CreateVarMap(pred);
+		prop->VarReplace(vmap);
+	}
+	else
+	{
+		prop = NULL;
 	}
 }
 
-Dpool::Dpool(const Ptr<DPGraph> dpgraph,
+void
+PropNode::AddInvariant(Formula* inv)
+{
+	prop = inv;
+}
+
+void
+PropNode::PrintCumuCons() const
+{
+	cout << endl;
+	cout << "+++++++ PropNode Constraints ++++++" << endl;
+	prop->Print();
+	cout << "++++++++++++++++++++++++" << endl;
+}
+
+void
+PropNode::PrintDerivNode() const
+{
+	cout << endl;
+	cout << "++++++++++++ Recursive Node +++++++++++" << endl;
+	DpoolNode::PrintDerivNode();
+
+	cout << "User-annotated formula:" << endl;
+	prop->Print();
+	cout << endl;
+	cout << "+++++++++++++++++++++++";
+	cout << endl;
+}
+
+void
+PropNode::PrintInstance(const map<Variable*, int>& valueMap) const
+{
+	cout << endl;
+	cout << "++++++++++++ Recursive Instance +++++++++++" << endl;
+	cout << "Head:";
+	head->PrintInstance(valueMap);
+	cout << endl;
+
+	cout << "User-annotated formula:" << endl;
+	prop->Print();
+	cout << "+++++++++++++++++++++++";
+	cout << endl;
+}
+
+void
+PropNode::PrintDerivation() const
+{
+	PrintDerivNode();
+}
+
+void
+PropNode::PrintExecution(map<Variable*, int>& valueMap) const
+{
+	PrintInstance(valueMap);
+}
+
+PropNode::~PropNode()
+{
+	delete head;
+	delete prop;
+}
+
+Dpool::Dpool(const Ptr<NewDPGraph> newGraph,
+			 const Ptr<MiniGraph> miniGraph,
 			 const BaseProperty& baseProp,
 			 const Invariant& inv)
 {
 	NS_LOG_INFO("Creating Dpool...");
-	//Perform topological sorting on the dependency graph
 	const AnnotMap& invariants = inv.GetInv();
-	const TupleNode* head = NULL;
-	//Ptr<MiniGraph> mGraph (new MiniGraph(dpgraph, inv));
-	NS_LOG_DEBUG("Construct Mini Graph.");
-	//pair<RuleListC, RuleListC> topoOrder = mGraph->TopoSort(invariants);
-	NS_LOG_DEBUG("Mini Graph constructed.");
-	//MetaListC btlist = mGraph->GetBaseTuples();
-
-	//Create a key in derivations for each tuple node in dpgraph
-	const TupleList& tnlist = dpgraph->GetTupleList();
-	TupleList::const_iterator itn;
-	DerivNodeList dlist = DerivNodeList();
-	for (itn = tnlist.begin();itn != tnlist.end();itn++)
-	{
-		string headName = (*itn)->GetName();
-		derivations.insert(DerivMap::value_type(headName, dlist));
-	}
-
-	//Process base tuples
-	NS_LOG_INFO("Process base tuples...");
-	//NS_LOG_DEBUG("Size of MetaList:" << btlist.size());
 	const ConsAnnotMap& baseAnnot = baseProp.GetProp();
-	MetaListC::const_iterator itti;
-	//for (itti = btlist.begin();itti != btlist.end();itti++)
+	const Node* head = NULL;
+	RuleListC topoOrder = miniGraph->TopoSort(inv);
+	list<NewMetaNode*> metaList = miniGraph->GetBaseTuples();
+
+	//Create a BaseNode for each base tuple
+	NS_LOG_INFO("Process base tuples...");
+	baseMap = BaseMap();
+	list<NewMetaNode*>::iterator itml;
+	for (itml = metaList.begin();itml != metaList.end();itml++)
 	{
-		list<Variable::TypeCode> tlist = (*itti)->GetSchema();
-		string tpName = (*itti)->GetName();
-		DerivNode* dNode = new DerivNode(tpName, tlist);
-		//Add user-specified constraints if any
-		const Tuple* headTuple = dNode->GetHeadTuple();
-		ConsAnnotMap::const_iterator itc = baseAnnot.find(tpName);
+		NS_LOG_DEBUG("Base tuple...");
+		string nodeName = (*itml)->GetName();
+		ConsAnnotMap::const_iterator itc = baseAnnot.find(nodeName);
 		if (itc != baseAnnot.end())
 		{
-			const ConsAnnot& cat = itc->second;
-			const PredicateInstance* predInst = cat.first;
-			const ConstraintsTemplate* cts = cat.second;
-			VarMap propMap = headTuple->CreateVarMap(predInst);
-			ConstraintsTemplate* newCons = new ConstraintsTemplate(*cts);
-			newCons->ReplaceVar(propMap);
-			//Update rule constraints
-			dNode->UpdateConstraint(newCons);
-			//Update cumulative constraints
-			ConsList cl(1, newCons);
-			dNode->UpdateCumuCons(cl);
+			//Process a base tuple with annotation
+			const ConsAnnot& propPair = itc->second;
+			PredicateInstance* basePred = propPair.first;
+			ConstraintsTemplate* baseCons = propPair.second;
+			BaseNode* bnode = new BaseNode(basePred, *baseCons);
+			BaseNodeList blist(1, bnode);
+			baseMap.insert(BaseMap::value_type(nodeName, blist));
 		}
-		UpdateDerivNode(tpName, dNode);
+		else
+		{
+			NS_LOG_DEBUG("No annot case");
+			int argSize = (*itml)->GetArgLength();
+			NS_LOG_DEBUG("Tuple length: " << argSize);
+			BaseNode* newNode = new BaseNode(nodeName, argSize);
+			BaseNodeList blist(1, newNode);
+			baseMap.insert(BaseMap::value_type(nodeName, blist));
+		}
 	}
 
-	//Process rule nodes that cause loops
-	//Add the invariant of the head to the created RecurNode
-	NS_LOG_INFO("Process rules that cause loops...");
-	//RuleListC& loopList = topoOrder.second;
-
-
-
-	//ERROR: The following line should be deleted
-	RuleListC loopList;
-	RuleListC::const_iterator itl;
-	for (itl = loopList.begin();itl != loopList.end();itl++)
+	//Create a PropNode for each recursive tuple
+	NS_LOG_INFO("Create circle nodes...");
+	recurMap = PropMap();
+	AnnotMap::const_iterator ita;
+	for (ita = invariants.begin();ita != invariants.end();ita++)
 	{
-		head = dpgraph->GetHeadTuple((*itl));
-		const Tuple* headTuple = head->GetTuple();
-		RecurNode* rnode = new RecurNode(headTuple);
-
-		string ruleName = (*itl)->GetName();
-		rnode->AddRuleName(ruleName);
-
-		//Add the annotation to the node
-		string tpName = headTuple->GetName();
-		const Annotation& inv = invariants.at(tpName);
-		Formula* newInv = inv.second->Clone();
-		const Tuple* tpr = rnode->GetHeadTuple();
-		VarMap vmapInv = tpr->CreateVarMap(inv.first);
-		//TODO: unification with equivalent class representative
-		newInv->VarReplace(vmapInv);
-		rnode->AddInvariant(newInv);
-
-		//Add child DerivNodes and unify variables in constraints
-		VarMap vmapTuple = headTuple->CreateVarMap(rnode->GetHeadTuple());
-		const TupleListC bodyList = dpgraph->GetBodyTuples(*itl);
-		const Tuple* tNode = NULL;
-		DerivNode* newNode = NULL;
-		TupleListC::const_iterator itt;
-		for (itt = bodyList.begin();itt != bodyList.end();itt++)
-		{
-			tNode = (*itt)->GetTuple();
-			newNode = new DerivNode(tNode);
-			VarMap newMap = tNode->CreateVarMap(newNode->GetHeadTuple());
-			vmapTuple.insert(newMap.begin(), newMap.end());
-			rnode->AddChildDerivNode(newNode);
-		}
-
-		//Replace variables in rule constraints
-		const ConstraintsTemplate* ruleCons = (*itl)->GetConsTemp();
-		ConstraintsTemplate* newCons = new ConstraintsTemplate(*ruleCons);
-		newCons->ReplaceVar(vmapTuple);
-		rnode->UpdateConstraint(newCons);
-
-		UpdateDerivNode(head->GetName(), rnode);
+		string tpName = ita->first;
+		const Annotation& recurAnnot = ita->second;
+		PredicateInstance* pred = recurAnnot.first;
+		Formula* form = recurAnnot.second;
+		PropNode* pnode = new PropNode(pred, form);
+		PropNodeList plist(1, pnode);
+		recurMap.insert(PropMap::value_type(tpName, plist));
 	}
 
 	//Process rule nodes based on topological order
 	NS_LOG_INFO("Process rules based on topological sorting...");
-	//RuleListC& rlist = topoOrder.first;
-
-	//ERROR: Following line should be deleted
-	RuleListC rlist;
 	RuleListC::const_iterator itr;
-	for (itr = rlist.begin();itr != rlist.end();itr++)
+	for (itr = topoOrder.begin();itr != topoOrder.end();itr++)
 	{
 		NS_LOG_DEBUG("Process a rule...");
 		//Record all possible derivations of body tuples
-		vector<DerivNodeList::const_iterator> itv;
-		const TupleListC& tblist = dpgraph->GetBodyTuples((*itr));
+		vector<DpoolNode*> itv;
+		const list<Node*>& tblist = newGraph->GetBodies((*itr));
 
-		head = dpgraph->GetHeadTuple((*itr));
+		head = newGraph->GetHeadTuple((*itr));
 		const Tuple* hdTuple = head->GetTuple();
 		Tuple* headInst = new Tuple(hdTuple->GetName(), hdTuple->GetSchema());
 		VarMap unifMap = hdTuple->CreateVarMap(headInst);
@@ -413,9 +433,9 @@ Dpool::Dpool(const Ptr<DPGraph> dpgraph,
 void
 Dpool::ProcessRuleNode(Tuple* head,
 				   	   RuleNode* rnode,
-					   const TupleListC& bodyList,
-					   TupleListC::const_iterator curPos,
-					   vector<DerivNodeList::const_iterator> bodyDerivs,
+					   const list<Node*>& bodyList,
+					   list<Node*>::const_iterator curPos,
+					   vector<DpoolNode*> bodyDerivs,
 					   VarMap vmap)
 {
 	NS_LOG_DEBUG("Size of bodyList: " << bodyList.size());
@@ -429,30 +449,81 @@ Dpool::ProcessRuleNode(Tuple* head,
 		return;
 	}
 
-	const DerivNodeList& dlist = derivations.at((*curPos)->GetName());
-	TupleListC::const_iterator curBody = curPos;
-	NS_LOG_DEBUG("Size of dlist:" << dlist.size());
+	//Find out whether the tuple being searched is
+	//a BaseNode, PropNode, or DerivNode
+	string tpName = (*curPos)->GetName();
+	const Tuple* bodyTuple = (*curPos)->GetTuple();
+	assert(bodyTuple != NULL);
 	curPos++;
-	DerivNodeList::const_iterator itd;
-	for (itd = dlist.begin();itd != dlist.end();itd++)
+	BaseMap::iterator itb = baseMap.find(tpName);
+	if (itb != baseMap.end())
 	{
-		//Record the derivation of body tuples
-		bodyDerivs.push_back(itd);
+		//Process BaseNode
+		BaseNodeList& blist = itb->second;
+		BaseNodeList::iterator itbl;
+		for (itbl = blist.begin();itbl != blist.end();itbl++)
+		{
+			bodyDerivs.push_back(*itbl);
 
-		//Create variable mapping
-		const Tuple* bodyTuple = (*curBody)->GetTuple();
-		VarMap newMap = bodyTuple->CreateVarMap((*itd)->GetHeadTuple());
-		vmap.insert(newMap.begin(), newMap.end());
-		ProcessRuleNode(head, rnode, bodyList, curPos, bodyDerivs, vmap);
+			const Tuple* tp = (*itbl)->GetHead();
+			VarMap newMap = bodyTuple->CreateVarMap(tp);
+			vmap.insert(newMap.begin(), newMap.end());
+			ProcessRuleNode(head, rnode, bodyList, curPos, bodyDerivs, vmap);
 
-		bodyDerivs.pop_back();
+			bodyDerivs.pop_back();
+		}
+	}
+	else
+	{
+		//Process PropNode
+		PropMap::iterator itp = recurMap.find(tpName);
+		if (itp != recurMap.end())
+		{
+			PropNodeList& plist = itp->second;
+			PropNodeList::iterator itpl;
+			for (itpl = plist.begin();itpl != plist.end();itpl++)
+			{
+				bodyDerivs.push_back(*itpl);
+
+				const Tuple* tp = (*itpl)->GetHead();
+				VarMap newMap = bodyTuple->CreateVarMap(tp);
+				vmap.insert(newMap.begin(), newMap.end());
+				ProcessRuleNode(head, rnode, bodyList, curPos, bodyDerivs, vmap);
+
+				bodyDerivs.pop_back();
+			}
+		}
+		else
+		{
+			//Process DerivNode
+			DerivMap::iterator itd = derivations.find(tpName);
+			if (itd == derivations.end())
+			{
+				NS_LOG_ERROR("Body derivations not found!");
+			}
+			DerivNodeList& dlist = itd->second;
+			DerivNodeList::iterator itdl;
+			for (itdl = dlist.begin();itdl != dlist.end();itdl++)
+			{
+				//Record the derivation of body tuples
+				bodyDerivs.push_back(*itdl);
+
+				//Create variable mapping
+				const Tuple* tp = (*itdl)->GetHead();
+				VarMap newMap = bodyTuple->CreateVarMap(tp);
+				vmap.insert(newMap.begin(), newMap.end());
+				ProcessRuleNode(head, rnode, bodyList, curPos, bodyDerivs, vmap);
+
+				bodyDerivs.pop_back();
+			}
+		}
 	}
 }
 
 void
 Dpool::CreateDerivNode(Tuple* head,
 		 	 	 	   RuleNode* rnode,
-					   vector<DerivNodeList::const_iterator>& bodyDerivs,
+					   vector<DpoolNode*>& bodyDerivs,
 					   VarMap& vmap)
 {
 	cout << "Create a DerivNode:" << endl;
@@ -463,8 +534,7 @@ Dpool::CreateDerivNode(Tuple* head,
 	rnode->PrintName();
 	cout << endl;
 
-	DerivNodeList dblist;
-	DerivAnnoList dalist;
+	DpoolNodeList dblist;
 	ConsList cslist;
 	FormList flist;
 
@@ -474,24 +544,46 @@ Dpool::CreateDerivNode(Tuple* head,
 	newCons->ReplaceVar(vmap);
 
 	//Process the rule
-	vector<DerivNodeList::const_iterator>::iterator it;
+	vector<DpoolNode*>::iterator it;
 	for (it = bodyDerivs.begin();it != bodyDerivs.end();it++)
 	{
-		//Determine if the DerivNode is RecurNode
-		const RecurNode* rNode = dynamic_cast<const RecurNode*>(**it);
-		if (rNode != NULL)
+		//Collect cumulative constraints and formulas
+		//TODO: Replace case study here with inheritance
+		DerivNode* dnode = dynamic_cast<DerivNode*>(*it);
+		if (dnode != NULL)
 		{
-			dalist.push_back(rNode);
-			flist.push_back(rNode->GetInv());
-		}
-		else
-		{
-			//Add pointer to the corresponding DerivNode of the body tuple
-			dblist.push_back(**it);
+			dblist.push_back(dnode);
 
 			//Add references to cumulative constraints
-			const ConsList& clist = (**it)->GetCumuConsts();
+			const ConsList& clist = (dnode)->GetCumuConsts();
 			cslist.insert(cslist.end(), clist.begin(), clist.end());
+			continue;
+		}
+
+		BaseNode* bnode = dynamic_cast<BaseNode*>(*it);
+		if (bnode != NULL)
+		{
+			dblist.push_back(bnode);
+
+			const ConstraintsTemplate* cts = bnode->GetCons();
+			if (cts != NULL)
+			{
+				cslist.push_back(cts);
+			}
+			continue;
+		}
+
+		PropNode* pnode = dynamic_cast<PropNode*>(*it);
+		if (pnode != NULL)
+		{
+			dblist.push_back(pnode);
+
+			const Formula* form = pnode->GetInv();
+			if (form != NULL)
+			{
+				flist.push_back(form);
+			}
+			continue;
 		}
 	}
 	//Add local constraints into cumulative constraint list
@@ -501,8 +593,7 @@ Dpool::CreateDerivNode(Tuple* head,
 	}
 
 	DerivNode* dnode = new DerivNode(head, rnode->GetName(),
-									 newCons, dblist, dalist,
-									 cslist, flist);
+									 newCons, dblist, cslist, flist);
 	UpdateDerivNode(head->GetName(), dnode);
 }
 
@@ -530,46 +621,46 @@ Dpool::VerifyInvariants(const Invariant& inv) const
 		DerivNodeList::const_iterator itd;
 		for (itd = dlist.begin();itd != dlist.end();itd++)
 		{
-			const RecurNode* rnode = dynamic_cast<const RecurNode*>(*itd);
-			if (rnode == NULL)
-			{
-				//Base case
-				//Unify the head tuple
-				const Tuple* head = (*itd)->GetHeadTuple();
-				VarMap vmap = head->CreateVarMap(predInst);
-				Formula* newInv = tupleInv->Clone();
-				newInv->VarReplace(vmap);
-
-				const ConstraintsTemplate* cst = (*itd)->GetConstraints();
-				//Translate cst into assertions in CVC4
-				//Query newInv
-				//Return false if false
-
-				delete newInv;
-			}
-			else
-			{
-				//Recursive case
-				const DerivNodeList& bodyList = (*itd)->GetBodyDerivs();
-				vector<const ConstraintsTemplate*> clist;
-				vector<Formula*> flist;
-				VarMap vmap;
-				const ConstraintsTemplate* cts = (*itd)->GetConstraints();
-				bool recurFlag = VerifyRecurInv(bodyList.begin(), bodyList.end(), clist,
-												flist, invariant, tpName, vmap, cts);
-
-				//TODO: Any alternative to garbage collection?
-				vector<Formula*>::iterator itf;
-				for (itf = flist.begin();itf != flist.end();itf++)
-				{
-					delete (*itf);
-				}
-
-				if (recurFlag == false)
-				{
-					return false;
-				}
-			}
+//			const RecurNode* rnode = dynamic_cast<const RecurNode*>(*itd);
+//			if (rnode == NULL)
+//			{
+//				//Base case
+//				//Unify the head tuple
+//				const Tuple* head = (*itd)->GetHeadTuple();
+//				VarMap vmap = head->CreateVarMap(predInst);
+//				Formula* newInv = tupleInv->Clone();
+//				newInv->VarReplace(vmap);
+//
+//				const ConstraintsTemplate* cst = (*itd)->GetConstraints();
+//				//Translate cst into assertions in CVC4
+//				//Query newInv
+//				//Return false if false
+//
+//				delete newInv;
+//			}
+//			else
+//			{
+//				//Recursive case
+//				const DerivNodeList& bodyList = (*itd)->GetBodyDerivs();
+//				vector<const ConstraintsTemplate*> clist;
+//				vector<Formula*> flist;
+//				VarMap vmap;
+//				const ConstraintsTemplate* cts = (*itd)->GetConstraints();
+//				bool recurFlag = VerifyRecurInv(bodyList.begin(), bodyList.end(), clist,
+//												flist, invariant, tpName, vmap, cts);
+//
+//				//TODO: Any alternative to garbage collection?
+//				vector<Formula*>::iterator itf;
+//				for (itf = flist.begin();itf != flist.end();itf++)
+//				{
+//					delete (*itf);
+//				}
+//
+//				if (recurFlag == false)
+//				{
+//					return false;
+//				}
+//			}
 		}
 	}
 
@@ -596,7 +687,7 @@ Dpool::VerifyRecurInv(DerivNodeList::const_iterator curPos,
 
 	//TODO: Unify the head tuples
 	bool veriResult = false;
-	const Tuple* bodyTuple = (*curPos)->GetHeadTuple();
+	const Tuple* bodyTuple = (*curPos)->GetHead();
 	string bodyName = bodyTuple->GetName();
 	curPos++;
 	AnnotMap::const_iterator ita = annot.find(bodyName);
@@ -607,7 +698,7 @@ Dpool::VerifyRecurInv(DerivNodeList::const_iterator curPos,
 		DerivNodeList::const_iterator itd;
 		for (itd = dlist.begin();itd != dlist.end();itd++)
 		{
-			const Tuple* head = (*itd)->GetHeadTuple();
+			const Tuple* head = (*itd)->GetHead();
 			VarMap headMap = bodyTuple->CreateVarMap(head);
 			headMap.insert(vmap.begin(), vmap.end());
 			clist.push_back((*itd)->GetConstraints());
@@ -653,7 +744,9 @@ Dpool::GetDerivList(string tpName) const
 void
 Dpool::PrintDpool() const
 {
-	cout << "Derivation Pool" << endl;
+	cout << endl;
+	cout << "############### Print Derivation Pool ##############" << endl;
+	cout << "####### Derived Nodes ########" << endl;
 	DerivMap::const_iterator itd;
 	for (itd = derivations.begin();itd != derivations.end();itd++)
 	{
@@ -666,6 +759,36 @@ Dpool::PrintDpool() const
 		{
 			cout << "The " << count << "th derivation" << endl;
 			(*itn)->PrintDerivNode();
+			cout << endl;
+		}
+		cout << endl;
+	}
+	cout << "######## Base Nodes #######" << endl;
+
+	BaseMap::const_iterator itb;
+	for (itb = baseMap.begin();itb != baseMap.end();itb++)
+	{
+		cout << itb->first;
+		const BaseNodeList& blist = itb->second;
+		BaseNodeList::const_iterator itbl;
+		for (itbl = blist.begin();itbl != blist.end();itbl++)
+		{
+			(*itbl)->PrintDerivNode();
+			cout << endl;
+		}
+		cout << endl;
+	}
+
+	cout << "######## Circle Nodes #######" << endl;
+	PropMap::const_iterator itp;
+	for (itp = recurMap.begin();itp != recurMap.end();itp++)
+	{
+		cout << itp->first;
+		const PropNodeList& plist = itp->second;
+		PropNodeList::const_iterator itpl;
+		for (itpl = plist.begin();itpl != plist.end();itpl++)
+		{
+			(*itpl)->PrintDerivNode();
 			cout << endl;
 		}
 		cout << endl;
@@ -701,6 +824,7 @@ Dpool::PrintAllDeriv() const
 			cout << "************" << endl;
 		}
 	}
+	cout << "----------------------" << endl;
 }
 
 Dpool::~Dpool()

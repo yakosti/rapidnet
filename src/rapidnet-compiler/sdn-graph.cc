@@ -228,6 +228,12 @@ TupleNode::TupleNode(string tpName, vector<Variable*> args)
 	tuple = new Tuple(tpName, args);
 }
 
+int
+TupleNode::GetArgLength() const
+{
+	return tuple->GetArgLength();
+}
+
 list<Variable::TypeCode>
 TupleNode::GetSchema() const
 {
@@ -271,6 +277,12 @@ CircleNode::CircleNode(const Tuple* tp, const AnnotMap& invariant)
 	{
 		NS_LOG_ERROR("No invariant found for the tuple!");
 	}
+}
+
+int
+CircleNode::GetArgLength() const
+{
+	return tuple->GetArgLength();
 }
 
 void
@@ -365,6 +377,33 @@ NewMetaNode::NewMetaNode(MetaNode*& mnode)
 	{
 		bodyTuples.push_back(*itl);
 	}
+}
+
+int
+NewMetaNode::GetArgLength() const
+{
+	list<Node*>::const_iterator it;
+	for (it = headTuples.begin();it != headTuples.end();it++)
+	{
+		return (*it)->GetArgLength();
+	}
+
+	for (it = bodyTuples.begin();it != bodyTuples.end();it++)
+	{
+		return (*it)->GetArgLength();
+	}
+
+	NS_LOG_ERROR("No instance found in this NewMetaNode!");
+	return 0;
+}
+
+bool
+NewMetaNode::IsCircleNode()
+{
+	//TODO: Eliminate type checking
+	list<Node*>::iterator it = bodyTuples.begin();
+	CircleNode* cnode = dynamic_cast<CircleNode*>(*it);
+	return (cnode == NULL?false:true);
 }
 
 void
@@ -843,7 +882,7 @@ NewDPGraph::NewDPGraph(Ptr<DPGraph> dpgraph, const Invariant& inv)
 				assert(tnode != NULL);
 				const Tuple* tp = tnode->GetTuple();
 				CircleNode* cnode = new CircleNode(tp, annotation);
-				Tuple* ctuple = cnode->GetTuple();
+				const Tuple* ctuple = cnode->GetTuple();
 				nmap.insert(map<TupleNode*, CircleNode*>::value_type(tnode, cnode));
 
 				nlist.push_back(cnode);
@@ -970,6 +1009,18 @@ NewDPGraph::NewDPGraph(Ptr<DPGraph> dpgraph, const Invariant& inv)
 	}
 }
 
+const list<Node*>&
+NewDPGraph::GetBodies(RuleNode* rn) const
+{
+	return inEdgesRL.at(rn);
+}
+
+const Node*
+NewDPGraph::GetHeadTuple(RuleNode* rn) const
+{
+	return outEdgeRL.at(rn);
+}
+
 void
 NewDPGraph::Print()
 {
@@ -1025,6 +1076,7 @@ NewDPGraph::~NewDPGraph()
 
 MiniGraph::MiniGraph(Ptr<NewDPGraph> newGraph, const Invariant& invariant)
 {
+	NS_LOG_INFO("Constructing MiniGraph...");
 	outEdgeRM = newGraph->outEdgeRM;
 	inEdgesRM = newGraph->inEdgesRM;
 
@@ -1060,7 +1112,7 @@ MiniGraph::MiniGraph(Ptr<NewDPGraph> newGraph, const Invariant& invariant)
 RuleListC
 MiniGraph::TopoSort(const Invariant& inv) const
 {
-	NS_LOG_INFO("Topological sorting");
+	NS_LOG_INFO("Topological sorting...");
 	const AnnotMap& invariants = inv.GetInv();
 	//Create a copy of the topology for processing
 	map<RuleNode*, NewMetaNode*> outEdgeRMCopy = outEdgeRM;
@@ -1154,7 +1206,7 @@ MiniGraph::GetBaseTuples() const
 	map<NewMetaNode*, RuleListC>::const_iterator itti;
 	for (itti = inEdgesMT.begin();itti != inEdgesMT.end();itti++)
 	{
-		if (itti->second.size() == 0)
+		if (itti->second.size() == 0 && !(itti->first->IsCircleNode()))
 		{
 			//Record all base tuples
 			mlist.push_back(itti->first);
