@@ -171,32 +171,31 @@ void compile (string overlogFile, bool provenanceEnabled)
   Ptr<TableStore> tableStore (new TableStore (ctxt));
   parseOverlog (overlogFile, ctxt, tableStore, provenanceEnabled);
 
+  //Construct the dependency graph
   Ptr<DPGraph> graphNdlog (new DPGraph(ctxt));
   //graphNdlog->PrintGraph();
 
-  //Recursive invariant
+  //Input recursive invariant
   Invariant inv = Invariant();
   Ptr<NewDPGraph> newGraph (new NewDPGraph(graphNdlog, inv));
   //newGraph->Print();
 
+  //Construct mini graph for topological sorting
   Ptr<MiniGraph> miniGraph (new MiniGraph(newGraph, inv));
   //miniGraph->PrintGraph();
-  RuleListC rlist = miniGraph->TopoSort(inv);
-  cout << endl << "Print topological sort results:" << endl;
-  for (RuleListC::iterator it = rlist.begin();it != rlist.end();it++)
-  {
-	  (*it)->PrintName();
-	  cout << endl;
-  }
 
   //Base properties
-//  BaseProperty baseProp = BaseProperty();
-//  //Recursive invariant
-//  Invariant inv = Invariant();
-//  Ptr<Dpool> dpool (new Dpool(graphNdlog, baseProp, inv));
-//  dpool->VerifyInvariants(inv);
-//  //dpool->PrintDpool();
-//  //dpool->PrintDeriv("ePingPongFinish");
+  BaseProperty baseProp = BaseProperty();
+
+  //Dpool construction
+  Ptr<Dpool> dpool (new Dpool(newGraph, miniGraph, baseProp, inv));
+  //dpool->PrintDpool();
+  dpool->PrintAllDeriv();
+
+  //Verify invariant property
+  //  dpool->VerifyInvariants(inv);
+
+  //Property verification
 //  //User-defined property
 //  Property p = Property();
 //
@@ -211,8 +210,6 @@ void compile (string overlogFile, bool provenanceEnabled)
   //writeToFile("testing_constraints", dlist); //laykuan testing
 
   //test_check_sat();
-
-  //Use DerivNode::GetAllObligs() to get all proof obligations
 }
 
 

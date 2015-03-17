@@ -54,7 +54,7 @@ void GenCounterExp(map<Variable*, int> assignment,
 	for (itd = dlist.begin();itd != dlist.end();itd++)
 	{
 		const DerivNode& dnode = (*itd).first;
-		string headName = dnode.GetHeadTuple()->GetName();
+		string headName = dnode.GetHead()->GetName();
 		SimpConstraints& simpCons = (*itd).second;
 		map<Variable*, int> valueMap = PropAssignment(simpCons, assignment);
 		cout << "************* Execution Trace of " << headName;
@@ -177,7 +177,7 @@ bool CheckExistProp(const Property& prop,
 	for (;itd != dlist.end();itd++, itp++)
 	{
 		//Create variable mapping between predicate and the head tuple
-		const Tuple* head = (*itd)->GetHeadTuple();
+		const Tuple* head = (*itd)->GetHead();
 		VarMap headMap = head->CreateVarMap(*itp);
 		vmap.insert(headMap.begin(), headMap.end());
 
@@ -279,7 +279,7 @@ bool CheckExistProp(const Property& prop,
 		DerivNodeList::const_iterator itdc;
 		for (itdc = dlist.begin();itdc != dlist.end();itdc++)
 		{
-			(*itdc)->FindSubTuple(existPlist, tlist);
+//			(*itdc)->FindSubTuple(existPlist, tlist);
 		}
 
 		//Check all possible combinations

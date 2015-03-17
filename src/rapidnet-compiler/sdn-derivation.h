@@ -19,35 +19,66 @@
 
 using namespace std;
 
+class Dpool;
 class DerivNode;
-class DerivBody;
-class RecurNode;
+class DpoolNode;
+class BaseNode;
+class PropNode;
 
-//TODO: Replace legacy type with macro
 typedef list<const ConstraintsTemplate*> ConsList;
 typedef list<const Formula*> FormList;
-typedef list<const DerivNode*> DerivNodeList;
+typedef list<DerivNode*> DerivNodeList;
+typedef list<BaseNode*> BaseNodeList;
+typedef list<PropNode*> PropNodeList;
+typedef list<DpoolNode*> DpoolNodeList;
 typedef map<string, DerivNodeList> DerivMap;
-typedef list<const RecurNode*> DerivAnnoList;
+typedef map<string, BaseNodeList> BaseMap;
+typedef map<string, PropNodeList> PropMap;
 
 typedef pair<const ConsList&, const FormList&> Obligation;
 
-//TODO: Create a class called BaseNode for base tuples.
-//DerivNode points to a derivation of a body tuple
-class DerivNode
+class DpoolNode
 {
 public:
-	DerivNode(const Tuple*);
+	DpoolNode(string tpName, int argSize);
 
-	DerivNode(string tpName, list<Variable::TypeCode>&);
+	DpoolNode(const Tuple*);
 
-	DerivNode(Tuple* tn, string rn,
-			  ConstraintsTemplate* consTemp,
-			  DerivNodeList dlist, DerivAnnoList dblist,
-			  ConsList clist, FormList flist):
-		head(tn),ruleName(rn),ruleConstraints(consTemp),
-		bodyDerivs(dlist),bodyAnnotations(dblist),
-		allConstraints(clist), allInvs(flist){}
+	DpoolNode(const PredicateInstance*);
+
+	const Tuple* GetHead() const {return head;}
+
+	void PrintHead() const;
+
+	void PrintHeadInst(const map<Variable*, int>&) const;
+
+	virtual void PrintCumuCons() const{}
+
+	//Just print the current DerivNode
+	virtual void PrintDerivNode() const{}
+
+	virtual void PrintInstance(const map<Variable*, int>&) const{}
+
+	//Print the whole derivation represented by the DerivNode
+	virtual void PrintDerivation() const{}
+
+	//Print a real execution corresponding to the derivation
+	virtual void PrintExecution(map<Variable*, int>&) const{}
+
+	virtual ~DpoolNode(){}
+
+protected:
+	Tuple* head;
+};
+
+//DerivNode points to a derivation of a body tuple
+class DerivNode: public DpoolNode
+{
+public:
+	DerivNode(Tuple* tn, string rn, ConstraintsTemplate* consTemp,
+			  DpoolNodeList& dlist, ConsList& clist, FormList& flist):
+				  DpoolNode(tn), ruleName(rn),ruleConstraints(consTemp),
+				  bodyDerivs(dlist), allConstraints(clist), allInvs(flist){}
 
 	void AddRuleName(string);
 
@@ -56,8 +87,6 @@ public:
 	void UpdateConstraint(ConstraintsTemplate*);
 
 	void UpdateCumuCons(ConsList&);
-
-	const Tuple* GetHeadTuple() const{return head;}
 
 	const ConsList& GetCumuConsts() const{return allConstraints;}
 
@@ -69,10 +98,10 @@ public:
 
 	const ConstraintsTemplate* GetConstraints() const{return ruleConstraints;}
 
-	const DerivNodeList& GetBodyDerivs() const{return bodyDerivs;}
+	const DpoolNodeList& GetBodyDerivs() const{return bodyDerivs;}
 
-	void FindSubTuple(const list<PredicateInstance*>&,
-					  map<string, list<const Tuple*> >&) const;
+//	void FindSubTuple(const list<PredicateInstance*>&,
+//					  map<string, list<const Tuple*> >&) const;
 
 	void PrintHead() const;
 
@@ -81,46 +110,75 @@ public:
 	void PrintCumuCons() const;
 
 	//Just print the current DerivNode
-	virtual void PrintDerivNode() const;
+	void PrintDerivNode() const;
 
-	virtual void PrintInstance(const map<Variable*, int>&) const;
+	void PrintInstance(const map<Variable*, int>&) const;
 
 	//Print the whole derivation represented by the DerivNode
 	void PrintDerivation() const;
 
 	//Print a real execution corresponding to the derivation
-	void PrintExecution(map<Variable*, int>) const;
+	void PrintExecution(map<Variable*, int>&) const;
 
 	virtual ~DerivNode();
 
 protected:
-	Tuple* head;
 	string ruleName;
 	ConstraintsTemplate* ruleConstraints;
-	DerivNodeList bodyDerivs; //Points body tuples that have derivations
-	DerivAnnoList bodyAnnotations; //Points body tuples that have annotations
+	DpoolNodeList bodyDerivs;
 
 	ConsList allConstraints; //Cumulative constraints of a derivation
 	FormList allInvs; //Cumulative invariants of a derivation
 };
 
-class RecurNode: public DerivNode
+class BaseNode: public DpoolNode
 {
 public:
-	RecurNode(const Tuple*);
+	BaseNode(const PredicateInstance*, const ConstraintsTemplate&);
 
-	void AddInvariant(Formula*);
+	BaseNode(const Tuple*);
 
-	const Formula* GetInv() const {return invariant;}
+	BaseNode(string, int);
+
+	const ConstraintsTemplate* GetCons() const{return cts;}
+
+	void PrintCumuCons() const;
 
 	void PrintDerivNode() const;
 
 	void PrintInstance(const map<Variable*, int>&) const;
 
-	~RecurNode();
+	void PrintDerivation() const;
+
+	void PrintExecution(map<Variable*, int>&) const;
+
+	~BaseNode();
 private:
-	//TODO: See if invariant can be merged into Constraints
-	Formula* invariant;
+	ConstraintsTemplate* cts;
+};
+
+class PropNode: public DpoolNode
+{
+public:
+	PropNode(const PredicateInstance*, Formula*);
+
+	void AddInvariant(Formula*);
+
+	const Formula* GetInv() const {return prop;}
+
+	void PrintCumuCons() const;
+
+	void PrintDerivNode() const;
+
+	void PrintInstance(const map<Variable*, int>&) const;
+
+	void PrintDerivation() const;
+
+	void PrintExecution(map<Variable*, int>&) const;
+
+	~PropNode();
+private:
+	Formula* prop;
 };
 
 class DerivInst;
@@ -129,18 +187,19 @@ class Derivation;
 class Dpool: public RefCountBase
 {
 public:
-	Dpool(const Ptr<DPGraph>, const BaseProperty&, const Invariant&);
+	Dpool(const Ptr<NewDPGraph>, const Ptr<MiniGraph>,
+		  const BaseProperty&, const Invariant&);
 
 	void ProcessRuleNode(Tuple*,
 		   	   	   	   	 RuleNode*,
-						 const TupleListC&,
-						 TupleListC::const_iterator,
-						 vector<DerivNodeList::const_iterator>,
+						 const list<Node*>&,
+						 list<Node*>::const_iterator,
+						 vector<DpoolNode*>,
 						 VarMap vmap);
 
 	void CreateDerivNode(Tuple*,
 	 	 	   	   	   	 RuleNode*,
-						 vector<DerivNodeList::const_iterator>&,
+						 vector<DpoolNode*>&,
 						 VarMap& vmap);
 
 	void UpdateDerivNode(string tpName, DerivNode* dnode);
@@ -170,6 +229,8 @@ public:
 	~Dpool();
 private:
 	DerivMap derivations;
+	BaseMap baseMap;
+	PropMap recurMap;
 };
 
 #endif /* SDN_DERIVATION_H_ */
