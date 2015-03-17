@@ -43,7 +43,7 @@
  * pktIn(@Switch, Src, SrcPort, Dst) => key(1,2,3,4)
  * perFlowRule(@Switch, Src, SrcPort, Dst, DstPort) => key(1,2,3,4,5)
  * openConnectionToController(@Switch, Controller) => key(1) 
- * trustedControllerMemory(@Controller, Switch, Host) => key(1,2)
+ * trustedControllerMemory(@Controller, Switch, Host) => key(2,3)
  */
 
 /* 
@@ -54,15 +54,41 @@
  * ***************************************************************************** *
  */
 
+/* switch */
+
 #define pktIn(Switch, Src, SrcPort, Dst) \
   tuple (Firewall::PKTIN, \
     attr ("pktIn_attr1", Ipv4Value, Switch), \
     attr ("pktIn_attr2", Ipv4Value, Src), \
     attr ("pktIn_attr3", Int32Value, SrcPort), \
-    attr ("pktIn_attr4", Ipv4Value, Dst))
+    attr ("pktIn_attr4", Ipv4Value, Dst) \
+  )
 
 #define insert_pktIn(Switch, Src, SrcPort, Dst) \
   app(Switch) -> Insert(pktIn(addr(Switch), addr(Src), SrcPort, addr(Dst)));
+
+
+/* controller memory */
+
+#define trustedControllerMemory(Controller, Switch, Host)\
+  tuple (Firewall::TRUSTEDCONTROLLERMEMORY, \
+    attr("trustedControllerMemory_attr1", Ipv4Value, Controller), \
+    attr("trustedControllerMemory_attr1", Ipv4Value, Switch), \
+    attr("trustedControllerMemory_attr2", Ipv4Value, Host) \
+  )
+
+#define insert_trustedControllerMemory(Controller, Switch, Host) \
+  app(Controller) -> Insert(trustedControllerMemory(addr(Controller), addr(Switch), addr(Host)));
+
+/* openConnectionToController */
+#define openConnectionToController(Switch, Controller)\
+  tuple (Firewall::OPENCONNECTIONTOCONTROLLER, \
+    attr("openConnectionToController_attr1", Ipv4Value, Switch), \
+    attr("openConnectionToController_attr2", Ipv4Value, Controller) \
+  )
+
+#define insert_openConnectionToController(Switch, Controller) \
+  app(Switch) -> Insert(openConnectionToController(addr(Switch), addr(Controller)));
 
 /* 
  * ***************************************************************************** *
@@ -100,7 +126,19 @@ ApplicationContainer apps;
 void
 InitPktIn ()
 {
-  insert_pktIn(1, 1, 1, 1);
+  insert_pktIn(1,1,1,1);
+}
+
+void 
+InitControllerMemory() 
+{
+  insert_trustedControllerMemory(1,1,1);
+}
+
+void 
+InitSwitchConnectionToController() 
+{
+  insert_openConnectionToController(1,1);
 }
 
 int
@@ -113,7 +151,8 @@ main (int argc, char *argv[])
   apps.Start (Seconds (0.0));
   apps.Stop (Seconds (10.0));
 
-  schedule (0.0001, InitPktIn);
+  schedule (0.0001, InitSwitchConnectionToController);
+  schedule (0.0002, InitPktIn);
 
   Simulator::Run ();
   Simulator::Destroy ();
