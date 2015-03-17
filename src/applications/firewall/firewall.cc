@@ -88,14 +88,14 @@ Firewall::InitDatabase ()
   AddRelationWithKeys (PERFLOWRULE, attrdeflist (
     attrdef ("perFlowRule_attr1", IPV4),
     attrdef ("perFlowRule_attr2", IPV4),
-    attrdef ("perFlowRule_attr3", IPV4),
+    attrdef ("perFlowRule_attr3", INT32),
     attrdef ("perFlowRule_attr4", IPV4),
-    attrdef ("perFlowRule_attr5", IPV4)));
+    attrdef ("perFlowRule_attr5", INT32)));
 
   AddRelationWithKeys (PKTIN, attrdeflist (
     attrdef ("pktIn_attr1", IPV4),
     attrdef ("pktIn_attr2", IPV4),
-    attrdef ("pktIn_attr3", IPV4),
+    attrdef ("pktIn_attr3", INT32),
     attrdef ("pktIn_attr4", IPV4)));
 
   AddRelationWithKeys (TRUSTEDCONTROLLERMEMORY, attrdeflist (

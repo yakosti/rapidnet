@@ -37,8 +37,8 @@
 
 materialize(trustedControllerMemory,infinity,infinity,keys(2,3)). 
 materialize(openConnectionToController,infinity,infinity,keys(1)).
-materialize(pktIn,infinity,infinity,keys(1,2,3,4)).
-materialize(perFlowRule,infinity,infinity,keys(1,2,3,4,5)).
+materialize(pktIn,infinity,infinity,keys(1,2,3:int32,4)).
+materialize(perFlowRule,infinity,infinity,keys(1,2,3:int32,4,5:int32)).
 
 
 /* ************************************************* */
