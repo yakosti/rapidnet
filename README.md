@@ -158,3 +158,4 @@ where value > 1000,  so we know it is a string constant. (March 12, 2015)
 11) Running examples
 --------------------
 * `./rapidnet/compiler/compile /Users/lkloh/rapidnet/src/applications/firewall/firewall.olg`
+* [Upenn Tutorial](http://netdb.cis.upenn.edu/rapidnet/doxygen/html/rapidnet-ndlog-application.html)

@@ -135,6 +135,8 @@
  * ***************************************************************************** *
  */
 
+#define nodeNum 4
+
 using namespace std;
 using namespace ns3;
 using namespace ns3::rapidnet;
@@ -147,19 +149,19 @@ ApplicationContainer apps;
  * to Host Dst 2 (??)
  */
 void
-InitPktIn1 ()
+SimulatePktIn1 ()
 {
   insert_pktIn(1,1,1,2);
 }
 
 /*
  * The controller remembers that 
- * Switch 1 should trust Host 2
+ * Switch 1 should trust Host 3
  */
 void 
 InitControllerMemory() 
 {
-  insert_trustedControllerMemory(1,1,2);
+  insert_trustedControllerMemory(1,1,3);
 }
 
 /*
@@ -187,13 +189,14 @@ main (int argc, char *argv[])
   LogComponentEnable("Firewall", LOG_LEVEL_INFO);
   LogComponentEnable("RapidNetApplicationBase", LOG_LEVEL_INFO);
 
-  apps = InitRapidNetApps (2, Create<FirewallHelper> ());
+  apps = InitRapidNetApps (nodeNum, Create<FirewallHelper> ());
   apps.Start (Seconds (0.0));
   apps.Stop (Seconds (10.0));
 
   schedule (0.0002, InitOpenConnectionToController);
-  schedule (0.0003, InitPktIn1);
   schedule (0.0005, InitPerFlowRule); /* GIVES ME AN ERROR HERE! */
+  schedule (0.0003, SimulatePktIn1);
+  //schedule(0.0005, InitControllerMemory);
 
   Simulator::Run ();
   Simulator::Destroy ();
