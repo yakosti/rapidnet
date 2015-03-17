@@ -167,6 +167,7 @@ def build(bld):
     # RapidNet scripts
     obj = bld.create_ns3_program('rapidnet-app-simulator')
     obj.source = 'rapidnet-app-simulator.cc'
+
     
     #  EXCLUDED FOR COMPILATION
     #obj = bld.create_ns3_program('rapidnet-app-emulator')
@@ -184,6 +185,9 @@ def build(bld):
 
     obj = bld.create_ns3_program('epidemic-test')
     obj.source = 'epidemic-test.cc'
+
+    obj = bld.create_ns3_program('sdn-mac-learning-test')
+    obj.source = 'sdn-mac-learning-test.cc'
 
     # EXCLUDED FOR COMPILATION
     #obj = bld.create_ns3_program('emu-ping-pong-test')
