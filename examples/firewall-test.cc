@@ -75,8 +75,8 @@
 #define trustedControllerMemory(Controller, Switch, Host)\
   tuple (Firewall::TRUSTEDCONTROLLERMEMORY, \
     attr("trustedControllerMemory_attr1", Ipv4Value, Controller), \
-    attr("trustedControllerMemory_attr1", Ipv4Value, Switch), \
-    attr("trustedControllerMemory_attr2", Ipv4Value, Host) \
+    attr("trustedControllerMemory_attr2", Ipv4Value, Switch), \
+    attr("trustedControllerMemory_attr3", Ipv4Value, Host) \
   )
 
 #define insert_trustedControllerMemory(Controller, Switch, Host) \
@@ -135,7 +135,7 @@
  * ***************************************************************************** *
  */
 
-#define nodeNum 4
+#define nodeNum 5
 
 using namespace std;
 using namespace ns3;
@@ -146,7 +146,9 @@ ApplicationContainer apps;
 
 /*
  * Switch 1 receives a packet sent by Host Src 1 ( Trusted port 1)
- * to Host Dst 2 (??)
+ * to Host Dst 2 (untrusted port 2)
+ * 
+ * send to untrusted host
  */
 void
 SimulatePktIn1 ()
@@ -155,13 +157,37 @@ SimulatePktIn1 ()
 }
 
 /*
+ * Switch 1 receives a packet sent by Host Src 1 ( Trusted port 1)
+ * to Host Dst 4 (untrusted port 2)
+ * 
+ * This is sent, since InitControllerMemory remembers this
+ */
+void
+SimulatePktIn2 ()
+{
+  insert_pktIn(1,1,1,4);
+}
+
+/*
+ * Switch 1 receives a packet sent by Host Src 3 ( Trusted port 1)
+ * to Host Dst 5 (untrusted port 2)
+ * 
+ * This is sent, since InitControllerMemory remembers this
+ */
+void
+SimulatePktIn3 ()
+{
+  insert_pktIn(1,3,1,5);
+}
+
+/*
  * The controller remembers that 
- * Switch 1 should trust Host 3
+ * Switch 1 should trust Host 4 (from untrusted port 2)
  */
 void 
 InitControllerMemory() 
 {
-  insert_trustedControllerMemory(1,1,3);
+  insert_trustedControllerMemory(1,1,4);
 }
 
 /*
@@ -175,12 +201,17 @@ InitOpenConnectionToController()
 
 /*
  * Switch 1 can send packets from 
- * Src Host 3 (trusted port 1) -> Dst Host 4 (untrusted port 2)
+ * Src Host 3 (trusted port 1) -> Dst Host 5 (untrusted port 2)
  */
 void 
 InitPerFlowRule()
 {
-  insert_perFlowRule(1,3,1,4,2);
+  insert_perFlowRule(1,3,1,5,2);
+}
+
+void PrintRelation()
+{
+  PrintRelation(apps, Firewall::PKTRECEIVED);
 }
 
 int
@@ -194,9 +225,14 @@ main (int argc, char *argv[])
   apps.Stop (Seconds (10.0));
 
   schedule (0.0002, InitOpenConnectionToController);
-  schedule (0.0005, InitPerFlowRule); /* GIVES ME AN ERROR HERE! */
-  schedule (0.0003, SimulatePktIn1);
-  //schedule(0.0005, InitControllerMemory);
+  schedule (0.0005, InitPerFlowRule);
+  schedule(0.0005, InitControllerMemory); 
+
+  schedule (0.006, SimulatePktIn1); /* dropped */
+  schedule (0.007, SimulatePktIn2); /* sent */
+  schedule (0.008, SimulatePktIn3); /* sent */
+
+  schedule (20, PrintRelation); /* trace */
 
   Simulator::Run ();
   Simulator::Destroy ();
