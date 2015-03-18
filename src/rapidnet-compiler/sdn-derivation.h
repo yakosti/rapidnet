@@ -206,16 +206,6 @@ public:
 
 	bool VerifyInvariants(const Invariant&) const;
 
-	//TODO: to be tested with z3
-	bool VerifyRecurInv(DerivNodeList::const_iterator,
-						DerivNodeList::const_iterator,
-						vector<const ConstraintsTemplate*>,
-						vector<Formula*>&,
-						const AnnotMap&,
-						string veriTuple,
-						const VarMap& vmap,
-						const ConstraintsTemplate*) const;
-
 	const DerivMap& GetDerivation() const{return derivations;}
 
 	const DerivNodeList& GetDerivList(string tpName) const;
