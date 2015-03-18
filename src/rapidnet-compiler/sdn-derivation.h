@@ -26,7 +26,7 @@ class BaseNode;
 class PropNode;
 
 typedef list<const ConstraintsTemplate*> ConsList;
-typedef list<const Formula*> FormList;
+typedef list<Formula*> FormList;
 typedef list<DerivNode*> DerivNodeList;
 typedef list<BaseNode*> BaseNodeList;
 typedef list<PropNode*> PropNodeList;
@@ -90,7 +90,7 @@ public:
 
 	const ConsList& GetCumuConsts() const{return allConstraints;}
 
-	const FormList& GetInvariants() const{return allInvs;}
+	FormList& GetInvariants() {return allInvs;}
 
 	//Obtain all constraints and invariants that should be satisfied
 	//to make execution possible
@@ -164,7 +164,7 @@ public:
 
 	void AddInvariant(Formula*);
 
-	const Formula* GetInv() const {return prop;}
+	Formula* GetInv() {return prop;}
 
 	void PrintCumuCons() const;
 
@@ -205,16 +205,6 @@ public:
 	void UpdateDerivNode(string tpName, DerivNode* dnode);
 
 	bool VerifyInvariants(const Invariant&) const;
-
-	//TODO: to be tested with z3
-	bool VerifyRecurInv(DerivNodeList::const_iterator,
-						DerivNodeList::const_iterator,
-						vector<const ConstraintsTemplate*>,
-						vector<Formula*>&,
-						const AnnotMap&,
-						string veriTuple,
-						const VarMap& vmap,
-						const ConstraintsTemplate*) const;
 
 	const DerivMap& GetDerivation() const{return derivations;}
 

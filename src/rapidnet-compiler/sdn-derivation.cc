@@ -578,7 +578,7 @@ Dpool::CreateDerivNode(Tuple* head,
 		{
 			dblist.push_back(pnode);
 
-			const Formula* form = pnode->GetInv();
+			Formula* form = pnode->GetInv();
 			if (form != NULL)
 			{
 				flist.push_back(form);
@@ -606,6 +606,7 @@ Dpool::UpdateDerivNode(string tpName, DerivNode* dnode)
 bool
 Dpool::VerifyInvariants(const Invariant& inv) const
 {
+	Formula* proofObl = NULL;
 	const AnnotMap& invariant = inv.GetInv();
 	AnnotMap::const_iterator ita;
 	//Check each invariant in the annotation
@@ -614,123 +615,81 @@ Dpool::VerifyInvariants(const Invariant& inv) const
 		string tpName = ita->first;
 		const Annotation& annot = ita->second;
 		PredicateInstance* predInst = annot.first;
-		Formula* tupleInv = annot.second;
+		int predArgSize = predInst->GetArgs().size();
+		//All headers should be unified to the unifTuple
+		Tuple unifTuple = Tuple(tpName, predArgSize);
+
+		//Unify variables in the invariant
+		Formula* tupleInv = annot.second->Clone();
+		VarMap invMap = unifTuple.CreateVarMap(predInst);
+		tupleInv->VarReplace(invMap);
 
 		//Check soundness and completeness
+		//Invariant <=> Constraints1 \/ Constraints2 \/ ... \/ Constraintsn
 		const DerivNodeList& dlist = derivations.at(tpName);
 		DerivNodeList::const_iterator itd;
+		Formula* disjForm = NULL;
 		for (itd = dlist.begin();itd != dlist.end();itd++)
 		{
-//			const RecurNode* rnode = dynamic_cast<const RecurNode*>(*itd);
-//			if (rnode == NULL)
-//			{
-//				//Base case
-//				//Unify the head tuple
-//				const Tuple* head = (*itd)->GetHeadTuple();
-//				VarMap vmap = head->CreateVarMap(predInst);
-//				Formula* newInv = tupleInv->Clone();
-//				newInv->VarReplace(vmap);
-//
-//				const ConstraintsTemplate* cst = (*itd)->GetConstraints();
-//				//Translate cst into assertions in CVC4
-//				//Query newInv
-//				//Return false if false
-//
-//				delete newInv;
-//			}
-//			else
-//			{
-//				//Recursive case
-//				const DerivNodeList& bodyList = (*itd)->GetBodyDerivs();
-//				vector<const ConstraintsTemplate*> clist;
-//				vector<Formula*> flist;
-//				VarMap vmap;
-//				const ConstraintsTemplate* cts = (*itd)->GetConstraints();
-//				bool recurFlag = VerifyRecurInv(bodyList.begin(), bodyList.end(), clist,
-//												flist, invariant, tpName, vmap, cts);
-//
-//				//TODO: Any alternative to garbage collection?
-//				vector<Formula*>::iterator itf;
-//				for (itf = flist.begin();itf != flist.end();itf++)
-//				{
-//					delete (*itf);
-//				}
-//
-//				if (recurFlag == false)
-//				{
-//					return false;
-//				}
-//			}
-		}
-	}
-
-	return true;
-}
-
-bool
-Dpool::VerifyRecurInv(DerivNodeList::const_iterator curPos,
-					  DerivNodeList::const_iterator endItr,
-					  vector<const ConstraintsTemplate*> clist,
-					  vector<Formula*>& flist,
-					  const AnnotMap& annot,
-					  string veriTuple,
-					  const VarMap& vmap,
-					  const ConstraintsTemplate* ruleCons) const
-{
-	if (curPos == endItr)
-	{
-		//Assert clist
-		//Unify ruleCons
-		//Query veriTuple's formula after Variable mapping
-
-	}
-
-	//TODO: Unify the head tuples
-	bool veriResult = false;
-	const Tuple* bodyTuple = (*curPos)->GetHead();
-	string bodyName = bodyTuple->GetName();
-	curPos++;
-	AnnotMap::const_iterator ita = annot.find(bodyName);
-	if (ita == annot.end())
-	{
-		//Non-recursive body
-		const DerivNodeList& dlist = derivations.at(bodyName);
-		DerivNodeList::const_iterator itd;
-		for (itd = dlist.begin();itd != dlist.end();itd++)
-		{
+			//Enumerate all possible derivations, including recursive ones
+			Formula* conjForm = NULL;
 			const Tuple* head = (*itd)->GetHead();
-			VarMap headMap = bodyTuple->CreateVarMap(head);
-			headMap.insert(vmap.begin(), vmap.end());
-			clist.push_back((*itd)->GetConstraints());
-			veriResult = VerifyRecurInv(curPos, endItr, clist, flist, annot,
-										veriTuple, headMap, ruleCons);
-			if (veriResult == false)
+			VarMap vmap = head->CreateVarMap(&unifTuple);
+
+			const ConsList& clist = (*itd)->GetCumuConsts();
+			ConsList::const_iterator itc;
+			for (itc = clist.begin();itc != clist.end();itc++)
 			{
-				return false;
+				const ConstraintList& ctsList = (*itc)->GetConstraints();
+				ConstraintList::const_iterator itct;
+				for (itct = ctsList.begin();itct != ctsList.end();itct++)
+				{
+					Constraint* cons = new Constraint(**itct);
+					if (conjForm == NULL)
+					{
+						conjForm = cons;
+					}
+					else
+					{
+						conjForm = new Connective(Connective::AND, conjForm, cons);
+					}
+				}
 			}
-			clist.pop_back();
-		}
-	}
-	else
-	{
-		//A recursive body
-		//Use invariant instead of all its derivations
-		const Annotation& bodyInv = ita->second;
-		PredicateInstance* predInst = bodyInv.first;
-		Formula* formInv = bodyInv.second;
 
-		VarMap formMap = bodyTuple->CreateVarMap(predInst);
-		Formula* newInv = formInv->Clone();
-		newInv->VarReplace(formMap);
-		flist.push_back(newInv);
-		veriResult = VerifyRecurInv(curPos, endItr, clist, flist, annot,
-				 	 	 	 	 	veriTuple, vmap, ruleCons);
-		if (veriResult == false)
-		{
-			return false;
+			FormList& flist = (*itd)->GetInvariants();
+			FormList::iterator itf;
+			for (itf = flist.begin();itf != flist.end();itf++)
+			{
+				Formula* newForm = (*itf)->Clone();
+				newForm->VarReplace(vmap);
+				if (conjForm == NULL)
+				{
+					conjForm = newForm;
+				}
+				else
+				{
+					conjForm = new Connective(Connective::AND, conjForm, newForm);
+				}
+			}
+
+			//Create the disjunctive formula of C1 \/ C2...\/ Cn
+			if (disjForm == NULL)
+			{
+				disjForm = conjForm;
+			}
+			else
+			{
+				disjForm = new Connective(Connective::OR, disjForm, conjForm);
+			}
 		}
+
+		Formula* soundForm = new Connective(Connective::IMPLY, disjForm, tupleInv);
+		//TODO: Verify soundForm
+		Formula* completeForm = new Connective(Connective::IMPLY, tupleInv, disjForm);
+		//TODO: Verify completeForm
 	}
 
+	//TODO: What's the return value here?
 	return true;
 }
 
