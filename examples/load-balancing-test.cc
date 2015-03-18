@@ -43,6 +43,17 @@
 #define insert_pktClient(Switch, Client) \
   app(Switch) -> Insert(pktClient(addr(Switch),add(Client)));
 
+/* loadBalancerConnectionToServer */
+
+#define loadBalancerConnectionToServer(SwitchLoadBalancer, Server) \
+  tuple(LoadBalancing::LOADBALANCERCONNECTIONTOSERVER, \
+    attr("loadBalancerConnectionToServer_attr1", Ipv4Value, SwitchLoadBalancer),\
+    attr("loadBalancerConnectionToServer_attr2", Ipv4Value, Server))
+
+#define insert_loadBalancerConnectionToServer(SwitchLoadBalancer, Server) \
+  app(SwitchLoadBalancer) -> \
+    Insert(loadBalancerConnectionToServer(addr(SwitchLoadBalancer),addr(Server)));
+
 /* 
  * **************************************************************** *
  *                                                                  *
@@ -66,7 +77,9 @@
  * **************************************************************** *
  */
 
-#define nodeNum 4
+#define nodeNum 11
+#define GATEWAY_SWITCH 10
+#define LOAD_BALANCER_SWITCH 11
 
 using namespace std;
 using namespace ns3;
@@ -75,9 +88,9 @@ using namespace ns3::rapidnet::loadbalancing;
 
 ApplicationContainer apps;
 
-void InitMacTable()
-{
-  //insertmacport(1,2,2,"00:19:B9:F9:2D:0C");
+void init_switchConnection() {
+  insert_switchConnection(GATEWAY_SWITCH, LOAD_BALANCER_SWITCH);
+  //insert_switchConnection(1,2);
 }
 
 
@@ -91,7 +104,9 @@ int main(int argc, char *argv[])
   apps.Start (Seconds (0.0));
   apps.Stop (Seconds (10.0));
 
-  //schedule (0.001, InitMacTable);
+  /* initialization */
+  schedule (0.001, init_switchConnection);
+  
 
   Simulator::Run();
   Simulator::Destroy();
