@@ -28,6 +28,8 @@
 using namespace ns3;
 using namespace rapidnet;
 
+/* ************************************************************** */
+
 Ptr<Value>
 FAppend::Eval (Ptr<Tuple> tuple)
 {
@@ -44,6 +46,22 @@ FAppend::New (Ptr<Expression> source)
   return retval;
 }
 
+/* ************************************************************** */
+
+Ptr<Value>
+FModulo::Eval (Ptr<Tuple> tuple)
+{
+  return ListValue::New ();
+}
+
+Ptr<FunctionExpr>
+FModulo::New ()
+{
+  return Create<FModulo> ();
+}
+
+/* ************************************************************** */
+
 Ptr<Value>
 FEmpty::Eval (Ptr<Tuple> tuple)
 {
@@ -55,6 +73,8 @@ FEmpty::New ()
 {
   return Create<FEmpty> ();
 }
+
+/* ************************************************************** */
 
 Ptr<Value>
 FConcat::Eval (Ptr<Tuple> tuple)
@@ -83,6 +103,8 @@ FConcat::New (Ptr<Expression> head, Ptr<Expression> tail)
   retval->m_tail = tail;
   return retval;
 }
+
+/* ************************************************************** */
 
 Ptr<Value>
 FItem::Eval (Ptr<Tuple> tuple)
@@ -114,6 +136,8 @@ FItem::New (Ptr<Expression> lst, Ptr<Expression> index)
   return retval;
 }
 
+/* ************************************************************** */
+
 Ptr<Value>
 FMember::Eval (Ptr<Tuple> tuple)
 {
@@ -131,6 +155,8 @@ FMember::New (Ptr<Expression> lst, Ptr<Expression> item)
   return retval;
 }
 
+/* ************************************************************** */
+
 Ptr<Value>
 FNow::Eval (Ptr<Tuple> tuple)
 {
@@ -142,6 +168,8 @@ FNow::New ()
 {
   return Create<FNow> ();
 }
+
+/* ************************************************************** */
 
 Ptr<Value>
 FDiffTime::Eval (Ptr<Tuple> tuple)
@@ -157,6 +185,8 @@ FDiffTime::New (Ptr<Expression> time2, Ptr<Expression> time1)
   retval->m_time1 = time1;
   return retval;
 }
+
+/* ************************************************************** */
 
 Ptr<Value>
 FHslsTtl::Eval (Ptr<Tuple> tuple)
@@ -179,6 +209,8 @@ FHslsTtl::New (Ptr<Expression> timeAttrName, Ptr<Expression> periodAttrName)
   return retval;
 }
 
+/* ************************************************************** */
+
 Ptr<Value>
 FSize::Eval (Ptr<Tuple> tuple)
 {
@@ -196,6 +228,8 @@ FSize::New (Ptr<Expression> listAttrName)
   retval->m_listAttrName = listAttrName;
   return retval;
 }
+
+/* ************************************************************** */
 
 Ptr<Value>
 FLast::Eval (Ptr<Tuple> tuple)
@@ -222,6 +256,8 @@ FLast::New (Ptr<Expression> listAttrName)
   retval->m_listAttrName = listAttrName;
   return retval;
 }
+
+/* ************************************************************** */
 
 Ptr<Value>
 FRemoveLast::Eval (Ptr<Tuple> tuple)
@@ -255,6 +291,8 @@ FRemoveLast::New (Ptr<Expression> listAttrName)
   return retval;
 }
 
+/* ************************************************************** */
+
 Ptr<Value>
 FTypeOf::Eval (Ptr<Tuple> tuple)
 {
@@ -269,6 +307,8 @@ FTypeOf::New (Ptr<Expression> arg)
   return retval;
 }
 
+/* ************************************************************** */
+
 Ptr<Value>
 FRand::Eval (Ptr<Tuple> tuple)
 {
@@ -282,6 +322,8 @@ FRand::New ()
 {
   return Create<FRand> ();
 }
+
+/* ************************************************************** */
 
 Ptr<Value>
 FSha1::Eval (Ptr<Tuple> tuple)
@@ -298,6 +340,8 @@ FSha1::New (Ptr<Expression> arg)
   return retval;
 }
 
+/* ************************************************************** */
+
 Ptr<Value>
 FSvCreate::Eval (Ptr<Tuple> tuple)
 {
@@ -310,6 +354,8 @@ FSvCreate::New ()
   Ptr<FSvCreate> retval = Create<FSvCreate> ();
   return retval;
 }
+
+/* ************************************************************** */
 
 Ptr<Value>
 FSvIn::Eval(Ptr<Tuple> tuple)
@@ -332,6 +378,8 @@ FSvIn::New (Ptr<Expression> svExpr,
   return retval;
 }
 
+/* ************************************************************** */
+
 Ptr<Value>
 FSvAndNot::Eval(Ptr<Tuple> tuple)
 {
@@ -350,6 +398,8 @@ FSvAndNot::New (Ptr<Expression> svExpr_1,
   retval->m_svExpr_2 = svExpr_2;
   return retval;
 }
+
+/* ************************************************************** */
 
 Ptr<Value>
 FSvAppend::Eval(Ptr<Tuple> tuple)
@@ -370,6 +420,8 @@ FSvAppend::New (Ptr<Expression> svExpr,
   return retval;
 }
 
+/* ************************************************************** */
+
 Ptr<Value>
 FSvRemove::Eval(Ptr<Tuple> tuple)
 {
@@ -389,6 +441,8 @@ FSvRemove::New (Ptr<Expression> svExpr,
   return retval;
 }
 
+/* ************************************************************** */
+
 Ptr<Value>
 FPEdb::Eval(Ptr<Tuple> tuple)
 {
@@ -405,6 +459,8 @@ FPEdb::New (Ptr<Expression> prov, Ptr<Expression> id)
   retval->m_id = id;
   return retval;
 }
+
+/* ************************************************************** */
 
 Ptr<Value>
 FPIdb::Eval(Ptr<Tuple> tuple)
@@ -446,6 +502,8 @@ FPIdb::New (Ptr<Expression> provList, Ptr<Expression> loc)
   return retval;
 }
 
+/* ************************************************************** */
+
 Ptr<Value>
 FPRule::Eval(Ptr<Tuple> tuple)
 {
@@ -482,4 +540,8 @@ FPRule::New (Ptr<Expression> provList, Ptr<Expression> rloc, Ptr<Expression> rul
 
   return retval;
 }
+
+/* ************************************************************** */
+
+
 

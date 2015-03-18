@@ -55,6 +55,19 @@ protected:
   Ptr<Expression> m_source;
 };
 
+class FModulo : public FunctionExpr
+{
+public:
+
+  virtual ~FModulo () {}
+
+  virtual Ptr<Value> Eval (Ptr<Tuple> tuple);
+
+  static Ptr<FunctionExpr> New ();
+
+};
+
+
 class FEmpty : public FunctionExpr
 {
 public:

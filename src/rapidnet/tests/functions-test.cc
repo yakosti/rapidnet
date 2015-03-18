@@ -36,6 +36,8 @@ namespace ns3 {
 namespace rapidnet {
 namespace tests {
 
+/* ************************************************************** */
+
 /**
  * \ingroup rapidnet_tests
  *
@@ -68,10 +70,10 @@ FunctionsTest::RunTests ()
     && FConcatTest ()
     && FMemberTest ()
     && FSha1Test ();
-
   return result;
 }
 
+/* ************************************************************** */
 
 bool
 FunctionsTest::FAppendTest ()
@@ -92,6 +94,8 @@ FunctionsTest::FAppendTest ()
   //cout << "FAppend tests passed!" << endl;
   return result;
 }
+
+/* ************************************************************** */
 
 bool
 FunctionsTest::FConcatTest ()
@@ -126,6 +130,7 @@ FunctionsTest::FConcatTest ()
   return result;
 }
 
+/* ************************************************************** */
 
 bool
 FunctionsTest::FMemberTest ()
@@ -163,6 +168,7 @@ FunctionsTest::FMemberTest ()
   //cout << "FMember tests passed!" << endl;
   return result;
 }
+/* ************************************************************** */
 
 bool
 FunctionsTest::FSha1Test ()
@@ -187,8 +193,13 @@ FunctionsTest::FSha1Test ()
   return result;
 }
 
+/* ************************************************************** */
+
 static FunctionsTest g_functionsTest;
 
 } // namespace tests
 } // namespace rapidnet
 } // namespace ns3
+
+
+

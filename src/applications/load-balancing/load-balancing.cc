@@ -177,8 +177,10 @@ LoadBalancing::R2_eca (Ptr<Tuple> pktToBalance)
     strlist ("pktToBalance_attr1"));
 
   result->Assign (Assignor::New ("loadBalancerConnectionToServer_attr2",
-    FSha1::New (
-      VarExpr::New ("pktToBalance_attr3"))));
+    Operation::New (UnknownOperatorError,
+      FRand::New (
+),
+      ValueExpr::New (Int32Value::New (3)))));
 
   result = result->Project (
     RANDOMLYOBTAINEDSERVER,

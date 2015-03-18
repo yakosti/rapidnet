@@ -68,7 +68,7 @@ r1 pktToBalance(@SwitchLoadBalancer, SwitchGateway, Client) :-
 r2 randomlyObtainedServer(@SwitchLoadBalancer, Server, Client) :- 
 	pktToBalance(@SwitchLoadBalancer, SwitchGateway, Client),
 	loadBalancerConnectionToServer(@SwitchLoadBalancer, Server),
-	Server := f_sha1(Client).
+	Server := f_rand() % 3.
 
 /*
  * Server received packet (originaly sent by Client), from SwitchLoadBalancer
