@@ -55,7 +55,7 @@ public:
   virtual bool RunTests (void);
 
 protected:
-
+  bool FModuloTest ();
   bool FAppendTest ();
   bool FConcatTest ();
   bool FMemberTest ();
@@ -66,12 +66,54 @@ bool
 FunctionsTest::RunTests ()
 {
   bool result = true;
-  result = FAppendTest ()
+  result = FModuloTest()
+    && FAppendTest ()
     && FConcatTest ()
     && FMemberTest ()
     && FSha1Test ();
   return result;
 }
+
+/* ************************************************************** */
+
+
+// bool
+// FunctionsTest::FSha1Test ()
+// {
+//   bool result = true;
+//   Ptr<Expression> expr1, expr2;
+//   Ptr<Value> value;
+//   Ptr<Tuple> dummy = tuple ("dummy");
+
+//   value = StrValue::New ("Hello, World!");
+//   expr1 = FSha1::New (ValueExpr::New (value));
+//   expr2 = FSha1::New (ValueExpr::New (value->Clone ()));
+//   NS_TEST_ASSERT (expr1->Eval (dummy)->Equals (expr2->Eval (dummy)));
+//   //cout << expr1->Eval (dummy) << endl;
+
+//   value = Ipv4Value::New ("192.168.0.1");
+//   expr1 = FSha1::New (ValueExpr::New (value));
+//   expr2 = FSha1::New (ValueExpr::New (value->Clone ()));
+//   NS_TEST_ASSERT (expr1->Eval (dummy)->Equals (expr2->Eval (dummy)));
+
+//   return result;
+// }
+
+
+bool
+FunctionsTest::FModuloTest ()
+{
+  bool result = true;
+  Ptr<Tuple> tuple = Tuple::New ("fmodulo_test");
+  Ptr<Value> eight = Int32Value::New(8);
+  Ptr<Value> three = Int32Value::New(3);
+
+  Ptr<Expression> expr1 = FModulo::New(ValueExpr::New(eight),ValueExpr::New(three));
+  NS_TEST_ASSERT (expr1->Eval(tuple)->Equals (Int32Value::New(2)) );
+  cout << "FModulotests passed!" << endl;
+  return result;
+}
+
 
 /* ************************************************************** */
 
@@ -112,7 +154,6 @@ FunctionsTest::FConcatTest ()
   a3.push_back (Ipv4Value::New ("10.1.1.1"));
   a3.push_back (Ipv4Value::New ("10.1.1.2"));
   a3.push_back (Ipv4Value::New ("10.1.1.3"));
-
 
   Ptr<Tuple> tuple = Tuple::New ("fconcat_test");
   tuple->AddAttribute (TupleAttribute::New ("a1", ListValue::New (a1)));
