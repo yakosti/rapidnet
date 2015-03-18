@@ -78,7 +78,7 @@ LoadBalancing::InitDatabase ()
   //RapidNetApplicationBase::InitDatabase ();
 
   AddRelationWithKeys (LOADBALANCERCONNECTIONTOSERVER, attrdeflist (
-    attrdef ("loadBalancerConnectionToServer_attr2", IPV4)));
+    attrdef ("loadBalancerConnectionToServer_attr2", STR)));
 
   AddRelationWithKeys (PKTCLIENT, attrdeflist (
     attrdef ("pktClient_attr2", IPV4)));

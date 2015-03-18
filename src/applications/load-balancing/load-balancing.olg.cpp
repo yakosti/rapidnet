@@ -48,7 +48,7 @@
 
 materialize(switchConnection, infinity, infinity, keys(1,2)).
 materialize(pktClient, infinity, infinity, keys(2)).
-materialize(loadBalancerConnectionToServer, infinity, infinity, keys(2)).
+materialize(loadBalancerConnectionToServer, infinity, infinity, keys(2:str)).
 
 /*
  * SwitchGateway forwards a packet originally from the client at IPclient

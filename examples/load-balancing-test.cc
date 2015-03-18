@@ -24,7 +24,6 @@
 
 
 /* switch connection */
-
 #define switchConnection(Switch1, Switch2) \
   tuple(LoadBalancing::SWITCHCONNECTION, \
     attr("switchConnection_attr1", Ipv4Value, Switch1),\
@@ -33,26 +32,31 @@
 #define insert_switchConnection(Switch1, Switch2) \
   app(Switch1) -> Insert(switchConnection(addr(Switch1),addr(Switch2)));
 
-/* pktClient */
 
+
+
+/* pktClient */
 #define pktClient(Switch, Client) \
   tuple(LoadBalancing::PKTCLIENT, \
     attr("pktClient_attr1", Ipv4Value, Switch),\
     attr("pktClient_attr2", Ipv4Value, Client))
 
 #define insert_pktClient(Switch, Client) \
-  app(Switch) -> Insert(pktClient(addr(Switch),add(Client)));
+  app(Switch) -> Insert(pktClient(addr(Switch),addr(Client)));
+
+
+
+
 
 /* loadBalancerConnectionToServer */
-
 #define loadBalancerConnectionToServer(SwitchLoadBalancer, Server) \
   tuple(LoadBalancing::LOADBALANCERCONNECTIONTOSERVER, \
     attr("loadBalancerConnectionToServer_attr1", Ipv4Value, SwitchLoadBalancer),\
-    attr("loadBalancerConnectionToServer_attr2", Ipv4Value, Server))
+    attr("loadBalancerConnectionToServer_attr2", StrValue, Server))
 
 #define insert_loadBalancerConnectionToServer(SwitchLoadBalancer, Server) \
   app(SwitchLoadBalancer) -> \
-    Insert(loadBalancerConnectionToServer(addr(SwitchLoadBalancer),addr(Server)));
+    Insert(loadBalancerConnectionToServer(addr(SwitchLoadBalancer), Server));
 
 /* 
  * **************************************************************** *
@@ -77,10 +81,12 @@
  * **************************************************************** *
  */
 
+/* define constants */
 #define nodeNum 11
 #define GATEWAY_SWITCH 10
 #define LOAD_BALANCER_SWITCH 11
 
+/* boilderplate */
 using namespace std;
 using namespace ns3;
 using namespace ns3::rapidnet;
@@ -88,13 +94,27 @@ using namespace ns3::rapidnet::loadbalancing;
 
 ApplicationContainer apps;
 
+/* init connection between gateway and load-balancer */
 void init_switchConnection() {
   insert_switchConnection(GATEWAY_SWITCH, LOAD_BALANCER_SWITCH);
-  //insert_switchConnection(1,2);
 }
 
+/* model 5 packets send from the same two clients */
+void init_pktClient() {
+  insert_pktClient(GATEWAY_SWITCH, 1);
+  insert_pktClient(GATEWAY_SWITCH, 1);
+  //insert_pktClient(GATEWAY_SWITCH, 2);
+  //insert_pktClient(GATEWAY_SWITCH, 2);
+  //insert_pktClient(GATEWAY_SWITCH, 2);
+}
 
+/* model 2 servers to send stuff to */
+void init_loadBalancerConnectionToServer() {
+  insert_loadBalancerConnectionToServer(LOAD_BALANCER_SWITCH, \
+    "728ff2b66172bf95a00ec29a11a5f15b249be11a"); //hash 1
+}
 
+/* run the simulation */
 int main(int argc, char *argv[])
 {
   LogComponentEnable("LoadBalancing", LOG_LEVEL_INFO);
@@ -106,7 +126,8 @@ int main(int argc, char *argv[])
 
   /* initialization */
   schedule (0.001, init_switchConnection);
-  
+  schedule (0.002, init_pktClient);
+  schedule (0.003, init_loadBalancerConnectionToServer);
 
   Simulator::Run();
   Simulator::Destroy();
