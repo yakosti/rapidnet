@@ -245,6 +245,33 @@ map<Variable*, int> check_sat(const ConsList& clist, const FormList& flist) {
 	return mapsubst;
 }
 
+map<Variable*, int> check_sat_generalized(const FormList& flist) {
+	/* formula */
+	FormList::const_iterator itf;
+	string formula_str = "";
+	int fcount = 0;
+	for (itf = flist.begin(); itf != flist.end(); itf++) {
+	    Formula* nform = (Formula*)*itf;
+	    string formstr = parseFormula(nform);
+	   	fcount += 1;
+	    string fcountstr = "f" + IntegerToString(fcount);
+	    formula_str += "(assert " + formstr + ")\n";
+	}	
+
+	string fvstr = variables_declaration_to_str(all_free_variables);
+	string pstr = variables_declaration_to_str(all_predicate_schemas);
+	string fstr = variables_declaration_to_str(all_function_schemas);
+	string cstr = variables_declaration_to_str(all_constants);
+	
+	string to_check = fvstr + pstr + fstr + cstr + formula_str;
+	cout << "\n Testing if this is satisfiable: \n" << to_check << endl;
+
+	map<Variable*, int> mapsubst = checking_with_z3(to_check);
+
+	clearAllVariables();
+	return mapsubst;
+}
+
 
 /* To be removed when everything is build out */
 void z3_model_test() {
@@ -546,7 +573,10 @@ string parseFormula(Formula* f) {
 string parseConnective(Connective* c) {
 	Connective::ConnType ct = c->GetConnType();
 	string leftF = parseFormula(c->GetLeftF());
-	string rightF = parseFormula(c->GetRightF());
+	string rightF = "";
+	if (c->GetRightF()) {
+		rightF = parseFormula(c->GetRightF());
+	}
 	switch (ct) {
 		case Connective::IMPLY:
 			return "(=> " + leftF + " " + rightF + ")";
@@ -554,6 +584,8 @@ string parseConnective(Connective* c) {
 			return "(or " + leftF + " " + rightF + ")";
 		case Connective::AND:
 			return "(and " + leftF + " " + rightF + ")";
+		case Connective::NOT:
+			return "(not " + leftF + ")";
 		default:
 			throw std::invalid_argument("Not a valid connective");
 	}

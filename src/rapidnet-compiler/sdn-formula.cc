@@ -72,6 +72,7 @@ Connective::Print() const
 	case Connective::IMPLY: cout << " -> ";break;
 	case Connective::OR: cout << " \\/ ";break;
 	case Connective::AND: cout << " /\\ ";break;
+	case Connective::NOT: cout << " neg ";break;
 	}
 	rightF->Print();
 }

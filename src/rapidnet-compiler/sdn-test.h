@@ -103,6 +103,29 @@ Quantifier* create_exists_x__isblue_x_rapidnet() {
   return exists_x__isblue_x_rapidnet;
 }
 
+/* Program
+ * ---------------------
+   (set-logic AUFNIRA)
+   (assert((not (forall ((x Int)) (= x 3))))
+   (check-sat)
+ */
+Connective* create_negation_on_quantifiers() {
+  /* rapidnet */
+  IntVal* three = new IntVal(3);
+  Variable* x = new Variable(Variable::INT, true);
+
+  vector<Variable*> boundVarList;
+  boundVarList.push_back(x);
+
+  Constraint* x_equals_3 = new Constraint(Constraint::EQ, x, three);
+
+  Quantifier* forall_x__x_equals_3_rapidnet = new Quantifier(Quantifier::FORALL, boundVarList, x_equals_3);
+
+  Connective* not_forall_x__x_equals_3_rapidnet = new Connective(Connective::NOT, forall_x__x_equals_3_rapidnet, NULL);
+
+  return not_forall_x__x_equals_3_rapidnet;
+}
+
 /*
  * *******************************************************************************
  *                                                                               *
@@ -213,8 +236,10 @@ FormList create_formula_list_two() {
  */
 FormList create_formula_list_four() {
   FormList flist;
-  Connective* c = create__x_gt_y__AND__y_gt_z__IMPLIES__x_gt_z();
-  flist.push_back(c);
+  Connective* c1 = create__x_gt_y__AND__y_gt_z__IMPLIES__x_gt_z();
+  Connective* c2 = create_negation_on_quantifiers();
+  flist.push_back(c1);
+  flist.push_back(c2);
   return flist;
 }
 
@@ -239,6 +264,27 @@ ConsList create_constraint_list_five() {
   ConsList clist;
   clist.push_back(ctemp);
   return clist;
+}
+
+FormList create_formula_list_five() {
+  vector<Variable::TypeCode> domain_types;
+  domain_types.push_back(Variable::STRING);
+  FunctionSchema* mother_schema = new FunctionSchema("mother", domain_types, Variable::STRING);
+
+  //assert that MichelleObama is the mother of MaliaObama
+  vector<Term*> args;
+  StringVal* MaliaObama = new StringVal("MaliaObama");
+  args.push_back(MaliaObama);
+  UserFunction* mother_malia = new UserFunction(mother_schema, args);
+
+  StringVal* MichelleObama = new StringVal("MichelleObama");
+  StringVal* BarbaraBush = new StringVal("BarbaraBush");
+
+  Constraint* michelle_is_mother_of_malia = new Constraint(Constraint::EQ, mother_malia, MichelleObama);
+
+  FormList flist;
+  flist.push_back(michelle_is_mother_of_malia);
+  return flist;
 }
 
 
@@ -287,6 +333,24 @@ void test_check_sat() {
   ConsList clist6;
   FormList flist6 = create_formula_list_six();
   map<Variable*, int> mymap6 = check_sat(clist6, flist6);
+}
+
+void test_check_sat_generalized() {
+  cout << "\n==== Testing Check Sat Generalized - exists y,forall x,((0<x AND x<5)=>(y>x)) ====\n";
+  FormList flist2 = create_formula_list_one();
+  map<Variable*, int> mymap2 = check_sat_generalized(flist2);
+
+  cout << "\n========= Testing Check Sat Generalized - (x>y)and(y>z)=>(x>z) ==========\n";
+  FormList flist4 = create_formula_list_four();
+  map<Variable*, int> mymap4 = check_sat_generalized(flist4);
+
+  cout << "\n============ Testing Check Sat Generalized - UserFunction ==========\n";
+  FormList flist5 = create_formula_list_five();
+  map<Variable*, int> mymap5 = check_sat_generalized(flist5);
+
+  cout << "\n============ Testing Check Sat Generalized - QuantifyPredicate ==========\n";
+  FormList flist6 = create_formula_list_six();
+  map<Variable*, int> mymap6 = check_sat_generalized(flist6);
 }
 
 /*
@@ -693,6 +757,7 @@ void test_parsing() {
   nested_function_check();
   
   test_check_sat();
+  test_check_sat_generalized();
 }
 
 /*
