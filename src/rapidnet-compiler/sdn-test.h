@@ -103,6 +103,29 @@ Quantifier* create_exists_x__isblue_x_rapidnet() {
   return exists_x__isblue_x_rapidnet;
 }
 
+/* Program
+ * ---------------------
+   (set-logic AUFNIRA)
+   (assert((not (forall ((x Int)) (= x 3))))
+   (check-sat)
+ */
+Connective* create_negation_on_quantifiers() {
+  /* rapidnet */
+  IntVal* three = new IntVal(3);
+  Variable* x = new Variable(Variable::INT, true);
+
+  vector<Variable*> boundVarList;
+  boundVarList.push_back(x);
+
+  Constraint* x_equals_3 = new Constraint(Constraint::EQ, x, three);
+
+  Quantifier* forall_x__x_equals_3_rapidnet = new Quantifier(Quantifier::FORALL, boundVarList, x_equals_3);
+
+  Connective* not_forall_x__x_equals_3_rapidnet = new Connective(Connective::NOT, forall_x__x_equals_3_rapidnet, NULL);
+
+  return not_forall_x__x_equals_3_rapidnet;
+}
+
 /*
  * *******************************************************************************
  *                                                                               *
@@ -213,8 +236,10 @@ FormList create_formula_list_two() {
  */
 FormList create_formula_list_four() {
   FormList flist;
-  Connective* c = create__x_gt_y__AND__y_gt_z__IMPLIES__x_gt_z();
-  flist.push_back(c);
+  Connective* c1 = create__x_gt_y__AND__y_gt_z__IMPLIES__x_gt_z();
+  Connective* c2 = create_negation_on_quantifiers();
+  flist.push_back(c1);
+  flist.push_back(c2);
   return flist;
 }
 

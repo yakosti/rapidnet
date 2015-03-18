@@ -573,7 +573,10 @@ string parseFormula(Formula* f) {
 string parseConnective(Connective* c) {
 	Connective::ConnType ct = c->GetConnType();
 	string leftF = parseFormula(c->GetLeftF());
-	string rightF = parseFormula(c->GetRightF());
+	string rightF = "";
+	if (c->GetRightF()) {
+		rightF = parseFormula(c->GetRightF());
+	}
 	switch (ct) {
 		case Connective::IMPLY:
 			return "(=> " + leftF + " " + rightF + ")";
@@ -581,6 +584,8 @@ string parseConnective(Connective* c) {
 			return "(or " + leftF + " " + rightF + ")";
 		case Connective::AND:
 			return "(and " + leftF + " " + rightF + ")";
+		case Connective::NOT:
+			return "(not " + leftF + ")";
 		default:
 			throw std::invalid_argument("Not a valid connective");
 	}

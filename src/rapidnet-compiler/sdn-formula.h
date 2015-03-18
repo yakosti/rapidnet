@@ -367,7 +367,10 @@ public:
 
 
 
-
+/*
+ * Negation is UNARY, thus is always stored on formL
+ * formR for negation is ALWAYS null
+ */
 class Connective: public Formula
 {
 public:
