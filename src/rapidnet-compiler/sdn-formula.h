@@ -376,6 +376,7 @@ public:
 		IMPLY,
 		OR,
 		AND,
+		NOT,
 	};
 
 	Connective(ConnType ct, Formula* formL, Formula* formR);
