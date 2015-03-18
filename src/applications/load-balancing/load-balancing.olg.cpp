@@ -13,12 +13,15 @@
  *
  * switchConnection(@Switch1, @Switch2)
  *      Switch1 has a connection and is thus able to communicate with Switch2
+ *      In this case, SwitchGateway wants to connect to SwitchLoadBalancer
  * 
  * pktClient(@Switch, Client)
  *     Switch received a packet from client
+ *     In this case, SwitchGateway received a packet from a client (not sure which one)
  *
  * loadBalancerConnectionToServer(@SwitchLoadBalancer, Server)
  *    load balancer connected to all available servers
+ *    In this case, SwitchLoadBalancer is connected to server (not sure which one)
  *
  *
  * Load Balancing - Derived Tuples
@@ -44,15 +47,8 @@
  */
 
 materialize(switchConnection, infinity, infinity, keys(1,2)).
-materialize(pktClient, infinity, infinity, keys(1,2)).
+materialize(pktClient, infinity, infinity, keys(2)).
 materialize(loadBalancerConnectionToServer, infinity, infinity, keys(2)).
-
-/* 
- * At most 8 servers 
- * They are numbered 0,1,2,3,4,5,6,7
- */
-
-
 
 /*
  * SwitchGateway forwards a packet originally from the client at IPclient

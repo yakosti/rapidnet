@@ -81,7 +81,6 @@ LoadBalancing::InitDatabase ()
     attrdef ("loadBalancerConnectionToServer_attr2", IPV4)));
 
   AddRelationWithKeys (PKTCLIENT, attrdeflist (
-    attrdef ("pktClient_attr1", IPV4),
     attrdef ("pktClient_attr2", IPV4)));
 
   AddRelationWithKeys (SWITCHCONNECTION, attrdeflist (
