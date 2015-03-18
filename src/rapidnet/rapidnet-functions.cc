@@ -48,16 +48,35 @@ FAppend::New (Ptr<Expression> source)
 
 /* ************************************************************** */
 
+// Ptr<Value>
+// FDiffTime::Eval (Ptr<Tuple> tuple)
+// {
+//   return Operation::New (RN_MINUS, m_time2, m_time1)->Eval (tuple);
+// }
+
+// Ptr<FunctionExpr>
+// FDiffTime::New (Ptr<Expression> time2, Ptr<Expression> time1)
+// {
+//   Ptr<FDiffTime> retval = Create<FDiffTime> ();
+//   retval->m_time2 = time2;
+//   retval->m_time1 = time1;
+//   return retval;
+// }
+
+
 Ptr<Value>
 FModulo::Eval (Ptr<Tuple> tuple)
 {
-  return ListValue::New ();
+  return Operation::New (RN_MODULUS, m_divident, m_divisor)->Eval (tuple);
 }
 
 Ptr<FunctionExpr>
-FModulo::New ()
+FModulo::New (Ptr<Expression> divident, Ptr<Expression> divisor)
 {
-  return Create<FModulo> ();
+  Ptr<FModulo> retval = Create<FModulo> ();
+  retval->m_divident = divident;
+  retval->m_divisor = divisor;
+  return retval;
 }
 
 /* ************************************************************** */

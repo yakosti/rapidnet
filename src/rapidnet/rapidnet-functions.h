@@ -63,8 +63,11 @@ public:
 
   virtual Ptr<Value> Eval (Ptr<Tuple> tuple);
 
-  static Ptr<FunctionExpr> New ();
+  static Ptr<FunctionExpr> New (Ptr<Expression> divident, Ptr<Expression> divisor);
 
+protected:
+
+  Ptr<Expression> m_divident, m_divisor;
 };
 
 
