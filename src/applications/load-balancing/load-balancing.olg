@@ -68,8 +68,8 @@ r1 pktToBalance(@SwitchLoadBalancer, SwitchGateway, Client) :-
 r2 randomlyObtainedServer(@SwitchLoadBalancer, Server, Client) :- 
 	pktToBalance(@SwitchLoadBalancer, SwitchGateway, Client),
 	loadBalancerConnectionToServer(@SwitchLoadBalancer, Server),
-	Server := f_modulo(4, 3),
-	pig := f_hashIp(Server).
+	Value := f_hashIp(Client),
+	Server := f_modulo(Value, 3).
 
 /*
  * Server received packet (originaly sent by Client), from SwitchLoadBalancer

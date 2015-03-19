@@ -59,7 +59,7 @@ FHashIP::Eval (Ptr<Tuple> tuple)
     sum += s[i];
   }
   //uint32_t ipaddr = (rn_ipv4 (m_ipaddr->Eval (tuple))).Get ();
-  return Int32Value::New(ipaddr);
+  return Int32Value::New(sum);
 }
 
 

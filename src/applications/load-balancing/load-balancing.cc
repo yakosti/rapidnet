@@ -176,9 +176,13 @@ LoadBalancing::R2_eca (Ptr<Tuple> pktToBalance)
     strlist ("loadBalancerConnectionToServer_attr1"),
     strlist ("pktToBalance_attr1"));
 
+  result->Assign (Assignor::New ("Value",
+    FHashIP::New (
+      VarExpr::New ("pktToBalance_attr3"))));
+
   result->Assign (Assignor::New ("loadBalancerConnectionToServer_attr2",
     FModulo::New (
-      ValueExpr::New (Int32Value::New (4)),
+      VarExpr::New ("Value"),
       ValueExpr::New (Int32Value::New (3)))));
 
   result = result->Project (
