@@ -55,6 +55,21 @@ protected:
   Ptr<Expression> m_source;
 };
 
+class FHashIP : public FunctionExpr
+{
+public:
+
+  virtual ~FHashIP () {}
+
+  virtual Ptr<Value> Eval (Ptr<Tuple> tuple);
+
+  static Ptr<FunctionExpr> New (Ptr<Expression> ipaddr);
+
+protected:
+  Ptr<Expression> m_ipaddr;
+};
+
+
 class FModulo : public FunctionExpr
 {
 public:

@@ -1,4 +1,4 @@
 ECA Rule r1Eca0Ins ACTION_REMOTE_SEND<pktToBalance(@SwitchLoadBalancer, SwitchGateway, Client)> :- EVENT_INSERT<pktClient(@SwitchGateway, Client)>, switchConnection(@SwitchGateway, SwitchLoadBalancer).
 ECA Rule r1Eca1Ins ACTION_REMOTE_SEND<pktToBalance(@SwitchLoadBalancer, SwitchGateway, Client)> :- EVENT_INSERT<switchConnection(@SwitchGateway, SwitchLoadBalancer)>, pktClient(@SwitchGateway, Client).
-ECA Rule r2_eca ACTION_LOCAL_SEND<randomlyObtainedServer(@SwitchLoadBalancer, Server, Client)> :- EVENT_RECV<pktToBalance(@SwitchLoadBalancer, SwitchGateway, Client)>, loadBalancerConnectionToServer(@SwitchLoadBalancer, Server), Server := f_rand()% 3.
+ECA Rule r2_eca ACTION_LOCAL_SEND<randomlyObtainedServer(@SwitchLoadBalancer, Server, Client)> :- EVENT_RECV<pktToBalance(@SwitchLoadBalancer, SwitchGateway, Client)>, loadBalancerConnectionToServer(@SwitchLoadBalancer, Server), Server := f_modulo(8, 3).
 ECA Rule r3_eca ACTION_REMOTE_SEND<pktServer(@Server, Client)> :- EVENT_RECV<randomlyObtainedServer(@SwitchLoadBalancer, Server, Client)>.

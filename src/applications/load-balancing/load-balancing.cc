@@ -177,9 +177,8 @@ LoadBalancing::R2_eca (Ptr<Tuple> pktToBalance)
     strlist ("pktToBalance_attr1"));
 
   result->Assign (Assignor::New ("loadBalancerConnectionToServer_attr2",
-    Operation::New (UnknownOperatorError,
-      FRand::New (
-),
+    FModulo::New (
+      ValueExpr::New (Int32Value::New (8)),
       ValueExpr::New (Int32Value::New (3)))));
 
   result = result->Project (

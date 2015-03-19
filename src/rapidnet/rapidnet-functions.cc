@@ -48,21 +48,22 @@ FAppend::New (Ptr<Expression> source)
 
 /* ************************************************************** */
 
-// Ptr<Value>
-// FDiffTime::Eval (Ptr<Tuple> tuple)
-// {
-//   return Operation::New (RN_MINUS, m_time2, m_time1)->Eval (tuple);
-// }
+Ptr<Value>
+FHashIP::Eval (Ptr<Tuple> tuple)
+{
+  string str = Eval(tuple)->ToString();
+  return ListValue::New();
+}
 
-// Ptr<FunctionExpr>
-// FDiffTime::New (Ptr<Expression> time2, Ptr<Expression> time1)
-// {
-//   Ptr<FDiffTime> retval = Create<FDiffTime> ();
-//   retval->m_time2 = time2;
-//   retval->m_time1 = time1;
-//   return retval;
-// }
+Ptr<FunctionExpr>
+FHashIP::New (Ptr<Expression> ipaddr)
+{
+  Ptr<FHashIP> retval = Create<FHashIP> ();
+  retval->m_ipaddr = ipaddr;
+  return retval;
+}
 
+/* ************************************************************** */
 
 Ptr<Value>
 FModulo::Eval (Ptr<Tuple> tuple)

@@ -40,7 +40,6 @@ all_modules = (
     'rapidnet/values',
     'rapidnet/tests',
     'rapidnet-compiler',
-    'applications/load-balancing',
     'applications/firewall',
     'applications/sdn-mac-learning',
     'applications/pingpong',
