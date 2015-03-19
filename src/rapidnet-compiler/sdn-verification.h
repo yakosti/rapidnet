@@ -176,8 +176,11 @@ bool CheckExistProp(const Property& prop,
 	list<PredicateInstance*>::const_iterator itp = plist.begin();
 	for (;itd != dlist.end();itd++, itp++)
 	{
+		(*itd)->PrintDerivNode();
 		//Create variable mapping between predicate and the head tuple
 		const Tuple* head = (*itd)->GetHead();
+		NS_LOG_DEBUG("Head tuple (univ prop):");
+		head->PrintTuple();
 		VarMap headMap = head->CreateVarMap(*itp);
 		vmap.insert(headMap.begin(), headMap.end());
 
@@ -200,13 +203,14 @@ bool CheckExistProp(const Property& prop,
 	//Collect universally quantified constraints
 	const ConstraintsTemplate* cTemp = prop.GetUniCons();
 	ConstraintsTemplate uniCons(*cTemp);
-	uniCons.ReplaceVar(vmap);
+	uniCons.PrintTemplate();
 	//Replace variables with representative ones of the equivalent class
 	list<SimpConstraints*>::iterator its;
 	for (its = slist.begin();its != slist.end();its++)
 	{
 		uniCons.ReplaceVar(**its);
 	}
+
 	cslist.push_back(&uniCons);
 
 //	cout << "cslist contents:" << endl;
@@ -221,7 +225,8 @@ bool CheckExistProp(const Property& prop,
 	if (assumpValue.size() == 0)
 	{
 		//Assumption is not satisfiable
-		NS_LOG_INFO("Assumption of the property does not satisfy.");
+		NS_LOG_INFO("Assumption of the property is unsatisfiable "
+				"for this derivation branch.");
 		return true;
 	}
 
@@ -279,7 +284,20 @@ bool CheckExistProp(const Property& prop,
 		DerivNodeList::const_iterator itdc;
 		for (itdc = dlist.begin();itdc != dlist.end();itdc++)
 		{
-//			(*itdc)->FindSubTuple(existPlist, tlist);
+			(*itdc)->FindSubTuple(existPlist, tlist);
+		}
+
+		map<string, list<const Tuple*> >::iterator itmp;
+		for (itmp = tlist.begin();itmp != tlist.end();itmp++)
+		{
+			list<const Tuple*>& tplist = itmp->second;
+			if (tplist.size() == 0)
+			{
+				NS_LOG_INFO("No matching for existentially \
+						    quantified predicate: " << itmp->first);
+				//Generate counter examples for universally quantified predicates
+				return false;
+			}
 		}
 
 		//Check all possible combinations
@@ -338,7 +356,7 @@ bool CheckRecurUniv(const DerivMap& dmap,
 	return true;
 }
 
-
+//TODO: Add property checking for base tuples
 bool CheckProperty(const Dpool& dpool,
 				   const Property& prop,
 				   map<Variable*, int>& assignment)

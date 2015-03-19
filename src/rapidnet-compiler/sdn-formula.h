@@ -356,16 +356,18 @@ class Formula
 public:
 	Formula(){}
 
-	virtual Formula* Clone() =0;
+	virtual Formula* Clone(){return NULL;}
 
-	virtual void Print() const =0;
+	virtual void Print() const{}
 
-	virtual void VarReplace(const VarMap&) =0;
+	virtual void VarReplace(const VarMap&){}
 
 	virtual ~Formula(){}
 };
 
+class True: public Formula{};
 
+class False: public Formula{};
 
 
 class Connective: public Formula
