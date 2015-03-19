@@ -48,12 +48,19 @@ FAppend::New (Ptr<Expression> source)
 
 /* ************************************************************** */
 
+
+
 Ptr<Value>
 FHashIP::Eval (Ptr<Tuple> tuple)
 {
-  string str = Eval(tuple)->ToString();
-  return ListValue::New();
+  string s = Eval(tuple)->ToString();
+   int32_t sum = 0;
+  for (int i=0; i<s.size(); i++) {
+    sum += s[i];
+  }
+  return Int32Value::New(sum);
 }
+
 
 Ptr<FunctionExpr>
 FHashIP::New (Ptr<Expression> ipaddr)
