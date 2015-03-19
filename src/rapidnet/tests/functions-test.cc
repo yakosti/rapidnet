@@ -55,6 +55,7 @@ public:
   virtual bool RunTests (void);
 
 protected:
+  bool FHashIPTest ();
   bool FModuloTest ();
   bool FAppendTest ();
   bool FConcatTest ();
@@ -66,7 +67,8 @@ bool
 FunctionsTest::RunTests ()
 {
   bool result = true;
-  result = FModuloTest()
+  result = FHashIPTest()
+    && FModuloTest()
     && FAppendTest ()
     && FConcatTest ()
     && FMemberTest ()
@@ -77,27 +79,27 @@ FunctionsTest::RunTests ()
 /* ************************************************************** */
 
 
-// bool
-// FunctionsTest::FSha1Test ()
-// {
-//   bool result = true;
-//   Ptr<Expression> expr1, expr2;
-//   Ptr<Value> value;
-//   Ptr<Tuple> dummy = tuple ("dummy");
+bool
+FunctionsTest::FHashIPTest ()
+{
+  bool result = true;
+  Ptr<Tuple> tuple = Tuple::New ("fhaship_test");
 
-//   value = StrValue::New ("Hello, World!");
-//   expr1 = FSha1::New (ValueExpr::New (value));
-//   expr2 = FSha1::New (ValueExpr::New (value->Clone ()));
-//   NS_TEST_ASSERT (expr1->Eval (dummy)->Equals (expr2->Eval (dummy)));
-//   //cout << expr1->Eval (dummy) << endl;
+  Ptr<Value> ipaddr1 = Ipv4Value::New("address_example");
+  Ptr<Value> ipaddr2 = Ipv4Value::New("different_from_above");
 
-//   value = Ipv4Value::New ("192.168.0.1");
-//   expr1 = FSha1::New (ValueExpr::New (value));
-//   expr2 = FSha1::New (ValueExpr::New (value->Clone ()));
-//   NS_TEST_ASSERT (expr1->Eval (dummy)->Equals (expr2->Eval (dummy)));
+  Ptr<Expression> expr1 = FHashIP::New(ValueExpr::New(ipaddr1));
+  Ptr<Expression> expr2 = FHashIP::New(ValueExpr::New(ipaddr1));
+  Ptr<Expression> expr3 = FHashIP::New(ValueExpr::New(ipaddr2));
 
-//   return result;
-// }
+  NS_TEST_ASSERT (expr1->Eval(tuple)->Equals(expr2->Eval(tuple)) );
+  NS_TEST_ASSERT ( !(expr1->Eval(tuple)->Equals(expr3->Eval(tuple))) );
+  cout << "Fhashiptests passed!" << endl;
+  return result;
+}
+
+
+/* ************************************************************** */
 
 
 bool
