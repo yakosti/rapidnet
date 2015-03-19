@@ -2,15 +2,13 @@ Learning Bridge
 
 1. (@ Switch): Forall: have routing entry for MAC address A -> 
 	(@Switch) have received a frame sourced from A 
-	OR (@Nei) have forwarded a frame source from A
 (Assumptions: no spoofing, no changing it to a frame that has source MAC address A)
 
 QUESTION: IS THE SWITCH THE SAME IN THE ANTECEDENT AND CONSEQUENT?
 
 forall Switch, Mac_A, OutPort, flowEntry(Switch, MAC_A, OutPort) ->
 	exists Nei, DstMac, 
-		packet(Switch, Nei, Mac_A, DstMac) **received packet from A** 
-		OR packet(Nei, Switch, Mac_A, DstMac) **forward packet sourced from from A**
+		packet(Switch, Nei, Mac_A, DstMac) 
 
 
 2. Forall: (@End-host) Have received a frame B that is not destined to end-host A 
