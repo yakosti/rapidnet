@@ -98,7 +98,6 @@ public:
 
 	void PrintTerm();
 
-	//TODO: PrintInstance does not work with non-const Variable*
 	virtual void PrintInstance(const map<Variable*, int>&) const{}
 
 private:
@@ -509,7 +508,9 @@ public:
 		EQ,		//Equal to
 		NEQ,	//Unequal to
 		GT,		//Greater than
+		GE,		//Greater than or equal to
 		LT,		//Smaller than
+		LE,		//Less than or equal to
 	};
 
 	Constraint(Operator opt, Term* exprL, Term* exprR);

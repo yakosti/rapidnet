@@ -34,11 +34,16 @@ PropAssignment(SimpConstraints& simpCons, map<Variable*, int> assignment)
 	for (ite = equiClass.begin();ite != equiClass.end();ite++)
 	{
 		Variable* repre = ite->first;
-		int value = assignment.at(repre);
+		map<Variable*, int>::const_iterator itm = assignment.find(repre);
+		int value = 0;
+		if (itm != assignment.end())
+		{
+			value = itm->second;
+		}
 		list<Variable*>::const_iterator itv;
 		for (itv = ite->second.begin();itv != ite->second.end();itv++)
 		{
-			fullAssign.insert(map<Variable*,int>::value_type(repre, value));
+			fullAssign.insert(map<Variable*,int>::value_type(*itv, value));
 		}
 	}
 
@@ -49,6 +54,8 @@ PropAssignment(SimpConstraints& simpCons, map<Variable*, int> assignment)
 void GenCounterExp(map<Variable*, int> assignment,
 				   list<pair<const DerivNode&, SimpConstraints&> >& dlist)
 {
+	cout << endl;
+	cout << "==================== Generate Counter Example ==================" << endl;
 	//Print execution of all DerivNodes
 	list<pair<const DerivNode&, SimpConstraints&> >::iterator itd;
 	for (itd = dlist.begin();itd != dlist.end();itd++)
@@ -56,12 +63,24 @@ void GenCounterExp(map<Variable*, int> assignment,
 		const DerivNode& dnode = (*itd).first;
 		string headName = dnode.GetHead()->GetName();
 		SimpConstraints& simpCons = (*itd).second;
+		NS_LOG_DEBUG("SimpCons: ");
+		simpCons.Print();
+		map<Variable*, int>::iterator assItr;
+		for (assItr = assignment.begin();assItr != assignment.end();assItr++)
+		{
+			cout << "Variable: ";
+			assItr->first->PrintTerm();
+			cout << ":" << assItr->second << endl;
+		}
+
 		map<Variable*, int> valueMap = PropAssignment(simpCons, assignment);
 		cout << "************* Execution Trace of " << headName;
 		cout << " *************" << endl;
 		dnode.PrintExecution(valueMap);
 		cout << "*******************************" << endl;
 	}
+
+	cout << "===================================" << endl;
 }
 
 //TODO: documentation
@@ -161,8 +180,7 @@ bool CheckRecurExist(const Property& prop,
 //TODO: Separate the verification of universally
 //quantified constraints from CheckExistProp
 bool CheckExistProp(const Property& prop,
-					const DerivNodeList& dlist,
-					map<Variable*, int>& assignment)
+					const DerivNodeList& dlist)
 {
 	NS_LOG_FUNCTION("Check universally quantified properties...");
 	//First if the assumption holds or not
@@ -170,6 +188,7 @@ bool CheckExistProp(const Property& prop,
 	ConsList cslist;
 	FormList flist;
 	list<SimpConstraints*> slist;
+	map<Variable*, int> assignment = map<Variable*, int>();
 
 	const list<PredicateInstance*>& plist = prop.GetUniPred();
 	DerivNodeList::const_iterator itd = dlist.begin();
@@ -203,7 +222,7 @@ bool CheckExistProp(const Property& prop,
 	//Collect universally quantified constraints
 	const ConstraintsTemplate* cTemp = prop.GetUniCons();
 	ConstraintsTemplate uniCons(*cTemp);
-	uniCons.PrintTemplate();
+	uniCons.ReplaceVar(vmap);
 	//Replace variables with representative ones of the equivalent class
 	list<SimpConstraints*>::iterator its;
 	for (its = slist.begin();its != slist.end();its++)
@@ -262,6 +281,17 @@ bool CheckExistProp(const Property& prop,
 		delete newTemp;
 		if (assignment.size() > 0)
 		{
+			//Generate counter-example
+			list<pair<const DerivNode&, SimpConstraints&> > pairList;
+			list<SimpConstraints*>::iterator itsl = slist.begin();
+			DerivNodeList::const_iterator itd = dlist.begin();
+			for (;itd != dlist.end();itd++, itsl++)
+			{
+				pair<const DerivNode&, SimpConstraints&> newPair(**itd, **itsl);
+				pairList.push_back(newPair);
+			}
+
+			GenCounterExp(assignment, pairList);
 			return false;
 		}
 		else
@@ -293,9 +323,20 @@ bool CheckExistProp(const Property& prop,
 			list<const Tuple*>& tplist = itmp->second;
 			if (tplist.size() == 0)
 			{
-				NS_LOG_INFO("No matching for existentially \
-						    quantified predicate: " << itmp->first);
+				NS_LOG_INFO("No matching for existentially "
+						    "quantified predicate: " << itmp->first);
 				//Generate counter examples for universally quantified predicates
+				//TODO: The following copy of code can be used as a function
+				list<pair<const DerivNode&, SimpConstraints&> > pairList;
+				list<SimpConstraints*>::iterator itsl = slist.begin();
+				DerivNodeList::const_iterator itd = dlist.begin();
+				for (;itd != dlist.end();itd++, itsl++)
+				{
+					pair<const DerivNode&, SimpConstraints&> newPair(**itd, **itsl);
+					pairList.push_back(newPair);
+				}
+
+				GenCounterExp(assumpValue, pairList);
 				return false;
 			}
 		}
@@ -305,6 +346,21 @@ bool CheckExistProp(const Property& prop,
 		list<const Tuple*> tplist;
 		bool res = CheckRecurExist(prop, tlist, itmc, tplist,
 								   cslist, flist, assignment, slist);
+		if (res == false)
+		{
+			//Generate counter examples for universally quantified predicates
+			//TODO: The following copy of code can be used as a function
+			list<pair<const DerivNode&, SimpConstraints&> > pairList;
+			list<SimpConstraints*>::iterator itsl = slist.begin();
+			DerivNodeList::const_iterator itd = dlist.begin();
+			for (;itd != dlist.end();itd++, itsl++)
+			{
+				pair<const DerivNode&, SimpConstraints&> newPair(**itd, **itsl);
+				pairList.push_back(newPair);
+			}
+
+			GenCounterExp(assignment, pairList);
+		}
 
 		//If the set of tuples are the instances in existential
 		//quantification, then they provide instantiation of
@@ -326,13 +382,12 @@ bool CheckRecurUniv(const DerivMap& dmap,
 					const Property& prop,
 					const list<PredicateInstance*>& plist,
 					list<PredicateInstance*>::const_iterator itc,
-					DerivNodeList dlist,
-					map<Variable*, int>& assignment)
+					DerivNodeList dlist)
 {
 	NS_LOG_FUNCTION("Enumerate universally quantified predicates...");
 	if (itc == plist.end())
 	{
-		return CheckExistProp(prop, dlist, assignment);
+		return CheckExistProp(prop, dlist);
 	}
 
 	string predName = (*itc)->GetName();
@@ -343,8 +398,7 @@ bool CheckRecurUniv(const DerivMap& dmap,
 	for (itd = headList.begin();itd != headList.end();itd++)
 	{
 		dlist.push_back(*itd);
-		bool result = CheckRecurUniv(dmap, prop, plist, itc,
-									 dlist, assignment);
+		bool result = CheckRecurUniv(dmap, prop, plist, itc, dlist);
 		//One false branch makes the whole checking false
 		if (result == false)
 		{
@@ -358,17 +412,15 @@ bool CheckRecurUniv(const DerivMap& dmap,
 
 //TODO: Add property checking for base tuples
 bool CheckProperty(const Dpool& dpool,
-				   const Property& prop,
-				   map<Variable*, int>& assignment)
+				   const Property& prop)
 {
 	cout << "----------------- Check property ----------------" << endl;
 	//Process universally quantified predicates
-	assignment = map<Variable*, int>();
 	const list<PredicateInstance*>& plist = prop.GetUniPred();
 	list<PredicateInstance*>::const_iterator itc = plist.begin();
 	DerivNodeList dlist = DerivNodeList();
 	const DerivMap& dmap = dpool.GetDerivation();
-	return CheckRecurUniv(dmap, prop, plist, itc, dlist, assignment);
+	return CheckRecurUniv(dmap, prop, plist, itc, dlist);
 }
 
 #endif /* SDN_VERIFICATION_H_ */

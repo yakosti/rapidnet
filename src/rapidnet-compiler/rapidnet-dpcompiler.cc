@@ -189,7 +189,7 @@ void compile (string overlogFile, bool provenanceEnabled)
 
   //Dpool construction
   Ptr<Dpool> dpool (new Dpool(newGraph, miniGraph, baseProp, inv));
-  //dpool->PrintDpool();
+  dpool->PrintDpool();
   //dpool->PrintAllDeriv();
 
   //Verify invariant property
@@ -202,8 +202,7 @@ void compile (string overlogFile, bool provenanceEnabled)
 
   NS_LOG_DEBUG("Property constructed.");
   //Verify the property
-  map<Variable*, int> assignment;
-  bool res = CheckProperty(*dpool, p, assignment);
+  bool res = CheckProperty(*dpool, p);
   cout << "Is the property valid? " << (res?"Yes":"No") << endl;
 
   /* adding smt solver part */

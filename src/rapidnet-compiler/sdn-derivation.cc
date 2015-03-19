@@ -184,6 +184,8 @@ DerivNode::PrintDerivation() const
 void
 DerivNode::PrintExecution(map<Variable*, int>& valueMap) const
 {
+	cout << endl;
+	cout << "~~~~~~~~~~~~~~~ Execution Trace ~~~~~~~~~~~~~~" << endl;
 	PrintInstance(valueMap);
 
 	DpoolNodeList::const_iterator itd;
@@ -192,6 +194,7 @@ DerivNode::PrintExecution(map<Variable*, int>& valueMap) const
 		(*itd)->PrintExecution(valueMap);
 		cout << endl;
 	}
+	cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
 }
 
 DerivNode::~DerivNode()
