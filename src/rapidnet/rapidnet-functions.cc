@@ -53,12 +53,13 @@ FAppend::New (Ptr<Expression> source)
 Ptr<Value>
 FHashIP::Eval (Ptr<Tuple> tuple)
 {
-  string s = Eval(tuple)->ToString();
-   int32_t sum = 0;
+  string s = m_ipaddr->Eval(tuple)->ToString ();
+  int32_t sum = 0;
   for (int i=0; i<s.size(); i++) {
     sum += s[i];
   }
-  return Int32Value::New(sum);
+  //uint32_t ipaddr = (rn_ipv4 (m_ipaddr->Eval (tuple))).Get ();
+  return Int32Value::New(ipaddr);
 }
 
 

@@ -178,7 +178,7 @@ LoadBalancing::R2_eca (Ptr<Tuple> pktToBalance)
 
   result->Assign (Assignor::New ("loadBalancerConnectionToServer_attr2",
     FModulo::New (
-      ValueExpr::New (Int32Value::New (8)),
+      ValueExpr::New (Int32Value::New (4)),
       ValueExpr::New (Int32Value::New (3)))));
 
   result = result->Project (
