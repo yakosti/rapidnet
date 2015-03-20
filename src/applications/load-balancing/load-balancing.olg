@@ -38,6 +38,10 @@
  *     SwitchLoadBalancer decided to send the packet from Client to 
  *     a particular server, called Server, using its algorithm
  *
+ * serverMapping(@SwitchLoadBalancer, Server, ServerNum)
+ *     SwitchLoadBalancer stores the mappings of ServerAddresses to an
+ *     integer for the server
+ *
  * Numbers
  * -------
  * 1 load balancer switch
@@ -69,18 +73,18 @@ r1 pktToBalance(@SwitchLoadBalancer, SwitchGateway, Client) :-
  * SwitchLoadBalancer does this by hashing the Client's IP address
  * to get a server
  */
-r2 randomlyObtainedServer(@SwitchLoadBalancer, Server, Client) :- 
+r2 randomlyObtainedServer(@SwitchLoadBalancer, ServerNum, Client) :- 
 	pktToBalance(@SwitchLoadBalancer, SwitchGateway, Client),
 	loadBalancerConnectionToServer(@SwitchLoadBalancer, Server),
 	Value := f_hashIp(Client),
-	Server := 1+f_modulo(Value, NUM_SERVERS).
+	ServerNum := 1+f_modulo(Value, NUM_SERVERS).
 
 /*
  * Server received packet (originaly sent by Client), from SwitchLoadBalancer
  */
-r3 pktServer(@ServerAddr, Client) :- 
-	randomlyObtainedServer(@SwitchLoadBalancer, Server, Client),
-	serverMapping(@SwitchLoadBalancer, ServerAddr, Server).
+r3 pktServer(@Server, Client) :- 
+	randomlyObtainedServer(@SwitchLoadBalancer, ServerNum, Client),
+	serverMapping(@SwitchLoadBalancer, Server, ServerNum).
 
 
 

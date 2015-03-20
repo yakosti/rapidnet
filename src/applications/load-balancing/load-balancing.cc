@@ -185,7 +185,7 @@ LoadBalancing::R2_eca (Ptr<Tuple> pktToBalance)
     FHashIP::New (
       VarExpr::New ("pktToBalance_attr3"))));
 
-  result->Assign (Assignor::New ("loadBalancerConnectionToServer_attr2",
+  result->Assign (Assignor::New ("ServerNum",
     Operation::New (RN_PLUS,
       ValueExpr::New (Int32Value::New (1)),
       FModulo::New (
@@ -195,7 +195,7 @@ LoadBalancing::R2_eca (Ptr<Tuple> pktToBalance)
   result = result->Project (
     RANDOMLYOBTAINEDSERVER,
     strlist ("pktToBalance_attr1",
-      "loadBalancerConnectionToServer_attr2",
+      "ServerNum",
       "pktToBalance_attr3"),
     strlist ("randomlyObtainedServer_attr1",
       "randomlyObtainedServer_attr2",
