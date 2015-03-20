@@ -22,6 +22,7 @@
  * loadBalancerConnectionToServer(@SwitchLoadBalancer, Server)
  *    load balancer connected to all available servers
  *    In this case, SwitchLoadBalancer is connected to server (not sure which one)
+ *    server is a number between 0,1,2,...,(NUM_SERVERS-1)
  *
  *
  * Load Balancing - Derived Tuples
@@ -46,9 +47,12 @@
  * 
  */
 
+
+
 materialize(switchConnection, infinity, infinity, keys(1,2)).
 materialize(pktClient, infinity, infinity, keys(2)).
-materialize(loadBalancerConnectionToServer, infinity, infinity, keys(2:str)).
+materialize(loadBalancerConnectionToServer, infinity, infinity, keys(2:int32)).
+//materialize(randomlyObtainedServer, infinity, infinity, keys(2,3)).
 
 /*
  * SwitchGateway forwards a packet originally from the client at IPclient
@@ -69,7 +73,7 @@ r2 randomlyObtainedServer(@SwitchLoadBalancer, Server, Client) :-
 	pktToBalance(@SwitchLoadBalancer, SwitchGateway, Client),
 	loadBalancerConnectionToServer(@SwitchLoadBalancer, Server),
 	Value := f_hashIp(Client),
-	Server := f_modulo(Value, 3).
+	Server := 1+f_modulo(Value, 3).
 
 /*
  * Server received packet (originaly sent by Client), from SwitchLoadBalancer

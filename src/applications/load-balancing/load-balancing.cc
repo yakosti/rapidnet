@@ -78,7 +78,7 @@ LoadBalancing::InitDatabase ()
   //RapidNetApplicationBase::InitDatabase ();
 
   AddRelationWithKeys (LOADBALANCERCONNECTIONTOSERVER, attrdeflist (
-    attrdef ("loadBalancerConnectionToServer_attr2", STR)));
+    attrdef ("loadBalancerConnectionToServer_attr2", INT32)));
 
   AddRelationWithKeys (PKTCLIENT, attrdeflist (
     attrdef ("pktClient_attr2", IPV4)));
@@ -181,9 +181,11 @@ LoadBalancing::R2_eca (Ptr<Tuple> pktToBalance)
       VarExpr::New ("pktToBalance_attr3"))));
 
   result->Assign (Assignor::New ("loadBalancerConnectionToServer_attr2",
-    FModulo::New (
-      VarExpr::New ("Value"),
-      ValueExpr::New (Int32Value::New (3)))));
+    Operation::New (RN_PLUS,
+      ValueExpr::New (Int32Value::New (1)),
+      FModulo::New (
+        VarExpr::New ("Value"),
+        ValueExpr::New (Int32Value::New (3))))));
 
   result = result->Project (
     RANDOMLYOBTAINEDSERVER,

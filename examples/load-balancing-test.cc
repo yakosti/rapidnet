@@ -2,7 +2,6 @@
 #include "ns3/simulator-module.h"
 #include "ns3/node-module.h"
 #include "ns3/helper-module.h"
-
 #include "ns3/load-balancing-module.h"
 #include "ns3/rapidnet-module.h"
 #include "ns3/values-module.h"
@@ -52,11 +51,22 @@
 #define loadBalancerConnectionToServer(SwitchLoadBalancer, Server) \
   tuple(LoadBalancing::LOADBALANCERCONNECTIONTOSERVER, \
     attr("loadBalancerConnectionToServer_attr1", Ipv4Value, SwitchLoadBalancer),\
-    attr("loadBalancerConnectionToServer_attr2", StrValue, Server))
+    attr("loadBalancerConnectionToServer_attr2", Int32Value, Server))
 
 #define insert_loadBalancerConnectionToServer(SwitchLoadBalancer, Server) \
   app(SwitchLoadBalancer) -> \
     Insert(loadBalancerConnectionToServer(addr(SwitchLoadBalancer), Server));
+
+/* randomlyObtainedServer */
+// #define randomlyObtainedServer(SwitchLoadBalancer, Server, Client) \
+//   tuple(LoadBalancing::LOADBALANCERCONNECTIONTOSERVER, \
+//     attr("randomlyObtainedServer_attr1", Ipv4Value, SwitchLoadBalancer),\
+//     attr("randomlyObtainedServer_attr2", Int32Value, Server),\
+//     attr("randomlyObtainedServer_attr3", Ipv4Value, Client))
+
+// #define insert_randomlyObtainedServer(SwitchLoadBalancer, Server, Client) \
+//   app(SwitchLoadBalancer) \
+//     -> Insert(randomlyObtainedServer(addr(SwitchLoadBalancer), Server, addr(Client)));
 
 /* 
  * **************************************************************** *
@@ -85,6 +95,7 @@
 #define nodeNum 11
 #define GATEWAY_SWITCH 10
 #define LOAD_BALANCER_SWITCH 11
+#define NUM_SERVERS 3
 
 /* boilderplate */
 using namespace std;
@@ -101,18 +112,20 @@ void init_switchConnection() {
 
 /* model 5 packets send from the same two clients */
 void init_pktClient() {
-  insert_pktClient(GATEWAY_SWITCH, 1);
-  insert_pktClient(GATEWAY_SWITCH, 1);
-  //insert_pktClient(GATEWAY_SWITCH, 2);
-  //insert_pktClient(GATEWAY_SWITCH, 2);
-  //insert_pktClient(GATEWAY_SWITCH, 2);
+  insert_pktClient(GATEWAY_SWITCH, 5);
+  insert_pktClient(GATEWAY_SWITCH, 5);
+  insert_pktClient(GATEWAY_SWITCH, 5);
+  insert_pktClient(GATEWAY_SWITCH, 6);
+  insert_pktClient(GATEWAY_SWITCH, 6);
 }
 
 /* model 2 servers to send stuff to */
 void init_loadBalancerConnectionToServer() {
-  insert_loadBalancerConnectionToServer(LOAD_BALANCER_SWITCH, \
-    "728ff2b66172bf95a00ec29a11a5f15b249be11a"); //hash 1
+  insert_loadBalancerConnectionToServer(LOAD_BALANCER_SWITCH, 1); 
+  insert_loadBalancerConnectionToServer(LOAD_BALANCER_SWITCH, 2); 
+  insert_loadBalancerConnectionToServer(LOAD_BALANCER_SWITCH, 3); 
 }
+
 
 /* run the simulation */
 int main(int argc, char *argv[])
