@@ -43,17 +43,37 @@ namespace rapidnet {
 class FAppend : public FunctionExpr
 {
 public:
-
   virtual ~FAppend () {}
-
   virtual Ptr<Value> Eval (Ptr<Tuple> tuple);
-
   static Ptr<FunctionExpr> New (Ptr<Expression> source);
 
 protected:
-
   Ptr<Expression> m_source;
 };
+
+class FHashIP : public FunctionExpr
+{
+public:
+  virtual ~FHashIP () {}
+  virtual Ptr<Value> Eval(Ptr<Tuple> tuple);
+  static Ptr<FunctionExpr> New(Ptr<Expression> ipaddr);
+
+protected:
+  Ptr<Expression> m_ipaddr;
+};
+
+
+class FModulo : public FunctionExpr
+{
+public:
+  virtual ~FModulo () {}
+  virtual Ptr<Value> Eval(Ptr<Tuple> tuple);
+  static Ptr<FunctionExpr> New(Ptr<Expression> divident, Ptr<Expression> divisor);
+
+protected:
+  Ptr<Expression> m_divident, m_divisor;
+};
+
 
 class FEmpty : public FunctionExpr
 {

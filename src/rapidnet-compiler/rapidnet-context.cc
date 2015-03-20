@@ -747,6 +747,14 @@ LookupFunction (string functionName)
     {
       return "FAppend";
     }
+  else if (functionName == "f_hashIp")
+    {
+      return "FHashIP";
+    }
+  else if (functionName == "f_modulo")
+    {
+      return "FModulo";
+    }
   else if (functionName == "f_empty")
     {
       return "FEmpty";
