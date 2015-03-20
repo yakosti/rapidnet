@@ -329,7 +329,6 @@ FRemoveLast::New (Ptr<Expression> listAttrName, Ptr<RapidNetApplicationBase> app
   return retval;
 }
 
-<<<<<<< HEAD
 
 
 Ptr<Value>
@@ -653,7 +652,7 @@ FPRule::New (Ptr<Expression> provList, Ptr<Expression> rloc, Ptr<Expression> rul
   return retval;
 }
 
-<<<<<<< HEAD
+
 
 
 Ptr<Value>
