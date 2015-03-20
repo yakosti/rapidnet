@@ -189,21 +189,21 @@ void compile (string overlogFile, bool provenanceEnabled)
 
   //Dpool construction
   Ptr<Dpool> dpool (new Dpool(newGraph, miniGraph, baseProp, inv));
-  //dpool->PrintDpool();
-  dpool->PrintAllDeriv();
+  dpool->PrintDpool();
+  //dpool->PrintAllDeriv();
 
   //Verify invariant property
-  //  dpool->VerifyInvariants(inv);
+  //dpool->VerifyInvariants(inv);
 
   //Property verification
-//  //User-defined property
-//  Property p = Property();
-//
-//  NS_LOG_DEBUG("Property constructed.");
-//  //Verify the property
-//  map<Variable*, int> assignment;
-//  bool res = CheckProperty(*dpool, p, assignment);
-//  cout << "The property is valid: " << res << endl;
+  //User-defined property
+  Property p = Property();
+  p.Print();
+
+  NS_LOG_DEBUG("Property constructed.");
+  //Verify the property
+  bool res = CheckProperty(*dpool, p);
+  cout << "Is the property valid? " << (res?"Yes":"No") << endl;
 
   /* adding smt solver part */
   //const DerivNodeList& dlist = dpool->GetDerivList("advertisements");
@@ -218,13 +218,13 @@ void compile (string overlogFile, bool provenanceEnabled)
 int main (int argc, char** argv)
 {
   LogComponentEnable ("RapidNetDPGraph", LOG_LEVEL_FUNCTION);
-  LogComponentEnable ("DPGraph", LOG_LEVEL_FUNCTION);
-  LogComponentEnable ("Formula", LOG_LEVEL_FUNCTION);
-  LogComponentEnable ("Dpool", LOG_LEVEL_FUNCTION);
+//  LogComponentEnable ("DPGraph", LOG_LEVEL_FUNCTION);
+//  LogComponentEnable ("Formula", LOG_LEVEL_FUNCTION);
+//  LogComponentEnable ("Dpool", LOG_LEVEL_FUNCTION);
   LogComponentEnable ("Property", LOG_LEVEL_FUNCTION);
-//  LogComponentEnable ("Dpool", LOG_INFO);
-//  LogComponentEnable ("DPGraph", LOG_INFO);
-//  LogComponentEnable ("Formula", LOG_INFO);
+  LogComponentEnable ("Dpool", LOG_INFO);
+  LogComponentEnable ("DPGraph", LOG_INFO);
+  LogComponentEnable ("Formula", LOG_INFO);
 //  LogComponentEnable ("Property", LOG_INFO);
 
   test_parsing();

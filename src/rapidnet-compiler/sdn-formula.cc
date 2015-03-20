@@ -354,8 +354,10 @@ Constraint::Revert() const
 	{
 	case Constraint::EQ: newOp = Constraint::NEQ; break;
 	case Constraint::NEQ: newOp = Constraint::EQ; break;
-	case Constraint::GT: newOp = Constraint::LT; break;
-	case Constraint::LT: newOp = Constraint::GT; break;
+	case Constraint::GT: newOp = Constraint::LE; break;
+	case Constraint::GE: newOp = Constraint::LT; break;
+	case Constraint::LT: newOp = Constraint::GE; break;
+	case Constraint::LE: newOp = Constraint::GT; break;
 	}
 
 	Term* newLeftE = leftE->Clone();
@@ -541,9 +543,15 @@ Constraint::PrintOp() const
   case Constraint::GT:
     cout << ">";
     break;
+  case Constraint::GE:
+      cout << ">=";
+      break;
   case Constraint::LT:
     cout << "<";
     break;
+  case Constraint::LE:
+      cout << "<=";
+      break;
   }
 }
 
@@ -618,6 +626,7 @@ void Variable::GetVars(vector<Variable*>& vlist)
 void Variable::PrintTerm() {
   cout << name;
 }
+
 
 bool Variable::GetFreeOrBound() {
   return isbound;

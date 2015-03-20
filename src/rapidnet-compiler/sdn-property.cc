@@ -22,18 +22,21 @@ Property::Property()
 
 	//ProcessUniPred("reachable(src,dest,cost)", varMap);
 	//ProcessUniPred("verifyPath(m,n,l)", varMap);
+	ProcessUniPred("ePingPongFinish(src)", varMap);
 
-	//ProcessUniCons(varMap);
+	ProcessUniCons(varMap);
 
 	//ProcessExistPred("ePing(o,p)", varMap);
 	//ProcessExistPred("link(r,s,t)", varMap);
-	//ProcessExistCons(varMap);
+	ProcessExistPred("tLink(r,s)", varMap);
+	ProcessExistCons(varMap);
 }
 
 //TODO: Parse constraints from user input
 void
 Property::ProcessUniCons(const map<string, Variable*>& varMap)
 {
+	NS_LOG_FUNCTION("Processing universally quantified constraints...");
 	/*Constraint template*/
 //	string var1 = "a";
 //	Variable* varPtr = varMap.find(var1)->second;
@@ -42,14 +45,14 @@ Property::ProcessUniCons(const map<string, Variable*>& varMap)
 //
 //	univConsList->AddConstraint(newCons);
 
-//	string var1 = "a";
-//	Variable* varPtr = varMap.find(var1)->second;
-//
-//	Constraint* newCons = new Constraint(Constraint::GT,
-//										 varPtr,
-//										 new IntVal(6));
-//
-//	univConsList->AddConstraint(newCons);
+	string var1 = "src";
+	Variable* varPtr = varMap.find(var1)->second;
+
+	Constraint* newCons = new Constraint(Constraint::GT,
+										 varPtr,
+										 new IntVal(6));
+
+	univConsList->AddConstraint(newCons);
 }
 
 void
@@ -86,12 +89,22 @@ Property::ProcessExistCons(const map<string, Variable*>& varMap)
 //
 //	existConsList->AddConstraint(newCons);
 
-	string var1 = "cost";
+//	string var1 = "cost";
+//	Variable* varPtr = varMap.find(var1)->second;
+//
+//	Constraint* newCons = new Constraint(Constraint::GT,
+//										 varPtr,
+//										 new IntVal(0));
+//
+//	existConsList->AddConstraint(newCons);
+
+//  Property verification of pingpong.olg
+	string var1 = "s";
 	Variable* varPtr = varMap.find(var1)->second;
 
-	Constraint* newCons = new Constraint(Constraint::GT,
+	Constraint* newCons = new Constraint(Constraint::LT,
 										 varPtr,
-										 new IntVal(0));
+										 new IntVal(2));
 
 	existConsList->AddConstraint(newCons);
 }
@@ -120,6 +133,7 @@ Property::ParseArgs(const string args, map<string, Variable*>& varMap)
 void
 Property::ProcessUniPred(string line, map<string, Variable*>& varMap)
 {
+	NS_LOG_FUNCTION("Processing universally quantified predicate...");
 	PredicateInstance* predInst = ParsePred(line, varMap);
 	univPredList.push_back(predInst);
 }
@@ -160,8 +174,6 @@ Property::Print() const
 		(*itv)->PrintTerm();
 		cout << ",";
 	}
-
-	NS_LOG_DEBUG("Reach here!!!");
 
 	list<PredicateInstance*>::const_iterator itp;
 	for (itp = univPredList.begin();itp != univPredList.end();itp++)
@@ -308,22 +320,22 @@ Invariant::Invariant()
 //	Annotation newAnnot = Annotation(pInst, form);
 //	invs.insert(AnnotMap::value_type(predName, newAnnot));
 
-	NS_LOG_FUNCTION("Generate invariant...");
-	string predName = "verifyPath";
-	int argNum = 9;
-	PredicateSchema* scheme = new PredicateSchema(predName, argNum);
-	vector<Term*> args;
-	for (int i = 0;i < argNum;i++)
-	{
-		Variable* newVar = new Variable(Variable::STRING, true);
-		args.push_back(newVar);
-	}
-	//Use index to create formulas;
-	IntVal* value = new IntVal(0);
-	Formula* form = new Constraint(Constraint::GT, args[0], value);
-	PredicateInstance* pInst = new PredicateInstance(scheme, args);
-	Annotation newAnnot = Annotation(pInst, form);
-	invs.insert(AnnotMap::value_type(predName, newAnnot));
+//	NS_LOG_FUNCTION("Generate invariant...");
+//	string predName = "verifyPath";
+//	int argNum = 9;
+//	PredicateSchema* scheme = new PredicateSchema(predName, argNum);
+//	vector<Term*> args;
+//	for (int i = 0;i < argNum;i++)
+//	{
+//		Variable* newVar = new Variable(Variable::STRING, true);
+//		args.push_back(newVar);
+//	}
+//	//Use index to create formulas;
+//	IntVal* value = new IntVal(0);
+//	Formula* form = new Constraint(Constraint::GT, args[0], value);
+//	PredicateInstance* pInst = new PredicateInstance(scheme, args);
+//	Annotation newAnnot = Annotation(pInst, form);
+//	invs.insert(AnnotMap::value_type(predName, newAnnot));
 
 	//  AnnotMap testMap;
 	//  list<Variable::TypeCode> tlist (9, Variable::STRING);

@@ -48,6 +48,9 @@ public:
 
 	const Tuple* GetHead() const {return head;}
 
+	void FindSubTuple(const list<PredicateInstance*>& plist,
+					map<string, list<const Tuple*> >& tlist) const{}
+
 	void PrintHead() const;
 
 	void PrintHeadInst(const map<Variable*, int>&) const;
@@ -75,7 +78,7 @@ protected:
 class DerivNode: public DpoolNode
 {
 public:
-	DerivNode(Tuple* tn, string rn, ConstraintsTemplate* consTemp,
+	DerivNode(const Tuple* tn, string rn, ConstraintsTemplate* consTemp,
 			  DpoolNodeList& dlist, ConsList& clist, FormList& flist):
 				  DpoolNode(tn), ruleName(rn),ruleConstraints(consTemp),
 				  bodyDerivs(dlist), allConstraints(clist), allInvs(flist){}
@@ -87,6 +90,8 @@ public:
 	void UpdateConstraint(ConstraintsTemplate*);
 
 	void UpdateCumuCons(ConsList&);
+
+	void ReplaceVar(VarMap& vmap);
 
 	const ConsList& GetCumuConsts() const{return allConstraints;}
 
@@ -100,8 +105,8 @@ public:
 
 	const DpoolNodeList& GetBodyDerivs() const{return bodyDerivs;}
 
-//	void FindSubTuple(const list<PredicateInstance*>&,
-//					  map<string, list<const Tuple*> >&) const;
+	void FindSubTuple(const list<PredicateInstance*>&,
+					  map<string, list<const Tuple*> >&) const;
 
 	void PrintHead() const;
 
@@ -142,6 +147,9 @@ public:
 
 	const ConstraintsTemplate* GetCons() const{return cts;}
 
+	void FindSubTuple(const list<PredicateInstance*>&,
+					map<string, list<const Tuple*> >&) const;
+
 	void PrintCumuCons() const;
 
 	void PrintDerivNode() const;
@@ -165,6 +173,9 @@ public:
 	void AddInvariant(Formula*);
 
 	Formula* GetInv() {return prop;}
+
+	void FindSubTuple(const list<PredicateInstance*>&,
+					  map<string, list<const Tuple*> >&) const;
 
 	void PrintCumuCons() const;
 
@@ -190,14 +201,14 @@ public:
 	Dpool(const Ptr<NewDPGraph>, const Ptr<MiniGraph>,
 		  const BaseProperty&, const Invariant&);
 
-	void ProcessRuleNode(Tuple*,
+	void ProcessRuleNode(const Tuple*,
 		   	   	   	   	 RuleNode*,
 						 const list<Node*>&,
 						 list<Node*>::const_iterator,
 						 vector<DpoolNode*>,
 						 VarMap vmap);
 
-	void CreateDerivNode(Tuple*,
+	void CreateDerivNode(const Tuple*,
 	 	 	   	   	   	 RuleNode*,
 						 vector<DpoolNode*>&,
 						 VarMap& vmap);
