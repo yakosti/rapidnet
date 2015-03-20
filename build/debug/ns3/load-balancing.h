@@ -34,6 +34,7 @@ public:
   static const string PKTSERVER;
   static const string PKTTOBALANCE;
   static const string RANDOMLYOBTAINEDSERVER;
+  static const string SERVERMAPPING;
   static const string SWITCHCONNECTION;
 
   static TypeId GetTypeId (void);

@@ -21,6 +21,7 @@ const string LoadBalancing::PKTCLIENT = "pktClient";
 const string LoadBalancing::PKTSERVER = "pktServer";
 const string LoadBalancing::PKTTOBALANCE = "pktToBalance";
 const string LoadBalancing::RANDOMLYOBTAINEDSERVER = "randomlyObtainedServer";
+const string LoadBalancing::SERVERMAPPING = "serverMapping";
 const string LoadBalancing::SWITCHCONNECTION = "switchConnection";
 
 NS_LOG_COMPONENT_DEFINE ("LoadBalancing");
@@ -82,6 +83,10 @@ LoadBalancing::InitDatabase ()
 
   AddRelationWithKeys (PKTCLIENT, attrdeflist (
     attrdef ("pktClient_attr2", IPV4)));
+
+  AddRelationWithKeys (SERVERMAPPING, attrdeflist (
+    attrdef ("serverMapping_attr2", IPV4),
+    attrdef ("serverMapping_attr3", INT32)));
 
   AddRelationWithKeys (SWITCHCONNECTION, attrdeflist (
     attrdef ("switchConnection_attr1", IPV4),
@@ -204,13 +209,18 @@ LoadBalancing::R3_eca (Ptr<Tuple> randomlyObtainedServer)
 {
   RAPIDNET_LOG_INFO ("R3_eca triggered");
 
-  Ptr<Tuple> result = randomlyObtainedServer;
+  Ptr<RelationBase> result;
+
+  result = GetRelation (SERVERMAPPING)->Join (
+    randomlyObtainedServer,
+    strlist ("serverMapping_attr3", "serverMapping_attr1"),
+    strlist ("randomlyObtainedServer_attr2", "randomlyObtainedServer_attr1"));
 
   result = result->Project (
     PKTSERVER,
-    strlist ("randomlyObtainedServer_attr2",
+    strlist ("serverMapping_attr2",
       "randomlyObtainedServer_attr3",
-      "randomlyObtainedServer_attr2"),
+      "serverMapping_attr2"),
     strlist ("pktServer_attr1",
       "pktServer_attr2",
       RN_DEST));

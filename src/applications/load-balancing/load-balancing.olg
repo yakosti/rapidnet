@@ -52,7 +52,7 @@
 materialize(switchConnection, infinity, infinity, keys(1,2)).
 materialize(pktClient, infinity, infinity, keys(2)).
 materialize(loadBalancerConnectionToServer, infinity, infinity, keys(2:int32)).
-//materialize(randomlyObtainedServer, infinity, infinity, keys(2,3)).
+materialize(serverMapping, infinity, infinity, keys(2,3:int32)).
 
 /*
  * SwitchGateway forwards a packet originally from the client at IPclient
@@ -78,8 +78,9 @@ r2 randomlyObtainedServer(@SwitchLoadBalancer, Server, Client) :-
 /*
  * Server received packet (originaly sent by Client), from SwitchLoadBalancer
  */
-r3 pktServer(@Server, Client) :- 
-	randomlyObtainedServer(@SwitchLoadBalancer, Server, Client).
+r3 pktServer(@ServerAddr, Client) :- 
+	randomlyObtainedServer(@SwitchLoadBalancer, Server, Client),
+	serverMapping(@SwitchLoadBalancer, ServerAddr, Server).
 
 
 
