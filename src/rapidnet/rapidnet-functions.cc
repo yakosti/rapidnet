@@ -38,6 +38,7 @@ using namespace rapidnet;
 std::string
 PrintAsHex (char* arr, ssize_t bytes);
 
+/* ************************************************************** */
 
 Ptr<Value>
 FAppend::Eval (Ptr<Tuple> tuple)
@@ -55,6 +56,50 @@ FAppend::New (Ptr<Expression> source, Ptr<RapidNetApplicationBase> app)
   return retval;
 }
 
+/* ************************************************************** */
+
+
+
+Ptr<Value>
+FHashIP::Eval (Ptr<Tuple> tuple)
+{
+  string s = m_ipaddr->Eval(tuple)->ToString ();
+  int32_t sum = 0;
+  for (int i=0; i<s.size(); i++) {
+    sum += s[i];
+  }
+  //uint32_t ipaddr = (rn_ipv4 (m_ipaddr->Eval (tuple))).Get ();
+  return Int32Value::New(sum);
+}
+
+
+Ptr<FunctionExpr>
+FHashIP::New (Ptr<Expression> ipaddr)
+{
+  Ptr<FHashIP> retval = Create<FHashIP> ();
+  retval->m_ipaddr = ipaddr;
+  return retval;
+}
+
+/* ************************************************************** */
+
+Ptr<Value>
+FModulo::Eval (Ptr<Tuple> tuple)
+{
+  return Operation::New (RN_MODULUS, m_divident, m_divisor)->Eval (tuple);
+}
+
+Ptr<FunctionExpr>
+FModulo::New (Ptr<Expression> divident, Ptr<Expression> divisor)
+{
+  Ptr<FModulo> retval = Create<FModulo> ();
+  retval->m_divident = divident;
+  retval->m_divisor = divisor;
+  return retval;
+}
+
+/* ************************************************************** */
+
 Ptr<Value>
 FEmpty::Eval (Ptr<Tuple> tuple)
 {
@@ -66,6 +111,8 @@ FEmpty::New (Ptr<RapidNetApplicationBase> app)
 {
   return Create<FEmpty> ();
 }
+
+/* ************************************************************** */
 
 Ptr<Value>
 FConcat::Eval (Ptr<Tuple> tuple)
@@ -94,6 +141,8 @@ FConcat::New (Ptr<Expression> head, Ptr<Expression> tail, Ptr<RapidNetApplicatio
   retval->m_tail = tail;
   return retval;
 }
+
+/* ************************************************************** */
 
 Ptr<Value>
 FItem::Eval (Ptr<Tuple> tuple)
@@ -125,6 +174,8 @@ FItem::New (Ptr<Expression> lst, Ptr<Expression> index, Ptr<RapidNetApplicationB
   return retval;
 }
 
+/* ************************************************************** */
+
 Ptr<Value>
 FMember::Eval (Ptr<Tuple> tuple)
 {
@@ -142,6 +193,8 @@ FMember::New (Ptr<Expression> lst, Ptr<Expression> item, Ptr<RapidNetApplication
   return retval;
 }
 
+/* ************************************************************** */
+
 Ptr<Value>
 FNow::Eval (Ptr<Tuple> tuple)
 {
@@ -153,6 +206,8 @@ FNow::New (Ptr<RapidNetApplicationBase> app)
 {
   return Create<FNow> ();
 }
+
+/* ************************************************************** */
 
 Ptr<Value>
 FDiffTime::Eval (Ptr<Tuple> tuple)
@@ -168,6 +223,8 @@ FDiffTime::New (Ptr<Expression> time2, Ptr<Expression> time1, Ptr<RapidNetApplic
   retval->m_time1 = time1;
   return retval;
 }
+
+/* ************************************************************** */
 
 Ptr<Value>
 FHslsTtl::Eval (Ptr<Tuple> tuple)
@@ -190,6 +247,8 @@ FHslsTtl::New (Ptr<Expression> timeAttrName, Ptr<Expression> periodAttrName, Ptr
   return retval;
 }
 
+/* ************************************************************** */
+
 Ptr<Value>
 FSize::Eval (Ptr<Tuple> tuple)
 {
@@ -207,6 +266,8 @@ FSize::New (Ptr<Expression> listAttrName, Ptr<RapidNetApplicationBase> app)
   retval->m_listAttrName = listAttrName;
   return retval;
 }
+
+/* ************************************************************** */
 
 Ptr<Value>
 FLast::Eval (Ptr<Tuple> tuple)
@@ -233,6 +294,8 @@ FLast::New (Ptr<Expression> listAttrName, Ptr<RapidNetApplicationBase> app)
   retval->m_listAttrName = listAttrName;
   return retval;
 }
+
+/* ************************************************************** */
 
 Ptr<Value>
 FRemoveLast::Eval (Ptr<Tuple> tuple)
@@ -266,6 +329,7 @@ FRemoveLast::New (Ptr<Expression> listAttrName, Ptr<RapidNetApplicationBase> app
   return retval;
 }
 
+<<<<<<< HEAD
 
 
 Ptr<Value>
@@ -335,6 +399,7 @@ FRemoveFirst::New (Ptr<Expression> listAttrName, Ptr<RapidNetApplicationBase> ap
 }
 
 
+/* ************************************************************** */
 
 Ptr<Value>
 FTypeOf::Eval (Ptr<Tuple> tuple)
@@ -350,6 +415,8 @@ FTypeOf::New (Ptr<Expression> arg, Ptr<RapidNetApplicationBase> app)
   return retval;
 }
 
+/* ************************************************************** */
+
 Ptr<Value>
 FRand::Eval (Ptr<Tuple> tuple)
 {
@@ -363,6 +430,8 @@ FRand::New (Ptr<RapidNetApplicationBase> app)
 {
   return Create<FRand> ();
 }
+
+/* ************************************************************** */
 
 Ptr<Value>
 FSha1::Eval (Ptr<Tuple> tuple)
@@ -379,6 +448,8 @@ FSha1::New (Ptr<Expression> arg, Ptr<RapidNetApplicationBase> app)
   return retval;
 }
 
+/* ************************************************************** */
+
 Ptr<Value>
 FSvCreate::Eval (Ptr<Tuple> tuple)
 {
@@ -391,6 +462,8 @@ FSvCreate::New (Ptr<RapidNetApplicationBase> app)
   Ptr<FSvCreate> retval = Create<FSvCreate> ();
   return retval;
 }
+
+/* ************************************************************** */
 
 Ptr<Value>
 FSvIn::Eval(Ptr<Tuple> tuple)
@@ -414,6 +487,8 @@ FSvIn::New (Ptr<Expression> svExpr,
   return retval;
 }
 
+/* ************************************************************** */
+
 Ptr<Value>
 FSvAndNot::Eval(Ptr<Tuple> tuple)
 {
@@ -433,6 +508,8 @@ FSvAndNot::New (Ptr<Expression> svExpr_1,
   retval->m_svExpr_2 = svExpr_2;
   return retval;
 }
+
+/* ************************************************************** */
 
 Ptr<Value>
 FSvAppend::Eval(Ptr<Tuple> tuple)
@@ -454,6 +531,8 @@ FSvAppend::New (Ptr<Expression> svExpr,
   return retval;
 }
 
+/* ************************************************************** */
+
 Ptr<Value>
 FSvRemove::Eval(Ptr<Tuple> tuple)
 {
@@ -474,6 +553,8 @@ FSvRemove::New (Ptr<Expression> svExpr,
   return retval;
 }
 
+/* ************************************************************** */
+
 Ptr<Value>
 FPEdb::Eval(Ptr<Tuple> tuple)
 {
@@ -490,6 +571,8 @@ FPEdb::New (Ptr<Expression> prov, Ptr<Expression> id, Ptr<RapidNetApplicationBas
   retval->m_id = id;
   return retval;
 }
+
+/* ************************************************************** */
 
 Ptr<Value>
 FPIdb::Eval(Ptr<Tuple> tuple)
@@ -531,6 +614,8 @@ FPIdb::New (Ptr<Expression> provList, Ptr<Expression> loc, Ptr<RapidNetApplicati
   return retval;
 }
 
+/* ************************************************************** */
+
 Ptr<Value>
 FPRule::Eval(Ptr<Tuple> tuple)
 {
@@ -568,6 +653,7 @@ FPRule::New (Ptr<Expression> provList, Ptr<Expression> rloc, Ptr<Expression> rul
   return retval;
 }
 
+<<<<<<< HEAD
 
 
 Ptr<Value>
@@ -1013,5 +1099,8 @@ FGet::New (Ptr<Expression> list, Ptr<Expression> i, Ptr<RapidNetApplicationBase>
   retval->m_i = i;
   return retval;
 }
+
+/* ************************************************************** */
+
 
 

@@ -36,6 +36,8 @@ namespace ns3 {
 namespace rapidnet {
 namespace tests {
 
+/* ************************************************************** */
+
 /**
  * \ingroup rapidnet_tests
  *
@@ -53,7 +55,8 @@ public:
   virtual bool RunTests (void);
 
 protected:
-
+  bool FHashIPTest ();
+  bool FModuloTest ();
   bool FAppendTest ();
   bool FConcatTest ();
   bool FMemberTest ();
@@ -64,14 +67,57 @@ bool
 FunctionsTest::RunTests ()
 {
   bool result = true;
-  result = FAppendTest ()
+  result = FHashIPTest()
+    && FModuloTest()
+    && FAppendTest ()
     && FConcatTest ()
     && FMemberTest ()
     && FSha1Test ();
-
   return result;
 }
 
+/* ************************************************************** */
+
+
+bool
+FunctionsTest::FHashIPTest ()
+{
+  bool result = true;
+  Ptr<Tuple> tuple = Tuple::New ("fhaship_test");
+
+  Ptr<Value> ipaddr1 = Ipv4Value::New("address_example");
+  Ptr<Value> ipaddr2 = Ipv4Value::New("different_from_above");
+
+  Ptr<Expression> expr1 = FHashIP::New(ValueExpr::New(ipaddr1));
+  Ptr<Expression> expr2 = FHashIP::New(ValueExpr::New(ipaddr1));
+  Ptr<Expression> expr3 = FHashIP::New(ValueExpr::New(ipaddr2));
+
+  NS_TEST_ASSERT (expr1->Eval(tuple)->Equals(expr2->Eval(tuple)) );
+  NS_TEST_ASSERT ( !(expr1->Eval(tuple)->Equals(expr3->Eval(tuple))) );
+  cout << "Fhashiptests passed!" << endl;
+  return result;
+}
+
+
+/* ************************************************************** */
+
+
+bool
+FunctionsTest::FModuloTest ()
+{
+  bool result = true;
+  Ptr<Tuple> tuple = Tuple::New ("fmodulo_test");
+  Ptr<Value> eight = Int32Value::New(8);
+  Ptr<Value> three = Int32Value::New(3);
+
+  Ptr<Expression> expr1 = FModulo::New(ValueExpr::New(eight),ValueExpr::New(three));
+  NS_TEST_ASSERT (expr1->Eval(tuple)->Equals (Int32Value::New(2)) );
+  cout << "FModulotests passed!" << endl;
+  return result;
+}
+
+
+/* ************************************************************** */
 
 bool
 FunctionsTest::FAppendTest ()
@@ -93,6 +139,8 @@ FunctionsTest::FAppendTest ()
   return result;
 }
 
+/* ************************************************************** */
+
 bool
 FunctionsTest::FConcatTest ()
 {
@@ -108,7 +156,6 @@ FunctionsTest::FConcatTest ()
   a3.push_back (Ipv4Value::New ("10.1.1.1"));
   a3.push_back (Ipv4Value::New ("10.1.1.2"));
   a3.push_back (Ipv4Value::New ("10.1.1.3"));
-
 
   Ptr<Tuple> tuple = Tuple::New ("fconcat_test");
   tuple->AddAttribute (TupleAttribute::New ("a1", ListValue::New (a1)));
@@ -126,6 +173,7 @@ FunctionsTest::FConcatTest ()
   return result;
 }
 
+/* ************************************************************** */
 
 bool
 FunctionsTest::FMemberTest ()
@@ -163,6 +211,7 @@ FunctionsTest::FMemberTest ()
   //cout << "FMember tests passed!" << endl;
   return result;
 }
+/* ************************************************************** */
 
 bool
 FunctionsTest::FSha1Test ()
@@ -187,8 +236,13 @@ FunctionsTest::FSha1Test ()
   return result;
 }
 
+/* ************************************************************** */
+
 static FunctionsTest g_functionsTest;
 
 } // namespace tests
 } // namespace rapidnet
 } // namespace ns3
+
+
+
