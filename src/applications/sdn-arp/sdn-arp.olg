@@ -1,0 +1,65 @@
+/* 
+ *  ===============
+ * ||   SDN ARP   ||
+ *  ===============
+ * Controller serves as ARP agent
+ *
+ * Base Tuples
+ * -----------
+ * 
+ * arpRequest(@Host, SrcIp, SrcMac, DstIp, DstMac)
+ * 
+ * linkHst(@Host, Switch, Port)
+ * 
+ * Derived Tuples
+ * --------------
+ * packet(@Switch, Host, Dst, PktLoad)
+ *     Switch Received packet sent from Host, to be forwarded to Dst. 
+ *     DstMac, DstIp, SrcMac, SrcIp, ARP_REQUEST, ARP_TYPE
+ */
+
+/*Constants*/
+#define BROADCAST "ff:ff:ff:ff:ff"
+#define ALL_PORT 0
+#define ARP_TYPE "ARP"
+#define IPV4_TYPE "IPV4"
+#define CONTROLLER "controller"
+#define ARP_REQUEST 1
+#define ARP_REPLY 2
+#define ARP_PRIO 1
+
+/*Host program*/
+/*Send ARP request to directly connected switch*/
+rh1 packet(@Switch, Host, Dst, PktLoad) :-
+	linkHst(@Host, Switch, Port),
+	arpRequest(@Host, SrcIp, SrcMac, DstIp, DstMac),
+	PktLoad1 := f_empty(),
+	PktLoad2 := f_prepend(DstMac, PktLoad1),
+	PktLoad3 := f_prepend(DstIp, PktLoad2),
+	PktLoad4 := f_prepend(SrcMac, PktLoad3),
+	PktLoad5 := f_prepend(SrcIp, PktLoad4),
+	PktLoad6 := f_prepend(ARP_REQUEST, PktLoad5),
+	PktLoad := f_prepend(ARP_TYPE, PktLoad6),
+	Dst := BROADCAST.
+
+/*Received packet from switch and extract ARP reply packets*/
+rh2 arpReply(@Host, SrcIp, SrcMac, DstIp, DstMac) :-
+	linkHst(@Host, Switch, Port),
+	packet(@Host, Switch, Dst, PktLoad),
+	Dst == Host,
+	ARP_TYPE == f_first(PktLoad),
+	PktLoad1 := f_removeFirst(PktLoad),
+	ARP_REPLY == f_first(PktLoad1),
+	PktLoad2 := f_removeFirst(PktLoad1),
+	SrcIp := f_first(PktLoad2),
+	PktLoad3 := f_removeFirst(PktLoad2),
+	SrcMac := f_first(PktLoad3),
+	PktLoad4 := f_removeFirst(PktLoad3),
+	DstIp := f_first(PktLoad4),
+	PktLoad5 := f_removeFirst(PktLoad4),
+	DstMac := f_first(PktLoad5).
+
+
+
+
+
