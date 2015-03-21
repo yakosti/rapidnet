@@ -189,21 +189,21 @@ void compile (string overlogFile, bool provenanceEnabled)
 
   //Dpool construction
   Ptr<Dpool> dpool (new Dpool(newGraph, miniGraph, baseProp, inv));
-  dpool->PrintDpool();
+  //dpool->PrintDpool();
   //dpool->PrintAllDeriv();
 
   //Verify invariant property
-  //dpool->VerifyInvariants(inv);
+  dpool->VerifyInvariants(inv);
 
   //Property verification
   //User-defined property
-  Property p = Property();
-  p.Print();
-
-  NS_LOG_DEBUG("Property constructed.");
-  //Verify the property
-  bool res = CheckProperty(*dpool, p);
-  cout << "Is the property valid? " << (res?"Yes":"No") << endl;
+//  Property p = Property();
+//  p.Print();
+//
+//  NS_LOG_DEBUG("Property constructed.");
+//  //Verify the property
+//  bool res = CheckProperty(*dpool, p);
+//  cout << "Is the property valid? " << (res?"Yes":"No") << endl;
 
   /* adding smt solver part */
   //const DerivNodeList& dlist = dpool->GetDerivList("advertisements");
@@ -227,7 +227,7 @@ int main (int argc, char** argv)
   LogComponentEnable ("Formula", LOG_INFO);
 //  LogComponentEnable ("Property", LOG_INFO);
 
-  test_parsing();
+  //test_parsing();
 
   string overlogFile;
   string baseoverlogFile = DEFAULT_RN_APP_BASE;

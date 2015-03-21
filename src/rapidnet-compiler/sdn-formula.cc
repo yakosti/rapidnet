@@ -79,8 +79,15 @@ Connective::Print() const
 
 Connective::~Connective()
 {
-	delete leftF;
-	delete rightF;
+	if (leftF != NULL)
+	{
+		delete leftF;
+	}
+
+	if (rightF != NULL)
+	{
+		delete rightF;
+	}
 }
 
 /* ***************************** FORMULA *********************************** */
@@ -158,7 +165,10 @@ Quantifier::Print() const
 
 Quantifier::~Quantifier()
 {
-	delete fml;
+	if (fml != NULL)
+	{
+		delete fml;
+	}
 }
 
 /* ***************************** Quantifier *********************************** */

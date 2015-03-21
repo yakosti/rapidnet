@@ -20,7 +20,6 @@ using namespace std;
 class Property
 {
 public:
-
 	//Hardcode property inputList
 	Property();
 

@@ -22,13 +22,14 @@ Property::Property()
 
 	//ProcessUniPred("reachable(src,dest,cost)", varMap);
 	//ProcessUniPred("verifyPath(m,n,l)", varMap);
-	ProcessUniPred("ePingPongFinish(src)", varMap);
+	//ProcessUniPred("ePingPongFinish(src)", varMap);
+	ProcessUniPred("path(x,y,z)", varMap);
 
-	ProcessUniCons(varMap);
+	//ProcessUniCons(varMap);
 
 	//ProcessExistPred("ePing(o,p)", varMap);
-	//ProcessExistPred("link(r,s,t)", varMap);
-	ProcessExistPred("tLink(r,s)", varMap);
+	//ProcessExistPred("link(m,n,c)", varMap);
+	//ProcessExistPred("tLink(r,s)", varMap);
 	ProcessExistCons(varMap);
 }
 
@@ -89,24 +90,28 @@ Property::ProcessExistCons(const map<string, Variable*>& varMap)
 //
 //	existConsList->AddConstraint(newCons);
 
-//	string var1 = "cost";
-//	Variable* varPtr = varMap.find(var1)->second;
-//
-//	Constraint* newCons = new Constraint(Constraint::GT,
-//										 varPtr,
-//										 new IntVal(0));
-//
-//	existConsList->AddConstraint(newCons);
+	//Property verification of path.olg
+	string var1 = "z";
+	Variable* varArg = varMap.find(var1)->second;
 
-//  Property verification of pingpong.olg
-	string var1 = "s";
-	Variable* varPtr = varMap.find(var1)->second;
+	Variable* varPtr = new Variable(Variable::STRING, true);
+	existVars.push_back(varPtr);
 
-	Constraint* newCons = new Constraint(Constraint::LT,
-										 varPtr,
-										 new IntVal(2));
+	Constraint* newCons = new Constraint(Constraint::GT,
+										 varArg,
+										 varPtr);
 
 	existConsList->AddConstraint(newCons);
+
+//  Property verification of pingpong.olg
+//	string var1 = "s";
+//	Variable* varPtr = varMap.find(var1)->second;
+//
+//	Constraint* newCons = new Constraint(Constraint::LT,
+//										 varPtr,
+//										 new IntVal(2));
+//
+//	existConsList->AddConstraint(newCons);
 }
 
 
@@ -303,22 +308,23 @@ Invariant::Invariant()
 {
 	invs = AnnotMap();
 
-//	NS_LOG_FUNCTION("Generate invariant...");
-//	string predName = "reachable";
-//	int argNum = 3;
-//	PredicateSchema* scheme = new PredicateSchema(predName, argNum);
-//	vector<Term*> args;
-//	for (int i = 0;i < argNum;i++)
-//	{
-//		Variable* newVar = new Variable(Variable::STRING, true);
-//		args.push_back(newVar);
-//	}
-//	//Use index to create formulas;
-//	IntVal* value = new IntVal(0);
-//	Formula* form = new Constraint(Constraint::GT, args[2], value);
-//	PredicateInstance* pInst = new PredicateInstance(scheme, args);
-//	Annotation newAnnot = Annotation(pInst, form);
-//	invs.insert(AnnotMap::value_type(predName, newAnnot));
+	//Invariant of reachability
+	NS_LOG_FUNCTION("Generate invariant...");
+	string predName = "path";
+	int argNum = 3;
+	PredicateSchema* scheme = new PredicateSchema(predName, argNum);
+	vector<Term*> args;
+	for (int i = 0;i < argNum;i++)
+	{
+		Variable* newVar = new Variable(Variable::STRING, true);
+		args.push_back(newVar);
+	}
+	//Use index to create formulas;
+	IntVal* value = new IntVal(3);
+	Formula* form = new Constraint(Constraint::GT, args[2], value);
+	PredicateInstance* pInst = new PredicateInstance(scheme, args);
+	Annotation newAnnot = Annotation(pInst, form);
+	invs.insert(AnnotMap::value_type(predName, newAnnot));
 
 //	NS_LOG_FUNCTION("Generate invariant...");
 //	string predName = "verifyPath";

@@ -6,6 +6,7 @@
  */
 
 #include "sdn-derivation.h"
+#include "sdn-parse-smtlib.h"
 
 NS_LOG_COMPONENT_DEFINE ("Dpool");
 
@@ -667,6 +668,7 @@ Dpool::VerifyInvariants(const Invariant& inv) const
 		const DerivNodeList& dlist = derivations.at(tpName);
 		DerivNodeList::const_iterator itd;
 		Formula* disjForm = NULL;
+		list<SimpConstraints*> slist;
 		for (itd = dlist.begin();itd != dlist.end();itd++)
 		{
 			//Enumerate all possible derivations, including recursive ones
@@ -675,22 +677,21 @@ Dpool::VerifyInvariants(const Invariant& inv) const
 			VarMap vmap = head->CreateVarMap(&unifTuple);
 
 			const ConsList& clist = (*itd)->GetCumuConsts();
-			ConsList::const_iterator itc;
-			for (itc = clist.begin();itc != clist.end();itc++)
+			SimpConstraints* newSimp = new SimpConstraints(clist);
+			slist.push_back(newSimp);
+			const ConstraintsTemplate& simpTemp = newSimp->GetConstraints();
+			const ConstraintList& ctsList = simpTemp.GetConstraints();
+			ConstraintList::const_iterator itct;
+			for (itct = ctsList.begin();itct != ctsList.end();itct++)
 			{
-				const ConstraintList& ctsList = (*itc)->GetConstraints();
-				ConstraintList::const_iterator itct;
-				for (itct = ctsList.begin();itct != ctsList.end();itct++)
+				Constraint* cons = new Constraint(**itct);
+				if (conjForm == NULL)
 				{
-					Constraint* cons = new Constraint(**itct);
-					if (conjForm == NULL)
-					{
-						conjForm = cons;
-					}
-					else
-					{
-						conjForm = new Connective(Connective::AND, conjForm, cons);
-					}
+					conjForm = cons;
+				}
+				else
+				{
+					conjForm = new Connective(Connective::AND, conjForm, cons);
 				}
 			}
 
@@ -722,12 +723,40 @@ Dpool::VerifyInvariants(const Invariant& inv) const
 		}
 
 		Formula* soundForm = new Connective(Connective::IMPLY, disjForm, tupleInv);
-		//TODO: Verify soundForm
+		Formula* negSoundForm = new Connective(Connective::NOT, soundForm, NULL);
+		bool truthFlag = true;
+		FormList sflist = FormList(1, negSoundForm);
+		map<Variable*, int> soundAssign = check_sat_generalized(sflist);
+		if (soundAssign.size() > 0)
+		{
+			cout << "Soundness does not hold!" << endl;
+			truthFlag = false;
+		}
 		Formula* completeForm = new Connective(Connective::IMPLY, tupleInv, disjForm);
-		//TODO: Verify completeForm
+		Formula* negCompleteForm = new Connective(Connective::NOT, completeForm, NULL);
+		FormList cflist = FormList(1, negCompleteForm);
+		map<Variable*, int> completeAssign = check_sat_generalized(cflist);
+		if (completeAssign.size() > 0)
+		{
+			cout << "Completeness does not hold!" << endl;
+			truthFlag = false;
+		}
+
+		//Deallocate memory
+		delete negSoundForm;
+		delete negCompleteForm;
+		list<SimpConstraints*>::iterator its;
+		for (its = slist.begin();its != slist.end();its++)
+		{
+			delete (*its);
+		}
+
+		if (truthFlag == false)
+		{
+			return false;
+		}
 	}
 
-	//TODO: What's the return value here?
 	return true;
 }
 
