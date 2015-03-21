@@ -1,0 +1,2 @@
+ECA Rule rh1Eca0Ins ACTION_REMOTE_SEND<packet(@Switch, Host, Dst, DstMac, DstIp, SrcMac, SrcIp, Req, Type)> :- EVENT_INSERT<linkHst(@Host, Switch, Port)>, arpRequest(@Host, SrcIp, SrcMac, DstIp, DstMac), Req := 1, Type := ARP, Dst := ff:ff:ff:ff:ff.
+ECA Rule rh1Eca1Ins ACTION_REMOTE_SEND<packet(@Switch, Host, Dst, DstMac, DstIp, SrcMac, SrcIp, Req, Type)> :- EVENT_INSERT<arpRequest(@Host, SrcIp, SrcMac, DstIp, DstMac)>, linkHst(@Host, Switch, Port), Req := 1, Type := ARP, Dst := ff:ff:ff:ff:ff.
