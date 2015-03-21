@@ -759,6 +759,18 @@ LookupFunction (string functionName)
     {
       return "FEmpty";
     }
+  else if (functionName == "f_prepend")
+    {
+      return "FPrepend";
+    }
+  else if (functionName == "f_removeFirst")
+    {
+      return "FRemoveFirst";
+    }
+  else if (functionName == "f_first")
+    {
+      return "FFirst";
+    }
   else if (functionName == "f_concat")
     {
       return "FConcat";
