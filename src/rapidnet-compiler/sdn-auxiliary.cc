@@ -5,7 +5,7 @@
  *      Author: cchen
  */
 
-#include "auxiliary.h"
+#include "sdn-auxiliary.h"
 
 UnionFindSet::UnionFindSet()
 {

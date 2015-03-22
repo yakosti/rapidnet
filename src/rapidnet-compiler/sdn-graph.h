@@ -21,7 +21,6 @@
 #include "sdn-property.h"
 #include "ol-context.h"
 #include "parser-util.h"
-#include "auxiliary.h"
 
 using namespace std;
 using namespace ns3;

@@ -6,7 +6,6 @@
  */
 
 #include "sdn-derivation.h"
-#include "sdn-parse-smtlib.h"
 
 NS_LOG_COMPONENT_DEFINE ("Dpool");
 

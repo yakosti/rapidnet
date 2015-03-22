@@ -43,12 +43,14 @@
 #include "sdn-derivation.h"
 #include "sdn-property.h"
 #include "sdn-verification.h"
-#include "sdn-test.h"
-#include "z3++.h"
+//#include "sdn-parse-smtlib.h"
 
 using namespace std;
 using namespace ns3;
 using namespace ns3::rapidnet_compiler;
+
+NS_LOG_COMPONENT_DEFINE ("RapidNetDPGraph");
+
 
 /**
  * \brief Preprocesses the overlog file using the C-preprocessor
@@ -204,10 +206,6 @@ void compile (string overlogFile, bool provenanceEnabled)
 //  //Verify the property
 //  bool res = CheckProperty(*dpool, p);
 //  cout << "Is the property valid? " << (res?"Yes":"No") << endl;
-
-  /* adding smt solver part */
-  //const DerivNodeList& dlist = dpool->GetDerivList("advertisements");
-  //writeToFile("testing_constraints", dlist); //laykuan testing
 
   //test_check_sat();
 }

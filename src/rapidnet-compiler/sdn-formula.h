@@ -20,7 +20,7 @@
 
 #include "ns3/log.h"
 #include "parser-util.h"
-#include "auxiliary.h"
+#include "sdn-auxiliary.h"
 
 using namespace std;
 using namespace ns3;
@@ -595,6 +595,7 @@ private:
 };
 
 typedef list<const ConstraintsTemplate*> ConsList;
+typedef list<Formula*> FormList;
 
 class SimpConstraints
 {

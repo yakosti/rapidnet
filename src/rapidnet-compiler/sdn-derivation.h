@@ -15,7 +15,7 @@
 #include "sdn-formula.h"
 #include "sdn-graph.h"
 #include "sdn-property.h"
-//#include "parser-util.h"
+#include "sdn-parse-smtlib.h"
 
 using namespace std;
 
@@ -25,8 +25,6 @@ class DpoolNode;
 class BaseNode;
 class PropNode;
 
-typedef list<const ConstraintsTemplate*> ConsList;
-typedef list<Formula*> FormList;
 typedef list<DerivNode*> DerivNodeList;
 typedef list<BaseNode*> BaseNodeList;
 typedef list<PropNode*> PropNodeList;
