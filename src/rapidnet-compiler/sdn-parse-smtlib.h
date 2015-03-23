@@ -599,10 +599,16 @@ string parseConstraint(Constraint* c) {
 	switch (op) {
 		case Constraint::EQ: 
 			return "(= " + leftE + " " + rightE + ")";
+		case Constraint::NEQ: 
+			return "(not (=" + leftE + " " + rightE + "))";
 		case Constraint::GT:
 			return "(> " + leftE + " " + rightE + ")";
+		case Constraint::GE:
+			return "(>= " + leftE + " " + rightE + ")";
 		case Constraint::LT:
 			return "(< " + leftE + " " + rightE + ")";
+		case Constraint::LE:
+			return "(<= " + leftE + " " + rightE + ")";
 		default:
 			throw std::invalid_argument("Invalid Constraint format");
 	}

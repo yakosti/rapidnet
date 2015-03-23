@@ -1,0 +1,13 @@
+## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
+
+def build(bld):
+    module = bld.create_ns3_module('sdn-arp', ['internet-stack'])
+    module.source = [
+        'sdn-arp.cc',
+        ]
+    headers = bld.new_task_gen('ns3header')
+    headers.module = 'sdn-arp'
+    headers.source = [
+        'sdn-arp.h',
+        'sdn-arp-helper.h',
+        ]
