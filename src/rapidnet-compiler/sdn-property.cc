@@ -356,6 +356,26 @@ Invariant::Invariant()
 	NS_LOG_FUNCTION("Invariant generated.");
 }
 
+void
+Invariant::Print() const
+{
+	cout << endl;
+	cout << "^^^^^^^^^^^^ Invariant Properties ^^^^^^^^^^^^^" << endl;
+	AnnotMap::const_iterator ita;
+	for (ita = invs.begin();ita != invs.end();ita++)
+	{
+		const Annotation& annot = ita->second;
+		const PredicateInstance* pred = annot.first;
+		const Formula* form = annot.second;
+
+		pred->Print();
+		cout << endl;
+		form->Print();
+		cout << endl << endl;
+	}
+	cout << "^^^^^^^^^^^^^^^^^^^^^^^^^" << endl;
+}
+
 Invariant::~Invariant()
 {
 	AnnotMap::iterator itv;

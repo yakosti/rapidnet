@@ -45,6 +45,21 @@ Connective::VarReplace(const VarMap& vmap)
 	rightF->VarReplace(vmap);
 }
 
+void
+Connective::VarReplace(SimpConstraints& simpCon)
+{
+	leftF->VarReplace(simpCon);
+	rightF->VarReplace(simpCon);
+}
+
+void
+Connective::ArgSwap()
+{
+	Formula* temp = leftF;
+	leftF = rightF;
+	rightF = temp;
+}
+
 Connective*
 Connective::Clone()
 {
@@ -123,6 +138,21 @@ Quantifier::VarReplace(const VarMap& vmap)
 	}
 
 	fml->VarReplace(vmap);
+}
+
+void
+Quantifier::VarReplace(SimpConstraints& simpCon)
+{
+	vector<Variable*>::iterator itv;
+	for (itv = boundVarList.begin();itv != boundVarList.end();itv++)
+	{
+		Variable* newVar = simpCon.FindRootVar(*itv);
+		if (newVar != NULL)
+		{
+			*itv = newVar;
+		}
+	}
+	fml->VarReplace(simpCon);
 }
 
 Quantifier*
@@ -418,7 +448,7 @@ Constraint::PrintInstance(const map<Variable*, int>& valueMap) const
 }
 
 bool
-Constraint::IsEquiv()
+Constraint::IsEquiv() const
 {
 	return ((op == Constraint::EQ)?true:false);
 }
@@ -436,7 +466,6 @@ Constraint::IsUnif()
 	}
 
 	return false;
-
 }
 
 void
@@ -1206,6 +1235,22 @@ ConstraintsTemplate::ReplaceVar(SimpConstraints& simpCons)
 	}
 }
 
+void
+ConstraintsTemplate::RemoveUnif()
+{
+	ConstraintList::iterator itc;
+	for (itc = constraints.begin();itc != constraints.end();itc++)
+	{
+		if ((*itc)->IsUnif())
+		{
+			delete (*itc);
+			(*itc) = NULL;
+		}
+	}
+
+	constraints.remove(NULL);
+}
+
 ConstraintsTemplate*
 ConstraintsTemplate::Revert() const
 {
@@ -1223,7 +1268,7 @@ ConstraintsTemplate::Revert() const
 
 ConstraintsTemplate::~ConstraintsTemplate()
 {
-	NS_LOG_FUNCTION("Dectruct ConstraintsTemplate...");
+	NS_LOG_FUNCTION("Destruct ConstraintsTemplate...");
 	ConstraintList::iterator it;
 	for (it = constraints.begin(); it != constraints.end(); it++)
 	{
@@ -1270,7 +1315,26 @@ SimpConstraints::SimpConstraints()
 	equiClass = map<Variable*, list<Variable*> >();
 }
 
-SimpConstraints::SimpConstraints(const ConsList& ctempList)
+
+SimpConstraints::SimpConstraints(list<ConstraintsTemplate*>& clist)
+{
+	ConsList conList = ConsList();
+	list<ConstraintsTemplate*>::iterator itl;
+	for (itl = clist.begin();itl != clist.end();itl++)
+	{
+		conList.push_back(*itl);
+	}
+
+	Initialize(conList);
+}
+
+SimpConstraints::SimpConstraints(const ConsList& clist)
+{
+	Initialize(clist);
+}
+
+void
+SimpConstraints::Initialize(const ConsList& ctempList)
 {
 	int count = 0;
 	pair<map<Variable*,int>::iterator, bool> ret;
@@ -1366,6 +1430,23 @@ SimpConstraints::CreateEquiClass()
 		}
 	}
 
+}
+
+Variable*
+SimpConstraints::FindRootVar(Variable* var)
+{
+	map<Variable*, int>::iterator itm = varTable.find(var);
+	if (itm != varTable.end())
+	{
+		int value = itm->second;
+		int root = varSet.Root(value);
+		Variable* rootVar = varRevTable.at(root);
+		return rootVar;
+	}
+	else
+	{
+		return NULL;
+	}
 }
 
 void

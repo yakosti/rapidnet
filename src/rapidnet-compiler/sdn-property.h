@@ -86,6 +86,8 @@ public:
 
 	const AnnotMap& GetInv() const {return invs;}
 
+	void Print() const;
+
 	~Invariant();
 
 private:

@@ -179,6 +179,7 @@ void compile (string overlogFile, bool provenanceEnabled)
 
   //Input recursive invariant
   Invariant inv = Invariant();
+  inv.Print();
   Ptr<NewDPGraph> newGraph (new NewDPGraph(graphNdlog, inv));
   //newGraph->Print();
 

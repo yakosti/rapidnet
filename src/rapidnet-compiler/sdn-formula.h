@@ -27,6 +27,7 @@ using namespace ns3;
 using namespace rapidnet_compiler;
 
 class Variable;
+class SimpConstraints;
 
 //TODO: change VarMap into a class
 typedef map<Variable*, Variable*> VarMap;
@@ -361,6 +362,12 @@ public:
 
 	virtual void VarReplace(const VarMap&){}
 
+	virtual void VarReplace(SimpConstraints& simp)
+		{cout << "Default variable replacement.";}
+
+	//TODO: This function is not good practice
+	virtual void ArgSwap(){}
+
 	virtual ~Formula(){}
 };
 
@@ -389,6 +396,10 @@ public:
 
 	void VarReplace(const VarMap&);
 
+	void VarReplace(SimpConstraints&);
+
+	void ArgSwap();
+
 	Connective* Clone();
 
 	ConnType GetConnType();
@@ -408,11 +419,6 @@ private:
 };
 
 
-
-
-
-
-
 class Quantifier: public Formula
 {
 public:
@@ -426,6 +432,8 @@ public:
 	Quantifier(const Quantifier&);
 
 	void VarReplace(const VarMap&);
+
+	void VarReplace(SimpConstraints&);
 
 	Quantifier* Clone();
 
@@ -532,7 +540,7 @@ public:
 
 	Term* GetRightE();
 
-	bool IsEquiv();
+	bool IsEquiv() const;
 
 	bool IsUnif();
 
@@ -578,6 +586,8 @@ public:
 
 	void ReplaceVar(SimpConstraints&);
 
+	void RemoveUnif();
+
 	ConstraintsTemplate* Revert() const;
 
 	const ConstraintList& GetConstraints() const {return constraints;}
@@ -604,7 +614,13 @@ public:
 
 	SimpConstraints(const ConsList&);
 
+	SimpConstraints(list<ConstraintsTemplate*>&);
+
+	void Initialize(const ConsList&);
+
 	void CreateEquiClass();
+
+	Variable* FindRootVar(Variable*);
 
 	const map<Variable*, list<Variable*> >& GetEquiClass() {return equiClass;}
 
@@ -619,7 +635,7 @@ public:
 	void Print();
 
 private:
-	ConstraintsTemplate cts;
+	ConstraintsTemplate cts;	//TODO: Is cts necessary?
 	map<Variable*, int> varTable;
 	map<int, Variable*> varRevTable;
 	UnionFindSet varSet;
