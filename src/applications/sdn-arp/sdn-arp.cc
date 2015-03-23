@@ -30,6 +30,7 @@ const string SdnArp::OFCONNSWC = "ofconnSwc";
 const string SdnArp::PACKET = "packet";
 const string SdnArp::PACKETIN = "packetIn";
 const string SdnArp::PACKETOUT = "packetOut";
+const string SdnArp::PORTANDSRCMAPPING = "portAndSrcMapping";
 const string SdnArp::RH2PACKETHOST = "rh2packetHost";
 
 NS_LOG_COMPONENT_DEFINE ("SdnArp");
@@ -119,6 +120,10 @@ SdnArp::InitDatabase ()
   AddRelationWithKeys (OFCONNSWC, attrdeflist (
     attrdef ("ofconnSwc_attr2", IPV4)));
 
+  AddRelationWithKeys (PORTANDSRCMAPPING, attrdeflist (
+    attrdef ("portAndSrcMapping_attr2", INT32),
+    attrdef ("portAndSrcMapping_attr3", IPV4)));
+
 }
 
 void
@@ -184,7 +189,7 @@ SdnArp::Rh1Eca0Ins (Ptr<Tuple> linkHst)
     strlist ("arpRequest_attr1"),
     strlist ("linkHst_attr1"));
 
-  result->Assign (Assignor::New ("Req",
+  result->Assign (Assignor::New ("Arptype",
     ValueExpr::New (Int32Value::New (1))));
 
   result->Assign (Assignor::New ("Type",
@@ -202,7 +207,7 @@ SdnArp::Rh1Eca0Ins (Ptr<Tuple> linkHst)
       "arpRequest_attr4",
       "arpRequest_attr3",
       "arpRequest_attr2",
-      "Req",
+      "Arptype",
       "Type",
       "linkHst_attr2"),
     strlist ("packet_attr1",
@@ -231,7 +236,7 @@ SdnArp::Rh1Eca1Ins (Ptr<Tuple> arpRequest)
     strlist ("linkHst_attr1"),
     strlist ("arpRequest_attr1"));
 
-  result->Assign (Assignor::New ("Req",
+  result->Assign (Assignor::New ("Arptype",
     ValueExpr::New (Int32Value::New (1))));
 
   result->Assign (Assignor::New ("Type",
@@ -249,7 +254,7 @@ SdnArp::Rh1Eca1Ins (Ptr<Tuple> arpRequest)
       "arpRequest_attr4",
       "arpRequest_attr3",
       "arpRequest_attr2",
-      "Req",
+      "Arptype",
       "Type",
       "linkHst_attr2"),
     strlist ("packet_attr1",
@@ -344,10 +349,15 @@ SdnArp::Rc1_eca (Ptr<Tuple> packetIn)
     strlist ("ofconnCtl_attr1", "ofconnCtl_attr2"),
     strlist ("packetIn_attr1", "packetIn_attr2"));
 
+  result = GetRelation (PORTANDSRCMAPPING)->Join (
+    result,
+    strlist ("portAndSrcMapping_attr1", "portAndSrcMapping_attr2"),
+    strlist ("packetIn_attr1", "packetIn_attr3"));
+
   result = result->Project (
     HOSTPOS,
     strlist ("packetIn_attr1",
-      "packetIn_attr4",
+      "portAndSrcMapping_attr3",
       "packetIn_attr2",
       "packetIn_attr3"),
     strlist ("hostPos_attr1",
@@ -460,7 +470,7 @@ SdnArp::Rc6_eca (Ptr<Tuple> arpReplyCtl)
     strlist ("hostPos_attr1", "hostPos_attr2", "hostPos_attr3"),
     strlist ("arpReplyCtl_attr1", "arpReplyCtl_attr2", "ofconnCtl_attr2"));
 
-  result->Assign (Assignor::New ("Req",
+  result->Assign (Assignor::New ("Arptype",
     ValueExpr::New (Int32Value::New (2))));
 
   result->Assign (Assignor::New ("Type",
@@ -475,7 +485,7 @@ SdnArp::Rc6_eca (Ptr<Tuple> arpReplyCtl)
       "arpReplyCtl_attr4",
       "arpReplyCtl_attr3",
       "arpReplyCtl_attr2",
-      "Req",
+      "Arptype",
       "Type",
       "ofconnCtl_attr2"),
     strlist ("packetOut_attr1",
@@ -540,7 +550,6 @@ SdnArp::Rs1_eca (Ptr<Tuple> packet)
       "packet_attr7",
       "packet_attr8",
       "packet_attr9",
-      VariableNotFoundError,
       "ofconnSwc_attr2"),
     strlist ("packetIn_attr1",
       "packetIn_attr2",
@@ -551,7 +560,6 @@ SdnArp::Rs1_eca (Ptr<Tuple> packet)
       "packetIn_attr7",
       "packetIn_attr8",
       "packetIn_attr9",
-      "packetIn_attr10",
       RN_DEST));
 
   Send (result);

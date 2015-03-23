@@ -43,6 +43,7 @@ public:
   static const string PACKET;
   static const string PACKETIN;
   static const string PACKETOUT;
+  static const string PORTANDSRCMAPPING;
   static const string RH2PACKETHOST;
 
   static TypeId GetTypeId (void);
