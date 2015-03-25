@@ -43,12 +43,14 @@
 #include "sdn-derivation.h"
 #include "sdn-property.h"
 #include "sdn-verification.h"
-#include "sdn-test.h"
-#include "z3++.h"
+//#include "sdn-parse-smtlib.h"
 
 using namespace std;
 using namespace ns3;
 using namespace ns3::rapidnet_compiler;
+
+NS_LOG_COMPONENT_DEFINE ("RapidNetDPGraph");
+
 
 /**
  * \brief Preprocesses the overlog file using the C-preprocessor
@@ -177,6 +179,7 @@ void compile (string overlogFile, bool provenanceEnabled)
 
   //Input recursive invariant
   Invariant inv = Invariant();
+  inv.Print();
   Ptr<NewDPGraph> newGraph (new NewDPGraph(graphNdlog, inv));
   //newGraph->Print();
 
@@ -189,25 +192,21 @@ void compile (string overlogFile, bool provenanceEnabled)
 
   //Dpool construction
   Ptr<Dpool> dpool (new Dpool(newGraph, miniGraph, baseProp, inv));
-  dpool->PrintDpool();
+  //dpool->PrintDpool();
   //dpool->PrintAllDeriv();
 
   //Verify invariant property
-  //dpool->VerifyInvariants(inv);
+  dpool->VerifyInvariants(inv);
 
   //Property verification
   //User-defined property
-  Property p = Property();
-  p.Print();
-
-  NS_LOG_DEBUG("Property constructed.");
-  //Verify the property
-  bool res = CheckProperty(*dpool, p);
-  cout << "Is the property valid? " << (res?"Yes":"No") << endl;
-
-  /* adding smt solver part */
-  //const DerivNodeList& dlist = dpool->GetDerivList("advertisements");
-  //writeToFile("testing_constraints", dlist); //laykuan testing
+//  Property p = Property();
+//  p.Print();
+//
+//  NS_LOG_DEBUG("Property constructed.");
+//  //Verify the property
+//  bool res = CheckProperty(*dpool, p);
+//  cout << "Is the property valid? " << (res?"Yes":"No") << endl;
 
   //test_check_sat();
 }
@@ -227,7 +226,7 @@ int main (int argc, char** argv)
   LogComponentEnable ("Formula", LOG_INFO);
 //  LogComponentEnable ("Property", LOG_INFO);
 
-  test_parsing();
+  //test_parsing();
 
   string overlogFile;
   string baseoverlogFile = DEFAULT_RN_APP_BASE;

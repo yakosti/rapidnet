@@ -119,7 +119,6 @@ DerivNode::PrintDerivNode() const
 	cout << "Rule name:" << ruleName;
 	cout << endl;
 	cout << "Body tuples:" << endl;
-	NS_LOG_DEBUG("Number of bodies: " << bodyDerivs.size());
 	DpoolNodeList::const_iterator itd;
 	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
 	{
@@ -151,7 +150,6 @@ DerivNode::PrintInstance(const map<Variable*, int>& valueMap) const
 	cout << "Rule name:" << ruleName;
 	cout << endl;
 	cout << "Body tuples:" << endl;
-	NS_LOG_DEBUG("Number of bodies: " << bodyDerivs.size());
 	DpoolNodeList::const_iterator itd;
 	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
 	{
@@ -425,7 +423,6 @@ Dpool::Dpool(const Ptr<NewDPGraph> newGraph,
 		{
 			NS_LOG_DEBUG("No annot case");
 			int argSize = (*itml)->GetArgLength();
-			NS_LOG_DEBUG("Tuple length: " << argSize);
 			BaseNode* newNode = new BaseNode(nodeName, argSize);
 			BaseNodeList blist(1, newNode);
 			baseMap.insert(BaseMap::value_type(nodeName, blist));
@@ -475,7 +472,6 @@ Dpool::ProcessRuleNode(const Tuple* ruleHead,
 					   vector<DpoolNode*> bodyDerivs,
 					   VarMap vmap)
 {
-	NS_LOG_DEBUG("Size of bodyList: " << bodyList.size());
 	if (curPos == bodyList.end())
 	{
 		//All possible derivations of body tuples
@@ -644,6 +640,7 @@ Dpool::UpdateDerivNode(string tpName, DerivNode* dnode)
 bool
 Dpool::VerifyInvariants(const Invariant& inv) const
 {
+	NS_LOG_FUNCTION("Verifying Invariants...");
 	Formula* proofObl = NULL;
 	const AnnotMap& invariant = inv.GetInv();
 	AnnotMap::const_iterator ita;
@@ -656,31 +653,121 @@ Dpool::VerifyInvariants(const Invariant& inv) const
 		int predArgSize = predInst->GetArgs().size();
 		//All headers should be unified to the unifTuple
 		Tuple unifTuple = Tuple(tpName, predArgSize);
+		NS_LOG_DEBUG("Unification tuple:");
+		unifTuple.PrintTuple();
+		cout << endl;
 
 		//Unify variables in the invariant
 		Formula* tupleInv = annot.second->Clone();
 		VarMap invMap = unifTuple.CreateVarMap(predInst);
 		tupleInv->VarReplace(invMap);
+		NS_LOG_DEBUG("Original Invariant Property:");
+		unifTuple.PrintTuple();
+		cout << endl;
+		tupleInv->Print();
+		cout << endl;
 
 		//Check soundness and completeness
 		//Invariant <=> Constraints1 \/ Constraints2 \/ ... \/ Constraintsn
+		list<list<ConstraintsTemplate*> > consMetaList = list<list<ConstraintsTemplate*> >();
+		list<FormList> cumuFlist = list<FormList>();
+
 		const DerivNodeList& dlist = derivations.at(tpName);
 		DerivNodeList::const_iterator itd;
-		Formula* disjForm = NULL;
+		//Collect constraints and invariants from all derivations
 		for (itd = dlist.begin();itd != dlist.end();itd++)
 		{
-			//Enumerate all possible derivations, including recursive ones
-			Formula* conjForm = NULL;
+			NS_LOG_DEBUG("Print derivations");
+			(*itd)->PrintDerivation();
+			cout << endl;
+
+			list<ConstraintsTemplate*> newclist = list<ConstraintsTemplate*>();
 			const Tuple* head = (*itd)->GetHead();
 			VarMap vmap = head->CreateVarMap(&unifTuple);
 
 			const ConsList& clist = (*itd)->GetCumuConsts();
-			ConsList::const_iterator itc;
+			ConsList::const_iterator itcl;
+			for (itcl = clist.begin();itcl != clist.end();itcl++)
+			{
+				ConstraintsTemplate* consTemp = new ConstraintsTemplate(**itcl);
+				consTemp->ReplaceVar(vmap);
+				newclist.push_back(consTemp);
+			}
+			consMetaList.push_back(newclist);
+
+			FormList newflist = FormList();
+			FormList& flist = (*itd)->GetInvariants();
+			FormList::iterator itf;
+			for (itf = flist.begin();itf != flist.end();itf++)
+			{
+				Formula* newForm = (*itf)->Clone();
+				newForm->VarReplace(vmap);
+				newflist.push_back(newForm);
+			}
+			cumuFlist.push_back(newflist);
+		}
+
+		//Create simplified constraints
+		list<ConstraintsTemplate*> cumuCList = list<ConstraintsTemplate*>();
+		list<list<ConstraintsTemplate*> >::iterator itcl;
+		for (itcl = consMetaList.begin();itcl != consMetaList.end();itcl++)
+		{
+			cumuCList.insert(cumuCList.end(), (*itcl).begin(), (*itcl).end());
+		}
+		SimpConstraints simpCons = SimpConstraints(cumuCList);
+		NS_LOG_DEBUG("Print simplified constraints:");
+		simpCons.Print();
+		cout << endl;
+
+		//Simplify cumulative constraints & replace variables with
+		//representative members in the equivalent class
+		NS_LOG_DEBUG("Simplified constraints:");
+		for (itcl = consMetaList.begin();itcl != consMetaList.end();itcl++)
+		{
+			list<ConstraintsTemplate*>::iterator itc;
+			list<ConstraintsTemplate*>& clist = *itcl;
 			for (itc = clist.begin();itc != clist.end();itc++)
 			{
-				const ConstraintList& ctsList = (*itc)->GetConstraints();
+				(*itc)->RemoveUnif();
+				(*itc)->ReplaceVar(simpCons);
+
+				NS_LOG_DEBUG("Simplified constraintsTemplate:");
+				(*itc)->PrintTemplate();
+				cout << endl;
+			}
+		}
+
+		//Replace variables in Formulas of derivations
+		NS_LOG_DEBUG("Print simplified formulas:");
+		list<FormList>::iterator itfl;
+		for (itfl = cumuFlist.begin();itfl != cumuFlist.end();itfl++)
+		{
+			FormList::iterator itf;
+			for (itf = (*itfl).begin();itf != (*itfl).end();itf++)
+			{
+				(*itf)->VarReplace(simpCons);
+
+				(*itf)->Print();
+				cout << endl;
+			}
+		}
+
+		//Replace variables in the invariant
+		tupleInv->VarReplace(simpCons);
+
+		//Create proof obligation for invariant checking
+		Formula* disjForm = NULL;
+		itfl = cumuFlist.begin();
+		for (itcl = consMetaList.begin();itcl != consMetaList.end();itcl++, itfl++)
+		{
+			list<ConstraintsTemplate*>::iterator itc;
+			list<ConstraintsTemplate*>& clist = *itcl;
+			Formula* conjForm = NULL;
+			for (itc = clist.begin();itc != clist.end();itc++)
+			{
+				const ConstraintList& conslist = (*itc)->GetConstraints();
 				ConstraintList::const_iterator itct;
-				for (itct = ctsList.begin();itct != ctsList.end();itct++)
+				for (itct = conslist.begin();itct != conslist.end();itct++)
 				{
 					Constraint* cons = new Constraint(**itct);
 					if (conjForm == NULL)
@@ -694,12 +781,10 @@ Dpool::VerifyInvariants(const Invariant& inv) const
 				}
 			}
 
-			FormList& flist = (*itd)->GetInvariants();
 			FormList::iterator itf;
-			for (itf = flist.begin();itf != flist.end();itf++)
+			for (itf = (*itfl).begin();itf != (*itfl).end();itf++)
 			{
 				Formula* newForm = (*itf)->Clone();
-				newForm->VarReplace(vmap);
 				if (conjForm == NULL)
 				{
 					conjForm = newForm;
@@ -722,12 +807,63 @@ Dpool::VerifyInvariants(const Invariant& inv) const
 		}
 
 		Formula* soundForm = new Connective(Connective::IMPLY, disjForm, tupleInv);
-		//TODO: Verify soundForm
-		Formula* completeForm = new Connective(Connective::IMPLY, tupleInv, disjForm);
-		//TODO: Verify completeForm
+		Formula* negSoundForm = new Connective(Connective::NOT, soundForm, NULL);
+		bool truthFlag = true;
+		FormList sflist = FormList(1, negSoundForm);
+		map<Variable*, int> soundAssign = check_sat_generalized(sflist);
+		if (soundAssign.size() > 0)
+		{
+			cout << "Soundness does not hold!" << endl;
+			truthFlag = false;
+		}
+		else
+		{
+			cout << "Soundness holds!" << endl;
+		}
+
+		soundForm->ArgSwap();
+		Formula* completeForm = soundForm;
+		Formula* negCompleteForm = new Connective(Connective::NOT, completeForm, NULL);
+		FormList cflist = FormList(1, negCompleteForm);
+		map<Variable*, int> completeAssign = check_sat_generalized(cflist);
+		if (completeAssign.size() > 0)
+		{
+			cout << "Completeness does not hold!" << endl;
+			truthFlag = false;
+		}
+		else
+		{
+			cout << "Completeness holds!" << endl;
+		}
+
+		//Deallocate memory
+		delete soundForm;
+		//ERROR: memory leak: delete negSoundForm and negCompleteForm
+		for (itcl = consMetaList.begin();itcl != consMetaList.end();itcl++)
+		{
+			list<ConstraintsTemplate*>::iterator itc;
+			list<ConstraintsTemplate*>& clist = *itcl;
+			for (itc = clist.begin();itc != clist.end();itc++)
+			{
+				delete (*itc);
+			}
+		}
+
+		for (itfl = cumuFlist.begin();itfl != cumuFlist.end();itfl++)
+		{
+			FormList::iterator itf;
+			for (itf = (*itfl).begin();itf != (*itfl).end();itf++)
+			{
+				delete (*itf);
+			}
+		}
+
+		if (truthFlag == false)
+		{
+			return false;
+		}
 	}
 
-	//TODO: What's the return value here?
 	return true;
 }
 

@@ -20,7 +20,6 @@ using namespace std;
 class Property
 {
 public:
-
 	//Hardcode property inputList
 	Property();
 
@@ -86,6 +85,8 @@ public:
 	Invariant();
 
 	const AnnotMap& GetInv() const {return invs;}
+
+	void Print() const;
 
 	~Invariant();
 

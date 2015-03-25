@@ -7,8 +7,6 @@
 
 #include <iostream>
 #include <deque>
-#include <list>
-#include "ol-context.h"
 #include "sdn-graph.h"
 
 NS_LOG_COMPONENT_DEFINE ("DPGraph");
