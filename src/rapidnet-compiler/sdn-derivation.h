@@ -213,7 +213,7 @@ public:
 
 	void UpdateDerivNode(string tpName, DerivNode* dnode);
 
-	bool VerifyInvariants(const Invariant&) const;
+	void VerifyInvariants(const Invariant&) const;
 
 	const DerivMap& GetDerivation() const{return derivations;}
 
