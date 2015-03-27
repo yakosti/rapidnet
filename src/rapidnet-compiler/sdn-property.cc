@@ -272,6 +272,7 @@ BaseProperty::BaseProperty()
 {
 	propSet = ConsAnnotMap();
 
+	//pingpong.olg
 //	string predName = "tLink";
 //	int argNum = 2;
 //	PredicateSchema* scheme = new PredicateSchema(predName, argNum);
@@ -290,6 +291,26 @@ BaseProperty::BaseProperty()
 //
 //	ConsAnnot cat = ConsAnnot(pInst, cts);
 //	propSet.insert(ConsAnnotMap::value_type(predName, cat));
+
+	//reachability.olg
+	string predName = "link";
+	int argNum = 3;
+	PredicateSchema* scheme = new PredicateSchema(predName, argNum);
+	vector<Term*> args;
+	for (int i = 0;i < argNum;i++)
+	{
+		Variable* newVar = new Variable(Variable::STRING, true);
+		args.push_back(newVar);
+	}
+	//Use index to create formulas;
+	PredicateInstance* pInst = new PredicateInstance(scheme, args);
+	IntVal* value = new IntVal(0);
+	Constraint* ct = new Constraint(Constraint::GT, args[2], value);
+	ConstraintsTemplate* cts = new ConstraintsTemplate();
+	cts->AddConstraint(ct);
+
+	ConsAnnot cat = ConsAnnot(pInst, cts);
+	propSet.insert(ConsAnnotMap::value_type(predName, cat));
 }
 
 BaseProperty::~BaseProperty()

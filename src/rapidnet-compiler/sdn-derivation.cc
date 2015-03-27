@@ -637,16 +637,22 @@ Dpool::UpdateDerivNode(string tpName, DerivNode* dnode)
 	derivations[tpName].push_back(dnode);
 }
 
-bool
+//TODO: There are potential memory leak problems with VerifyInvariants
+void
 Dpool::VerifyInvariants(const Invariant& inv) const
 {
 	NS_LOG_FUNCTION("Verifying Invariants...");
-	Formula* proofObl = NULL;
 	const AnnotMap& invariant = inv.GetInv();
 	AnnotMap::const_iterator ita;
+
 	//Check each invariant in the annotation
 	for (ita = invariant.begin();ita != invariant.end();ita++)
 	{
+		//Soundness: (C1 => C) /\ (C2 => C) /\ ... /\ (Ci => C)
+		//Completeness: (C => C1) \/ (C => C2) \/ ... \/ (C => Ci)
+		bool soundFlag = true;
+		bool completeFlag = false;
+
 		string tpName = ita->first;
 		const Annotation& annot = ita->second;
 		PredicateInstance* predInst = annot.first;
@@ -667,11 +673,6 @@ Dpool::VerifyInvariants(const Invariant& inv) const
 		tupleInv->Print();
 		cout << endl;
 
-		//Check soundness and completeness
-		//Invariant <=> Constraints1 \/ Constraints2 \/ ... \/ Constraintsn
-		list<list<ConstraintsTemplate*> > consMetaList = list<list<ConstraintsTemplate*> >();
-		list<FormList> cumuFlist = list<FormList>();
-
 		const DerivNodeList& dlist = derivations.at(tpName);
 		DerivNodeList::const_iterator itd;
 		//Collect constraints and invariants from all derivations
@@ -681,10 +682,11 @@ Dpool::VerifyInvariants(const Invariant& inv) const
 			(*itd)->PrintDerivation();
 			cout << endl;
 
-			list<ConstraintsTemplate*> newclist = list<ConstraintsTemplate*>();
+			Formula* localInv = tupleInv->Clone();
 			const Tuple* head = (*itd)->GetHead();
 			VarMap vmap = head->CreateVarMap(&unifTuple);
 
+			list<ConstraintsTemplate*> newclist = list<ConstraintsTemplate*>();
 			const ConsList& clist = (*itd)->GetCumuConsts();
 			ConsList::const_iterator itcl;
 			for (itcl = clist.begin();itcl != clist.end();itcl++)
@@ -693,7 +695,6 @@ Dpool::VerifyInvariants(const Invariant& inv) const
 				consTemp->ReplaceVar(vmap);
 				newclist.push_back(consTemp);
 			}
-			consMetaList.push_back(newclist);
 
 			FormList newflist = FormList();
 			FormList& flist = (*itd)->GetInvariants();
@@ -704,85 +705,44 @@ Dpool::VerifyInvariants(const Invariant& inv) const
 				newForm->VarReplace(vmap);
 				newflist.push_back(newForm);
 			}
-			cumuFlist.push_back(newflist);
-		}
 
-		//Create simplified constraints
-		list<ConstraintsTemplate*> cumuCList = list<ConstraintsTemplate*>();
-		list<list<ConstraintsTemplate*> >::iterator itcl;
-		for (itcl = consMetaList.begin();itcl != consMetaList.end();itcl++)
-		{
-			cumuCList.insert(cumuCList.end(), (*itcl).begin(), (*itcl).end());
-		}
-		SimpConstraints simpCons = SimpConstraints(cumuCList);
-		NS_LOG_DEBUG("Print simplified constraints:");
-		simpCons.Print();
-		cout << endl;
+			//Simplify constraints
+			SimpConstraints simpCons = SimpConstraints(newclist);
+			NS_LOG_DEBUG("Print simplified constraints:");
+			simpCons.Print();
+			cout << endl;
 
-		//Simplify cumulative constraints & replace variables with
-		//representative members in the equivalent class
-		NS_LOG_DEBUG("Simplified constraints:");
-		for (itcl = consMetaList.begin();itcl != consMetaList.end();itcl++)
-		{
-			list<ConstraintsTemplate*>::iterator itc;
-			list<ConstraintsTemplate*>& clist = *itcl;
-			for (itc = clist.begin();itc != clist.end();itc++)
-			{
-				(*itc)->RemoveUnif();
-				(*itc)->ReplaceVar(simpCons);
-
-				NS_LOG_DEBUG("Simplified constraintsTemplate:");
-				(*itc)->PrintTemplate();
-				cout << endl;
-			}
-		}
-
-		//Replace variables in Formulas of derivations
-		NS_LOG_DEBUG("Print simplified formulas:");
-		list<FormList>::iterator itfl;
-		for (itfl = cumuFlist.begin();itfl != cumuFlist.end();itfl++)
-		{
-			FormList::iterator itf;
-			for (itf = (*itfl).begin();itf != (*itfl).end();itf++)
+			//Replace variables in Formulas of derivations
+			for (itf = newflist.begin();itf != newflist.end();itf++)
 			{
 				(*itf)->VarReplace(simpCons);
-
-				(*itf)->Print();
-				cout << endl;
 			}
-		}
 
-		//Replace variables in the invariant
-		tupleInv->VarReplace(simpCons);
+			//Replace variables in the invariant
+			localInv->VarReplace(simpCons);
 
-		//Create proof obligation for invariant checking
-		Formula* disjForm = NULL;
-		itfl = cumuFlist.begin();
-		for (itcl = consMetaList.begin();itcl != consMetaList.end();itcl++, itfl++)
-		{
-			list<ConstraintsTemplate*>::iterator itc;
-			list<ConstraintsTemplate*>& clist = *itcl;
+			//Create proof obligation for invariant checking
 			Formula* conjForm = NULL;
-			for (itc = clist.begin();itc != clist.end();itc++)
+
+			//Add constraints
+			const ConstraintsTemplate& simpTemp = simpCons.GetConstraints();
+			const ConstraintList& cslist = simpTemp.GetConstraints();
+			ConstraintList::const_iterator itcs;
+			for (itcs = cslist.begin();itcs != cslist.end();itcs++)
 			{
-				const ConstraintList& conslist = (*itc)->GetConstraints();
-				ConstraintList::const_iterator itct;
-				for (itct = conslist.begin();itct != conslist.end();itct++)
+				Constraint* cons = new Constraint(**itcs);
+				if (conjForm == NULL)
 				{
-					Constraint* cons = new Constraint(**itct);
-					if (conjForm == NULL)
-					{
-						conjForm = cons;
-					}
-					else
-					{
-						conjForm = new Connective(Connective::AND, conjForm, cons);
-					}
+					conjForm = cons;
+				}
+				else
+				{
+					conjForm = new Connective(Connective::AND, conjForm, cons);
 				}
 			}
 
-			FormList::iterator itf;
-			for (itf = (*itfl).begin();itf != (*itfl).end();itf++)
+			//Add formulas
+			for (itf = newflist.begin();itf != newflist.end();itf++)
 			{
 				Formula* newForm = (*itf)->Clone();
 				if (conjForm == NULL)
@@ -795,76 +755,80 @@ Dpool::VerifyInvariants(const Invariant& inv) const
 				}
 			}
 
-			//Create the disjunctive formula of C1 \/ C2...\/ Cn
-			if (disjForm == NULL)
+			//Check:
+			//(1) Completeness: C => Ci
+			if (completeFlag == false)
 			{
-				disjForm = conjForm;
+				Formula* completeForm = new Connective(Connective::IMPLY, localInv, conjForm);
+				Formula* negCompleteForm = new Connective(Connective::NOT, completeForm, NULL);
+				FormList cflist = FormList(1, negCompleteForm);
+				map<Variable*, int> completeAssign = check_sat_generalized(cflist);
+				if (completeAssign.size() > 0)
+				{
+					cout << "This part of completeness does not hold!" << endl;
+				}
+				else
+				{
+					cout << "Completeness holds!" << endl;
+					completeFlag = true;
+				}
+
+				completeForm->NullifyMem();
+				delete negCompleteForm;
 			}
-			else
+
+			//(2) Soundness: Ci => C;
+			if (soundFlag == true)
 			{
-				disjForm = new Connective(Connective::OR, disjForm, conjForm);
+				Formula* soundForm = new Connective(Connective::IMPLY, conjForm, localInv);
+				Formula* negSoundForm = new Connective(Connective::NOT, soundForm, NULL);
+				FormList sflist = FormList(1, negSoundForm);
+				map<Variable*, int> soundAssign = check_sat_generalized(sflist);
+				if (soundAssign.size() > 0)
+				{
+					cout << "Soundness does not hold!" << endl;
+					soundFlag = false;
+				}
+				else
+				{
+					cout << "This part of soundness holds!" << endl;
+				}
+
+				soundForm->NullifyMem();
+				delete negSoundForm;
 			}
-		}
 
-		Formula* soundForm = new Connective(Connective::IMPLY, disjForm, tupleInv);
-		Formula* negSoundForm = new Connective(Connective::NOT, soundForm, NULL);
-		bool truthFlag = true;
-		FormList sflist = FormList(1, negSoundForm);
-		map<Variable*, int> soundAssign = check_sat_generalized(sflist);
-		if (soundAssign.size() > 0)
-		{
-			cout << "Soundness does not hold!" << endl;
-			truthFlag = false;
-		}
-		else
-		{
-			cout << "Soundness holds!" << endl;
-		}
-
-		soundForm->ArgSwap();
-		Formula* completeForm = soundForm;
-		Formula* negCompleteForm = new Connective(Connective::NOT, completeForm, NULL);
-		FormList cflist = FormList(1, negCompleteForm);
-		map<Variable*, int> completeAssign = check_sat_generalized(cflist);
-		if (completeAssign.size() > 0)
-		{
-			cout << "Completeness does not hold!" << endl;
-			truthFlag = false;
-		}
-		else
-		{
-			cout << "Completeness holds!" << endl;
-		}
-
-		//Deallocate memory
-		delete soundForm;
-		//ERROR: memory leak: delete negSoundForm and negCompleteForm
-		for (itcl = consMetaList.begin();itcl != consMetaList.end();itcl++)
-		{
-			list<ConstraintsTemplate*>::iterator itc;
-			list<ConstraintsTemplate*>& clist = *itcl;
-			for (itc = clist.begin();itc != clist.end();itc++)
+			list<ConstraintsTemplate*>::iterator itnew;
+			cout << "newclist size: " << newclist.size() << endl;
+			for (itnew = newclist.begin();itnew != newclist.end();itnew++)
 			{
-				delete (*itc);
+				delete (*itnew);
 			}
-		}
 
-		for (itfl = cumuFlist.begin();itfl != cumuFlist.end();itfl++)
-		{
-			FormList::iterator itf;
-			for (itf = (*itfl).begin();itf != (*itfl).end();itf++)
+			delete localInv;
+			delete conjForm;
+
+
+			if (soundFlag == false && completeFlag == true)
 			{
-				delete (*itf);
+				NS_LOG_INFO("Soundness & Completeness neither holds!");
+				delete tupleInv;
+				return;
 			}
 		}
 
-		if (truthFlag == false)
+		if (soundFlag == true)
 		{
-			return false;
+			NS_LOG_INFO("Soundness holds");
 		}
+
+		if (completeFlag == true)
+		{
+			NS_LOG_INFO("Completeness holds");
+		}
+
+		delete tupleInv;
 	}
-
-	return true;
 }
 
 const DerivNodeList&
@@ -872,7 +836,6 @@ Dpool::GetDerivList(string tpName) const
 {
 	return derivations.at(tpName);
 }
-
 
 void
 Dpool::PrintDpool() const

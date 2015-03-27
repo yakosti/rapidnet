@@ -7,6 +7,8 @@
 
 #include "sdn-verification.h"
 
+NS_LOG_COMPONENT_DEFINE ("Verification");
+
 /*
  * Property verification
  */
@@ -20,6 +22,7 @@
 map<Variable*, int>
 PropAssignment(SimpConstraints& simpCons, map<Variable*, int> assignment)
 {
+	NS_LOG_FUNCTION("Propagate assignments...");
 	map<Variable*, int> fullAssign;
 	const map<Variable*, list<Variable*> >& equiClass = simpCons.GetEquiClass();
 	map<Variable*, list<Variable*> >::const_iterator ite;
@@ -46,6 +49,7 @@ PropAssignment(SimpConstraints& simpCons, map<Variable*, int> assignment)
 void GenCounterExp(map<Variable*, int> assignment,
 				   list<pair<const DerivNode&, SimpConstraints&> >& dlist)
 {
+	NS_LOG_FUNCTION("Generate counter example...");
 	cout << endl;
 	cout << "==================== Generate Counter Example ==================" << endl;
 	//Print execution of all DerivNodes

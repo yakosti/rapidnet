@@ -60,6 +60,13 @@ Connective::ArgSwap()
 	rightF = temp;
 }
 
+void
+Connective::NullifyMem()
+{
+	leftF = NULL;
+	rightF = NULL;
+}
+
 Connective*
 Connective::Clone()
 {
@@ -355,7 +362,7 @@ Constraint::Constraint(const Constraint& cst)
 
 Constraint::~Constraint()
 {
-	NS_LOG_FUNCTION("Destruct Constraint...");
+	NS_LOG_FUNCTION("Destruct Constraint: " << this);
 	Variable* var = dynamic_cast<Variable*>(leftE);
 	if (var == NULL)
 	{
@@ -1268,7 +1275,7 @@ ConstraintsTemplate::Revert() const
 
 ConstraintsTemplate::~ConstraintsTemplate()
 {
-	NS_LOG_FUNCTION("Destruct ConstraintsTemplate...");
+	NS_LOG_FUNCTION("Destruct ConstraintsTemplate: " << this);
 	ConstraintList::iterator it;
 	for (it = constraints.begin(); it != constraints.end(); it++)
 	{
@@ -1316,10 +1323,10 @@ SimpConstraints::SimpConstraints()
 }
 
 
-SimpConstraints::SimpConstraints(list<ConstraintsTemplate*>& clist)
+SimpConstraints::SimpConstraints(const list<ConstraintsTemplate*>& clist)
 {
 	ConsList conList = ConsList();
-	list<ConstraintsTemplate*>::iterator itl;
+	list<ConstraintsTemplate*>::const_iterator itl;
 	for (itl = clist.begin();itl != clist.end();itl++)
 	{
 		conList.push_back(*itl);
@@ -1353,6 +1360,7 @@ SimpConstraints::Initialize(const ConsList& ctempList)
 			vector<Variable*> vlist;
 			(*itc)->GetVars(vlist);
 			vector<Variable*>::iterator itv;
+
 			for (itv = vlist.begin();itv != vlist.end();itv++)
 			{
 				ret = varTable.insert(map<Variable*, int>::value_type(*itv, count));

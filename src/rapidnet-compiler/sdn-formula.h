@@ -368,6 +368,9 @@ public:
 	//TODO: This function is not good practice
 	virtual void ArgSwap(){}
 
+	//ERROR: Aweful idea
+	virtual void NullifyMem(){}
+
 	virtual ~Formula(){}
 };
 
@@ -399,6 +402,9 @@ public:
 	void VarReplace(SimpConstraints&);
 
 	void ArgSwap();
+
+	//ERROR: Aweful function
+	void NullifyMem();
 
 	Connective* Clone();
 
@@ -614,7 +620,7 @@ public:
 
 	SimpConstraints(const ConsList&);
 
-	SimpConstraints(list<ConstraintsTemplate*>&);
+	SimpConstraints(const list<ConstraintsTemplate*>&);
 
 	void Initialize(const ConsList&);
 
@@ -635,7 +641,7 @@ public:
 	void Print();
 
 private:
-	ConstraintsTemplate cts;	//TODO: Is cts necessary?
+	ConstraintsTemplate cts;
 	map<Variable*, int> varTable;
 	map<int, Variable*> varRevTable;
 	UnionFindSet varSet;
