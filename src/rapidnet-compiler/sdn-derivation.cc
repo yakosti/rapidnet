@@ -29,6 +29,18 @@ DpoolNode::DpoolNode(const PredicateInstance* pred)
 }
 
 void
+DpoolNode::CreateDerivInst(VarMap& vmap)
+{
+	const vector<Variable*> varVec = head->GetArgs();
+	vector<Variable*>::const_iterator itv;
+	for (itv = varVec.begin();itv < varVec.end();itv++)
+	{
+		Variable* newVar = new Variable(Variable::STRING, false);
+		vmap.insert(VarMap::value_type(*itv, newVar));
+	}
+}
+
+void
 DpoolNode::PrintHead() const
 {
 	head->PrintTuple();
@@ -38,6 +50,12 @@ void
 DpoolNode::PrintHeadInst(const map<Variable*, int>& valueMap) const
 {
 	head->PrintInstance(valueMap);
+}
+
+void
+DpoolNode::PrintHeadInst(const map<Variable*, int>& valueMap, VarMap& vmap) const
+{
+	head->PrintInstance(valueMap, vmap);
 }
 
 void
@@ -78,22 +96,37 @@ DerivNode::GetAllObligs() const
 
 void
 DerivNode::FindSubTuple(const list<PredicateInstance*>& plist,
-					    map<string, list<const Tuple*> >& tlist) const
+					    ExQuanTuple& tlist,
+						const DerivNode* desigHead) const
 {
 	//Assume tlist has been initialized according to plist
 	string tpName = head->GetName();
-	map<string, list<const Tuple*> >::iterator itm;
+	ExQuanTuple::iterator itm;
 	itm = tlist.find(tpName);
 	if (itm != tlist.end())
 	{
 		//The tuple needs to be registered
-		itm->second.push_back(head);
+		TupleLineage newLineage = TupleLineage(head, desigHead);
+		itm->second.push_back(newLineage);
 	}
 
 	DpoolNodeList::const_iterator itd;
 	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
 	{
-		(*itd)->FindSubTuple(plist, tlist);
+		(*itd)->FindSubTuple(plist, tlist, desigHead);
+	}
+}
+
+void
+DerivNode::CreateDerivInst(VarMap& vmap)
+{
+	DpoolNode::CreateDerivInst(vmap);
+	ruleConstraints->CreateVarInst(vmap);
+
+	DpoolNodeList::iterator itd;
+	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
+	{
+		(*itd)->CreateDerivInst(vmap);
 	}
 }
 
@@ -166,10 +199,36 @@ DerivNode::PrintInstance(const map<Variable*, int>& valueMap) const
 }
 
 void
+DerivNode::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) const
+{
+	cout << endl;
+	cout << "%%%%%%%%%%%%%% Derivation Instance %%%%%%%%%%%%%" << endl;
+	cout << "Head:";
+	head->PrintInstance(valueMap, vmap);
+	cout << endl;
+	cout << "Rule name:" << ruleName;
+	cout << endl;
+	cout << "Body tuples:" << endl;
+	DpoolNodeList::const_iterator itd;
+	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
+	{
+		(*itd)->PrintHeadInst(valueMap, vmap);
+		cout << endl;
+	}
+	if (ruleConstraints != NULL)
+	{
+		cout << "Constraints:" << endl;
+		ruleConstraints->PrintInstance(valueMap, vmap);
+		cout << endl;
+	}
+	cout << "%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
+}
+
+void
 DerivNode::PrintDerivation() const
 {
 	PrintDerivNode();
-	PrintCumuCons();
+	//PrintCumuCons();
 
 	DpoolNodeList::const_iterator itd;
 	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
@@ -190,6 +249,22 @@ DerivNode::PrintExecution(map<Variable*, int>& valueMap) const
 	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
 	{
 		(*itd)->PrintExecution(valueMap);
+		cout << endl;
+	}
+	cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+}
+
+void
+DerivNode::PrintExecInst(map<Variable*, int>& valueMap, VarMap& vmap) const
+{
+	cout << endl;
+	cout << "~~~~~~~~~~~~~~~ Execution Trace ~~~~~~~~~~~~~~" << endl;
+	PrintInstance(valueMap, vmap);
+
+	DpoolNodeList::const_iterator itd;
+	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
+	{
+		(*itd)->PrintExecInst(valueMap, vmap);
 		cout << endl;
 	}
 	cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
@@ -223,18 +298,21 @@ BaseNode::BaseNode(string tpName, int argSize):
 
 void
 BaseNode::FindSubTuple(const list<PredicateInstance*>& plist,
-				  	   map<string, list<const Tuple*> >& tlist) const
+				  	   ExQuanTuple& tlist,
+					   const DerivNode* desigHead) const
 {
 	//Assume tlist has been initialized according to plist
 	string tpName = head->GetName();
-	map<string, list<const Tuple*> >::iterator itm;
+	ExQuanTuple::iterator itm;
 	itm = tlist.find(tpName);
 	if (itm != tlist.end())
 	{
 		//The tuple needs to be registered
-		itm->second.push_back(head);
+		TupleLineage newLineage = TupleLineage(head, desigHead);
+		itm->second.push_back(newLineage);
 	}
 }
+
 
 void
 BaseNode::PrintCumuCons() const
@@ -279,6 +357,21 @@ BaseNode::PrintInstance(const map<Variable*, int>& valueMap) const
 }
 
 void
+BaseNode::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) const
+{
+	cout << endl;
+	cout << "@@@@@@@@@@ Base Instance @@@@@@@@@" << endl;
+	cout << "Head instance: " << endl;
+	head->PrintInstance(valueMap, vmap);
+	cout << endl;
+	if (cts != NULL)
+	{
+		cts->PrintInstance(valueMap, vmap);
+	}
+	cout << "@@@@@@@@@@@@@@@@@@@@@" << endl;
+}
+
+void
 BaseNode::PrintDerivation() const
 {
 	PrintDerivNode();
@@ -288,6 +381,12 @@ void
 BaseNode::PrintExecution(map<Variable*, int>& valueMap) const
 {
 	PrintInstance(valueMap);
+}
+
+void
+BaseNode::PrintExecInst(map<Variable*, int>& valueMap, VarMap& vmap) const
+{
+	PrintInstance(valueMap, vmap);
 }
 
 BaseNode::~BaseNode()
@@ -319,16 +418,18 @@ PropNode::AddInvariant(Formula* inv)
 
 void
 PropNode::FindSubTuple(const list<PredicateInstance*>& plist,
-					   map<string, list<const Tuple*> >& tlist) const
+					   ExQuanTuple& tlist,
+					   const DerivNode* desigHead) const
 {
 	//Assume tlist has been initialized according to plist
 	string tpName = head->GetName();
-	map<string, list<const Tuple*> >::iterator itm;
+	ExQuanTuple::iterator itm;
 	itm = tlist.find(tpName);
 	if (itm != tlist.end())
 	{
 		//The tuple needs to be registered
-		itm->second.push_back(head);
+		TupleLineage newLineage = TupleLineage(head, desigHead);
+		itm->second.push_back(newLineage);
 	}
 }
 
@@ -371,6 +472,24 @@ PropNode::PrintInstance(const map<Variable*, int>& valueMap) const
 }
 
 void
+PropNode::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) const
+{
+	cout << endl;
+	cout << "++++++++++++ Recursive Instance +++++++++++" << endl;
+	cout << "Head:";
+	head->PrintInstance(valueMap, vmap);
+	cout << endl;
+
+	cout << "User-annotated formula:" << endl;
+	Formula* newForm = prop->Clone();
+	newForm->VarReplace(vmap);
+	newForm->Print();
+	cout << "+++++++++++++++++++++++";
+	cout << endl;
+	delete newForm;
+}
+
+void
 PropNode::PrintDerivation() const
 {
 	PrintDerivNode();
@@ -380,6 +499,12 @@ void
 PropNode::PrintExecution(map<Variable*, int>& valueMap) const
 {
 	PrintInstance(valueMap);
+}
+
+void
+PropNode::PrintExecInst(map<Variable*, int>& valueMap, VarMap& vmap) const
+{
+	PrintInstance(valueMap, vmap);
 }
 
 PropNode::~PropNode()
@@ -835,6 +960,12 @@ const DerivNodeList&
 Dpool::GetDerivList(string tpName) const
 {
 	return derivations.at(tpName);
+}
+
+void
+Dpool::CreateDerivInst(const DpoolNode& dnode, VarMap& vmap)
+{
+
 }
 
 void

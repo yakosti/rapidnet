@@ -23,7 +23,8 @@ def build(bld):
         'sdn-formula.cc',
         'sdn-auxiliary.cc',
         'sdn-property.cc',
-        'sdn-parse-smtlib.cc',        
+        'sdn-parse-smtlib.cc',
+        'sdn-verification.cc',        
         ]    
 
     headers = bld.new_task_gen('ns3header')
@@ -43,7 +44,8 @@ def build(bld):
         'sdn-formula.h',
         'sdn-auxiliary.h',
         'sdn-property.h',
-        'sdn-parse-smtlib.h',        
+        'sdn-parse-smtlib.h',
+        'sdn-verification.h',        
         ]     
     
 
