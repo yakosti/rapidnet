@@ -196,17 +196,17 @@ void compile (string overlogFile, bool provenanceEnabled)
   //dpool->PrintAllDeriv();
 
   //Verify invariant property
-  dpool->VerifyInvariants(inv);
+  //dpool->VerifyInvariants(inv);
 
   //Property verification
   //User-defined property
-//  Property p = Property();
-//  p.Print();
-//
-//  NS_LOG_DEBUG("Property constructed.");
-//  //Verify the property
-//  bool res = CheckProperty(*dpool, p);
-//  cout << "Is the property valid? " << (res?"Yes":"No") << endl;
+  Property p = Property();
+  p.Print();
+
+  NS_LOG_DEBUG("Property constructed.");
+  //Verify the property
+  bool res = CheckProperty(*dpool, p);
+  cout << "Is the property valid? " << (res?"Yes":"No") << endl;
 
   //test_check_sat();
 }
@@ -220,7 +220,7 @@ int main (int argc, char** argv)
 //  LogComponentEnable ("DPGraph", LOG_LEVEL_FUNCTION);
   LogComponentEnable ("Formula", LOG_LEVEL_FUNCTION);
 //  LogComponentEnable ("Dpool", LOG_LEVEL_FUNCTION);
-//  LogComponentEnable ("Verification", LOG_LEVEL_FUNCTION);
+  LogComponentEnable ("Verification", LOG_LEVEL_FUNCTION);
 //  LogComponentEnable ("Property", LOG_LEVEL_FUNCTION);
   LogComponentEnable ("RapidNetDPGraph", LOG_INFO);
   LogComponentEnable ("Dpool", LOG_INFO);
