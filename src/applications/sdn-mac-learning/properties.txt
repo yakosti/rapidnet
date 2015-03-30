@@ -11,10 +11,9 @@ forall Switch, Mac_A, OutPort, flowEntry(Switch, MAC_A, OutPort) ->
 2. Forall: (@End-host) Have received a frame B that is not destined to end-host A 
         -> (@Switch) Switch does not have a routing entry for B's dest address
 
-forall Switch, Nei, Mac_A, Mac_B, Outport, 
-	Mac_A!=Mac_B ->
-		packet(Switch, Nei, Mac_A, Mac_B) ->
-		forall Mac, (flowEntry(Switch, Mac, Outport) -> Mac!=Mac_B)
+forall Switch, Nei, Mac, Outport, 
+	packet(Switch, Nei, Mac, Mac_B) AND Mac!=Mac_A AND Mac!=Mac_B ->
+	(flowEntry(Switch, Mac, Outport) AND Mac!=Mac_B)
 
 3. (@Switch) Not exist a routing entry to MAC address A -> (@Switch) never have received/forwarded a packet sourced from A
 
