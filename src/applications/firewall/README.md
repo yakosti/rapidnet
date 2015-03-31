@@ -28,6 +28,8 @@ If `trustedControllerMemory` records a host, in the past, Switch must have forwa
 
 ### Logic
 
+```
 forall trustedControllerMemory(Controller, Switch, Host) 
   ->
-  exists Host (PktIn(Switchm Src, Tport, Host) OR PktIn(Switch, Src, Tport, ))
+  exists Host, PktIn(Switch, Src, Tport, Host) 
+```
