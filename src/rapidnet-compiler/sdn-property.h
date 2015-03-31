@@ -41,6 +41,8 @@ public:
 
 	const list<PredicateInstance*>& GetExistPred() const{return existPredList;}
 
+	const list<Variable*>& GetExistVars() const{return existVars;}
+
 	const ConstraintsTemplate* GetUniCons() const{return univConsList;}
 
 	const ConstraintsTemplate* GetExistCons() const{return existConsList;}

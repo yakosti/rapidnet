@@ -91,7 +91,7 @@ void GenCounterExp(map<Variable*, int> assignment,
 bool CheckWholeProp(const Property& prop,
 					list<TupleLineage>& tplist,
 				    ConsList& clist,
-					const FormList& flist,
+					FormList& flist,
 					map<Variable*, int>& assignment,
 					list<SimpConstraints*>& slist,
 					map<const DerivNode*, VarMap>& dvmap)
@@ -147,12 +147,25 @@ bool CheckWholeProp(const Property& prop,
 		newTemp->ReplaceVar(**its);
 	}
 
-	NS_LOG_DEBUG("Print existentially quantified constraints:");
-	csTemp->PrintTemplate();
-	NS_LOG_DEBUG("Print converted constraints:");
-	newTemp->PrintTemplate();
-
-	clist.push_back(newTemp);
+	//Separate cases by determining if there are
+	//existentially quantified variables in properties
+	const list<Variable*>& existVars = prop.GetExistVars();
+	if (existVars.size() > 0)
+	{
+		//Create a universally quantified formula
+		list<Variable*>::const_iterator itev;
+		vector<Variable*> quanVars;
+		for (itev = existVars.begin();itev != existVars.end();itev++)
+		{
+			quanVars.push_back(*itev);
+		}
+		Formula* univForm = new Quantifier(Quantifier::FORALL, quanVars, newTemp);
+		flist.push_back(univForm);
+	}
+	else
+	{
+		clist.push_back(newTemp);
+	}
 
 	//Check clist + flist is sat?
 	assignment = check_sat(clist, flist);
@@ -174,7 +187,7 @@ bool CheckRecurExist(const Property& prop,
 					 ExQuanTuple::const_iterator itm,
 					 list<TupleLineage> tplist,
 					 ConsList& clist,
-					 const FormList& flist,
+					 FormList& flist,
 					 map<Variable*, int>& assignment,
 					 list<SimpConstraints*> slist,
 					 map<const DerivNode*, VarMap>& dvmap)
@@ -613,6 +626,7 @@ bool CheckRecurUniv(const DerivMap& dmap,
 bool CheckProperty(const Dpool& dpool,
 				   const Property& prop)
 {
+	//TODO: Unify invariant checking and property checking
 	cout << "----------------- Check property ----------------" << endl;
 	//Process universally quantified predicates
 	const list<PredicateInstance*>& plist = prop.GetUniPred();

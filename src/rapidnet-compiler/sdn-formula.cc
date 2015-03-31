@@ -129,6 +129,28 @@ Connective::~Connective()
 Quantifier::Quantifier(QuanType q, const vector<Variable*>& b, Formula* f):
   quantype(q),boundVarList(b),fml(f){}
 
+Quantifier::Quantifier(QuanType q, const vector<Variable*>& b, const ConstraintsTemplate* consTemp):
+	quantype(q),boundVarList(b)
+{
+	const ConstraintList& conslist = consTemp->GetConstraints();
+	Formula* conjForm = NULL;
+	ConstraintList::const_iterator itcs;
+	for (itcs = conslist.begin();itcs != conslist.end();itcs++)
+	{
+		Constraint* cons = new Constraint(**itcs);
+		if (conjForm == NULL)
+		{
+			conjForm = cons;
+		}
+		else
+		{
+			conjForm = new Connective(Connective::AND, conjForm, cons);
+		}
+	}
+
+	fml = conjForm;
+}
+
 Quantifier::Quantifier(const Quantifier& qtf)
 {
 	quantype = qtf.quantype;
