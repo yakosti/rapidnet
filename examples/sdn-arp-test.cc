@@ -29,6 +29,102 @@ using namespace ns3::rapidnet::sdnarp;
 ApplicationContainer apps;
 
 
+/* 
+ * ******************************************************************* *
+ *                                                                     *
+ *                         PREDICATE DEFINITIONS                       *
+ *                                                                     *
+ * ******************************************************************* *
+ */
+
+/* 
+ * ------------------------------------------------------------------- *
+ *                         OFCONN OPERATION                            *
+ * ------------------------------------------------------------------- *
+ */
+
+#define ofconnctl(src, dst) \
+  tuple (Arp::OFCONNCTL, \
+   attr("ofconnCtl_attr1", Ipv4Value, src), \
+   attr("ofconnCtl_attr2", Ipv4Value, dst))
+
+#define insert_ofconnctl(from, to) \
+  app(from) -> Insert (ofconnctl(addr(from), addr(to))); \
+
+#define ofconnswc(src, dst) \
+  tuple (Arp::OFCONNSWC, \
+   attr("ofconnSwc_attr1", Ipv4Value, src), \
+   attr("ofconnSwc_attr2", Ipv4Value, dst))
+
+#define insert_ofconnswc(from, to) \
+  app(from) -> Insert (ofconnswc(addr(from), addr(to))); \
+/* 
+ * ------------------------------------------------------------------- *
+ *                         OFCONN OPERATION                            *
+ * ------------------------------------------------------------------- *
+ */
+
+
+
+/* 
+ * ------------------------------------------------------------------- *
+ *                           LINK OPERATION                            *
+ * ------------------------------------------------------------------- *
+ */
+
+#define linkswc(src, next, port)      \
+  tuple (Arp::LINKSWC, \
+   attr("linkSwc_attr1", Ipv4Value, src), \
+         attr("linkSwc_attr2", Ipv4Value, next),  \
+         attr("linkSwc_attr3", Int32Value, port))
+
+#define insert_linkswc(from, to, port)         \
+  app(from) -> Insert (linkswc(addr(from), addr(to), port));
+
+#define linkhst(src, next, port)      \
+  tuple (Arp::LINKHST, \
+   attr("linkHst_attr1", Ipv4Value, src), \
+         attr("linkHst_attr2", Ipv4Value, next),  \
+         attr("linkHst_attr3", Int32Value, port))
+
+#define insert_linkhst(from, to, port)         \
+  app(from) -> Insert (linkhst(addr(from), addr(to), port));
+
+/* 
+ * ------------------------------------------------------------------- *
+ *                           LINK OPERATION                            *
+ * ------------------------------------------------------------------- *
+ */
+
+
+
+
+
+/* 
+ * ******************************************************************* *
+ *                                                                     *
+ *                         PREDICATE DEFINITIONS                       *
+ *                                                                     *
+ * ******************************************************************* *
+ */
+
+
+
+
+
+
+
+
+
+
+/* 
+ * ******************************************************************* *
+ *                                                                     *
+ *                             SIMULATION                              *
+ *                                                                     *
+ * ******************************************************************* *
+ */
+
 int main(int argc, char *argv[])
 {
   LogComponentEnable("SdnArp", LOG_LEVEL_INFO);
@@ -45,7 +141,13 @@ int main(int argc, char *argv[])
   return 0;
 }
 
-
+/* 
+ * ******************************************************************* *
+ *                                                                     *
+ *                             SIMULATION                              *
+ *                                                                     *
+ * ******************************************************************* *
+ */
 
 
 

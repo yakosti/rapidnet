@@ -1,24 +1,8 @@
-/* 
- *  ===============
- * ||   SDN ARP   ||
- *  ===============
- * Controller serves as ARP agent
- *
- * Base Tuples
- * -----------
- * 
- * arpRequest(@Host, SrcIp, SrcMac, DstIp, DstMac)
- * 
- * linkHst(@Host, Switch, Port)
- * 
- * Derived Tuples
- * --------------
- * packet(@Switch, Host, Dst, PktLoad)
- *     Switch Received packet sent from Host, to be forwarded to Dst. 
- *     DstMac, DstIp, SrcMac, SrcIp, ARP_REQUEST, ARP_TYPE
- */
 
-/* Constants */
+
+/* Constants 
+ * ---------
+ */
 #define BROADCAST "ff:ff:ff:ff:ff"
 #define ALL_PORT 0
 #define ARP_TYPE "ARP"
@@ -28,10 +12,21 @@
 #define ARP_REPLY 2
 #define ARP_PRIO 1
 
+
+
+
+
 /* 
  * Database for controller
  * ------------------------
+ * ofconnCtl(@Controller, Switch):
+ *     Controller can talk to Switch
+ *
+ * arpMapping(@Controller, Ip, Mac)
+ *     Controller knows that Ip is mapped to Mac
  * 
+ * hostPos(@Controller, Host, Switch, Port)
+ *     Controller registers that Host sent a packet to Switch via Port
  */
 materialize(ofconnCtl,infinity,infinity,keys(2)). //Openflow connection to switches
 /*Arguments: (controller, switch)*/
@@ -40,7 +35,23 @@ materialize(arpMapping,infinity,infinity,keys(2)). //Ip=>MAC mapping
 materialize(hostPos,infinity,infinity,keys(2)). //Position of host
 /*Arguments: (controller, host, switch, port)*/
 
-/*Database for switch*/
+
+
+
+
+
+/*
+ * Database for switch
+ * -------------------
+ * ofconnSwc(@Switch, Controller)
+ *     Switch can talk to Controller
+ *
+ * linkSwc(@Switch, Host, Port)
+ *     Host has sent a packet to Switch via Port 
+ *
+ * flowEntry(@Switch, Match, Prio, Actions)
+ *     Match, Prio, Action store values of constants 
+ */
 materialize(ofconnSwc,infinity,infinity,keys(2)). //Openflow connection to controller
 /*Arguments: (switch, controller)*/
 materialize(linkSwc,infinity,infinity,keys(3:int32)). //Inter-switch and switch-host connections
@@ -48,7 +59,27 @@ materialize(linkSwc,infinity,infinity,keys(3:int32)). //Inter-switch and switch-
 materialize(flowEntry,infinity,infinity,keys(2:str)). //Flow table at switch
 /*Arguments: (switch, match, priority, action)*/
 
-/*Database for host*/
+
+
+
+
+
+
+
+/*
+ * Database for host
+ * -----------------
+ * linkHst(@Host, Switch, Port)
+ *     Host sends a packet to Switch via Port
+ *
+ * arpRequest(@Host, SrcIp, SrcMac, DstIp, DstMac)
+ *     Host could be one of SrcIp/SrcMac, trying to send a packet to a destination
+ *     Dst with ip address DstIp and mac address DstMac
+ *
+ * arpReply(@Host, SrcIp, SrcMac, DstIp, DstMac)
+ *     Host could be one of SrcIp/SrcMac, trying to send a packet to a destination
+ *     Dst with ip address DstIp and mac address DstMac
+ */
 materialize(linkHst,infinity,infinity,keys(3:int32)). //Host-switch connection
 /*Arguments: (host, switch, port)*/
 materialize(arpRequest,infinity,infinity,keys(2,3:str,4,5:str)). //ARP requests
@@ -56,13 +87,34 @@ materialize(arpRequest,infinity,infinity,keys(2,3:str,4,5:str)). //ARP requests
 materialize(arpReply,infinity,infinity,keys(2,3:str,4,5:str)). //ARP replys
 /*Arguments: (host, src_ip, src_mac, dst_ip, dst_mac)*/
 
-/* mapping*/
+
+
+
+
+
+
+/* mapping
+ * -------
+ * portAndSrcMapping(@Controller, Port, Host)
+ *    Controller has a mapping between Port and Host, where Host is an Ip/Mac address
+ */
 materialize(portAndSrcMapping,infinity,infinity,keys(2:int32,3)).
 
-/*Non-materialized tuple:*/
-/*packet(@Switch, Host, Dst, DstMac, DstIp, SrcMac, SrcIp, Arptype, Type)*/
-/*packetOut(@Switch, Controller, Port, DstMac, DstIp, SrcMac, SrcIp, Arptype, Type)*/
-/*packetIn(@Controller, Switch, InPort, DstMac, DstIp, SrcMac, SrcIp, Arptype, Type)*/
+
+
+
+
+
+
+
+
+/* 
+ * Non-materialized tuples
+ * -----------------------
+ * packet(@Switch, Host, Dst, DstMac, DstIp, SrcMac, SrcIp, Arptype, Type)
+ * packetOut(@Switch, Controller, Port, DstMac, DstIp, SrcMac, SrcIp, Arptype, Type)
+ * packetIn(@Controller, Switch, InPort, DstMac, DstIp, SrcMac, SrcIp, Arptype, Type)
+ */
 
 /* ********************************************************** */
 
