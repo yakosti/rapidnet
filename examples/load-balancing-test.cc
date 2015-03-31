@@ -46,17 +46,6 @@
 
 
 
-
-/* loadBalancerConnectionToServer */
-#define loadBalancerConnectionToServer(SwitchLoadBalancer, ServerNum) \
-  tuple(LoadBalancing::LOADBALANCERCONNECTIONTOSERVER, \
-    attr("loadBalancerConnectionToServer_attr1", Ipv4Value, SwitchLoadBalancer),\
-    attr("loadBalancerConnectionToServer_attr2", Int32Value, ServerNum))
-
-#define insert_loadBalancerConnectionToServer(SwitchLoadBalancer, ServerNum) \
-  app(SwitchLoadBalancer) -> \
-    Insert(loadBalancerConnectionToServer(addr(SwitchLoadBalancer), ServerNum));
-
 /* serverMapping */
 #define serverMapping(SwitchLoadBalancer, Server, ServerNum) \
   tuple(LoadBalancing::SERVERMAPPING, \
@@ -120,13 +109,6 @@ void init_pktClient() {
   insert_pktClient(GATEWAY_SWITCH, 6);
 }
 
-/* model 2 servers to send stuff to */
-void init_loadBalancerConnectionToServer() {
-  insert_loadBalancerConnectionToServer(LOAD_BALANCER_SWITCH, 1); 
-  insert_loadBalancerConnectionToServer(LOAD_BALANCER_SWITCH, 2); 
-  insert_loadBalancerConnectionToServer(LOAD_BALANCER_SWITCH, 3); 
-}
-
 void init_serverMapping() {
   insert_serverMapping(LOAD_BALANCER_SWITCH, 1, 1);
   insert_serverMapping(LOAD_BALANCER_SWITCH, 2, 2);
@@ -147,7 +129,6 @@ int main(int argc, char *argv[])
   schedule (0.001, init_switchConnection);
   schedule (0.002, init_pktClient);
   schedule (0.003, init_serverMapping);
-  schedule (0.004, init_loadBalancerConnectionToServer);
 
   Simulator::Run();
   Simulator::Destroy();

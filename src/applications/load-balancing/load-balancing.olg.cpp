@@ -19,10 +19,6 @@
  *     Switch received a packet from client
  *     In this case, SwitchGateway received a packet from a client (not sure which one)
  *
- * loadBalancerConnectionToServer(@SwitchLoadBalancer, Server)
- *    load balancer connected to all available servers
- *    In this case, SwitchLoadBalancer is connected to server (not sure which one)
- *    server is a number between 0,1,2,...,(NUM_SERVERS-1)
  *
  *
  * Load Balancing - Derived Tuples
@@ -55,7 +51,6 @@
 
 materialize(switchConnection, infinity, infinity, keys(1,2)).
 materialize(pktClient, infinity, infinity, keys(2)).
-materialize(loadBalancerConnectionToServer, infinity, infinity, keys(2:int32)).
 materialize(serverMapping, infinity, infinity, keys(2,3:int32)).
 
 /*
@@ -75,7 +70,6 @@ r1 pktToBalance(@SwitchLoadBalancer, SwitchGateway, Client) :-
  */
 r2 randomlyObtainedServer(@SwitchLoadBalancer, ServerNum, Client) :- 
 	pktToBalance(@SwitchLoadBalancer, SwitchGateway, Client),
-	loadBalancerConnectionToServer(@SwitchLoadBalancer, Server),
 	Value := f_hashIp(Client),
 	ServerNum := 1+f_modulo(Value, 3).
 
