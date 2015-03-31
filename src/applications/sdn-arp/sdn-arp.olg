@@ -28,7 +28,11 @@
 #define ARP_REPLY 2
 #define ARP_PRIO 1
 
-/*Database for controller*/
+/* 
+ * Database for controller
+ * ------------------------
+ * 
+ */
 materialize(ofconnCtl,infinity,infinity,keys(2)). //Openflow connection to switches
 /*Arguments: (controller, switch)*/
 materialize(arpMapping,infinity,infinity,keys(2)). //Ip=>MAC mapping
