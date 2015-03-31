@@ -91,6 +91,7 @@ public:
 	~Invariant();
 
 private:
+	list<Variable*> vlist;
 	AnnotMap invs;
 };
 

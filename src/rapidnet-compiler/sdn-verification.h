@@ -22,30 +22,33 @@ PropAssignment(SimpConstraints&, map<Variable*, int>);
 //Counter-example generation
 void
 GenCounterExp(map<Variable*, int>,
-			  list<pair<const DerivNode&, SimpConstraints&> >&);
+			  list<pair<const DerivNode*, SimpConstraints&> >&,
+			  map<const DerivNode*, VarMap>&);
 
 //TODO: documentation
 //assignment: counter-example instances
 //return value: [true: constraints sat|false: constraints unsat]
 bool
 CheckWholeProp(const Property&,
-			   list<const Tuple*>,
+			   list<TupleLineage>&,
 			   ConsList&,
 			   const FormList&,
 			   map<Variable*, int>&,
-			   list<SimpConstraints*>);
+			   list<SimpConstraints*>&,
+			   map<const DerivNode*, VarMap>&);
 
 //Return value: [true: an unsat element, meaning its negation is valid|
 //				 false: all sat, its negation invalid]
 bool
 CheckRecurExist(const Property&,
-				map<string, list<const Tuple*> >&,
+				ExQuanTuple&,
 				map<string, list<const Tuple*> >::const_iterator,
-				list<const Tuple*>,
+				list<TupleLineage>,
 				ConsList&,
 				const FormList&,
 				map<Variable*, int>&,
-				list<SimpConstraints*>);
+				list<SimpConstraints*>,
+				map<const DerivNode*, VarMap>& );
 
 //TODO: Separate the verification of universally
 //quantified constraints from CheckExistProp
