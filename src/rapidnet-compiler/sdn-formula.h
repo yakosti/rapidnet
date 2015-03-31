@@ -378,7 +378,7 @@ class Formula
 public:
 	Formula(){}
 
-	virtual Formula* Clone(){return NULL;}
+	virtual Formula* Clone(){return new Formula();}
 
 	virtual void Print() const{}
 
@@ -396,7 +396,17 @@ public:
 	virtual ~Formula(){}
 };
 
-class True: public Formula{};
+class True: public Formula
+{
+public:
+	True(){}
+
+	True(const True&){}
+
+	True* Clone();
+
+	void Print() const{cout << "True";}
+};
 
 class False: public Formula{};
 
@@ -624,7 +634,7 @@ public:
 
 	const ConstraintList& GetConstraints() const {return constraints;}
 
-	bool IsEmpty();
+	bool IsEmpty() const;
 
 	void CreateVarInst(VarMap&);
 

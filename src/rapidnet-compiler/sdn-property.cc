@@ -22,12 +22,15 @@ Property::Property()
 
 	//ProcessUniPred("reachable(src,dest,cost)", varMap);
 	//ProcessUniPred("verifyPath(m,n,l)", varMap);
-	ProcessUniPred("ePingPongFinish(s)", varMap);
+	//ProcessUniPred("ePingPongFinish(s)", varMap);
 	//ProcessUniPred("path(x,y,z)", varMap);
+	//ProcessUniPred("flowEntry(s,m,o)", varMap);
+	ProcessUniPred("packet(a,b,c,d)", varMap);
+	ProcessUniPred("flowEntry(e,f,g)", varMap);
 
-	//ProcessUniCons(varMap);
+	ProcessUniCons(varMap);
 
-	//ProcessExistPred("ePing(o,p)", varMap);
+	//ProcessExistPred("packet(a,b,c,d)", varMap);
 	//ProcessExistPred("link(m,n,c)", varMap);
 	//ProcessExistPred("tLink(r,s)", varMap);
 	ProcessExistCons(varMap);
@@ -54,6 +57,27 @@ Property::ProcessUniCons(const map<string, Variable*>& varMap)
 //										 new IntVal(6));
 //
 //	univConsList->AddConstraint(newCons);
+
+	//sdn-mac-learning.olg
+	string var1 = "b";
+	Variable* varPtr1 = varMap.find(var1)->second;
+	string var2 = "e";
+	Variable* varPtr2 = varMap.find(var2)->second;
+
+	Constraint* newCons = new Constraint(Constraint::EQ,
+										 varPtr1,
+										 varPtr2);
+	univConsList->AddConstraint(newCons);
+
+	string var3 = "d";
+	Variable* varPtr3 = varMap.find(var3)->second;
+	string var4 = "a";
+	Variable* varPtr4 = varMap.find(var4)->second;
+
+	newCons = new Constraint(Constraint::NEQ,
+										 varPtr3,
+										 varPtr4);
+	univConsList->AddConstraint(newCons);
 }
 
 void
@@ -122,13 +146,47 @@ Property::ProcessExistCons(const map<string, Variable*>& varMap)
 //	existConsList->AddConstraint(newCons1);
 
 	//Property verification of pingpong.olg
-	string var1 = "s";
-	Variable* varPtr = varMap.find(var1)->second;
+//	string var1 = "s";
+//	Variable* varPtr = varMap.find(var1)->second;
+//
+//	Constraint* newCons = new Constraint(Constraint::LT,
+//										 varPtr,
+//										 new IntVal(2));
+//
+//	existConsList->AddConstraint(newCons);
 
-	Constraint* newCons = new Constraint(Constraint::LT,
-										 varPtr,
-										 new IntVal(2));
+	//sdn-mac-learning.olg
+//	string var1 = "s";
+//	Variable* varPtr1 = varMap.find(var1)->second;
+//	string var2 = "a";
+//	Variable* varPtr2 = varMap.find(var2)->second;
+//
+//
+//	Constraint* newCons = new Constraint(Constraint::LT,
+//										 varPtr1,
+//										 varPtr2);
+//
+//	existConsList->AddConstraint(newCons);
+//
+//	string var3 = "m";
+//	Variable* varPtr3 = varMap.find(var3)->second;
+//	string var4 = "c";
+//	Variable* varPtr4 = varMap.find(var4)->second;
+//
+//	newCons = new Constraint(Constraint::LT,
+//										 varPtr3,
+//										 varPtr4);
+//
+//	existConsList->AddConstraint(newCons);
 
+	string var1 = "f";
+	Variable* varPtr1 = varMap.find(var1)->second;
+	string var2 = "d";
+	Variable* varPtr2 = varMap.find(var2)->second;
+
+	Constraint* newCons = new Constraint(Constraint::NEQ,
+										 varPtr1,
+										 varPtr2);
 	existConsList->AddConstraint(newCons);
 }
 
@@ -311,24 +369,24 @@ BaseProperty::BaseProperty()
 //	propSet.insert(ConsAnnotMap::value_type(predName, cat));
 
 	//reachability.olg
-	string predName = "link";
-	int argNum = 3;
-	PredicateSchema* scheme = new PredicateSchema(predName, argNum);
-	vector<Term*> args;
-	for (int i = 0;i < argNum;i++)
-	{
-		Variable* newVar = new Variable(Variable::STRING, true);
-		args.push_back(newVar);
-	}
-	//Use index to create formulas;
-	PredicateInstance* pInst = new PredicateInstance(scheme, args);
-	IntVal* value = new IntVal(0);
-	Constraint* ct = new Constraint(Constraint::GT, args[2], value);
-	ConstraintsTemplate* cts = new ConstraintsTemplate();
-	cts->AddConstraint(ct);
-
-	ConsAnnot cat = ConsAnnot(pInst, cts);
-	propSet.insert(ConsAnnotMap::value_type(predName, cat));
+//	string predName = "link";
+//	int argNum = 3;
+//	PredicateSchema* scheme = new PredicateSchema(predName, argNum);
+//	vector<Term*> args;
+//	for (int i = 0;i < argNum;i++)
+//	{
+//		Variable* newVar = new Variable(Variable::STRING, true);
+//		args.push_back(newVar);
+//	}
+//	//Use index to create formulas;
+//	PredicateInstance* pInst = new PredicateInstance(scheme, args);
+//	IntVal* value = new IntVal(0);
+//	Constraint* ct = new Constraint(Constraint::GT, args[2], value);
+//	ConstraintsTemplate* cts = new ConstraintsTemplate();
+//	cts->AddConstraint(ct);
+//
+//	ConsAnnot cat = ConsAnnot(pInst, cts);
+//	propSet.insert(ConsAnnotMap::value_type(predName, cat));
 }
 
 BaseProperty::~BaseProperty()
@@ -387,6 +445,25 @@ Invariant::Invariant()
 //	PredicateInstance* pInst = new PredicateInstance(scheme, args);
 //	Annotation newAnnot = Annotation(pInst, form);
 //	invs.insert(AnnotMap::value_type(predName, newAnnot));
+
+
+	//Invariant of sdn-mac-learning.olg
+	NS_LOG_FUNCTION("Generate invariant...");
+	string predName = "packet";
+	int argNum = 4;
+	PredicateSchema* scheme = new PredicateSchema(predName, argNum);
+	vector<Term*> args;
+	for (int i = 0;i < argNum;i++)
+	{
+		Variable* newVar = new Variable(Variable::STRING, true);
+		args.push_back(newVar);
+	}
+	//Use index to create formulas;
+	Formula* form = new True();
+	PredicateInstance* pInst = new PredicateInstance(scheme, args);
+	Annotation newAnnot = Annotation(pInst, form);
+	invs.insert(AnnotMap::value_type(predName, newAnnot));
+
 
 
 //	NS_LOG_FUNCTION("Generate invariant...");

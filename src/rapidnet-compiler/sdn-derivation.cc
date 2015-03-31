@@ -101,6 +101,7 @@ DerivNode::FindSubTuple(const list<PredicateInstance*>& plist,
 {
 	//Assume tlist has been initialized according to plist
 	string tpName = head->GetName();
+	NS_LOG_DEBUG("Find tuple: " << tpName);
 	ExQuanTuple::iterator itm;
 	itm = tlist.find(tpName);
 	if (itm != tlist.end())
@@ -111,6 +112,7 @@ DerivNode::FindSubTuple(const list<PredicateInstance*>& plist,
 	}
 
 	DpoolNodeList::const_iterator itd;
+	NS_LOG_DEBUG("Size of dpool:" << bodyDerivs.size());
 	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
 	{
 		(*itd)->FindSubTuple(plist, tlist, desigHead);
@@ -303,6 +305,7 @@ BaseNode::FindSubTuple(const list<PredicateInstance*>& plist,
 {
 	//Assume tlist has been initialized according to plist
 	string tpName = head->GetName();
+	NS_LOG_DEBUG("Find tuple: " << tpName);
 	ExQuanTuple::iterator itm;
 	itm = tlist.find(tpName);
 	if (itm != tlist.end())
@@ -423,6 +426,7 @@ PropNode::FindSubTuple(const list<PredicateInstance*>& plist,
 {
 	//Assume tlist has been initialized according to plist
 	string tpName = head->GetName();
+	NS_LOG_DEBUG("Find tuple: " << tpName);
 	ExQuanTuple::iterator itm;
 	itm = tlist.find(tpName);
 	if (itm != tlist.end())
