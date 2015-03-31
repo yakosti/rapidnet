@@ -27,6 +27,7 @@ using namespace ns3;
 using namespace rapidnet_compiler;
 
 class Variable;
+class ConstraintsTemplate;
 class SimpConstraints;
 
 //TODO: change VarMap into a class
@@ -465,7 +466,9 @@ public:
 		EXISTS
 	};
 
-	Quantifier(QuanType q, const vector<Variable*>& b, Formula* f);
+	Quantifier(QuanType, const vector<Variable*>&, Formula*);
+
+	Quantifier(QuanType, const vector<Variable*>&, const ConstraintsTemplate*);
 
 	Quantifier(const Quantifier&);
 
