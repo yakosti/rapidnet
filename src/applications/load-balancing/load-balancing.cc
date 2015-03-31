@@ -16,7 +16,6 @@ using namespace ns3;
 using namespace ns3::rapidnet;
 using namespace ns3::rapidnet::loadbalancing;
 
-const string LoadBalancing::LOADBALANCERCONNECTIONTOSERVER = "loadBalancerConnectionToServer";
 const string LoadBalancing::PKTCLIENT = "pktClient";
 const string LoadBalancing::PKTSERVER = "pktServer";
 const string LoadBalancing::PKTTOBALANCE = "pktToBalance";
@@ -77,9 +76,6 @@ void
 LoadBalancing::InitDatabase ()
 {
   //RapidNetApplicationBase::InitDatabase ();
-
-  AddRelationWithKeys (LOADBALANCERCONNECTIONTOSERVER, attrdeflist (
-    attrdef ("loadBalancerConnectionToServer_attr2", INT32)));
 
   AddRelationWithKeys (PKTCLIENT, attrdeflist (
     attrdef ("pktClient_attr2", IPV4)));
@@ -174,12 +170,7 @@ LoadBalancing::R2_eca (Ptr<Tuple> pktToBalance)
 {
   RAPIDNET_LOG_INFO ("R2_eca triggered");
 
-  Ptr<RelationBase> result;
-
-  result = GetRelation (LOADBALANCERCONNECTIONTOSERVER)->Join (
-    pktToBalance,
-    strlist ("loadBalancerConnectionToServer_attr1"),
-    strlist ("pktToBalance_attr1"));
+  Ptr<Tuple> result = pktToBalance;
 
   result->Assign (Assignor::New ("Value",
     FHashIP::New (

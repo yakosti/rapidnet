@@ -29,7 +29,6 @@ namespace loadbalancing {
 class LoadBalancing : public RapidNetApplicationBase
 {
 public:
-  static const string LOADBALANCERCONNECTIONTOSERVER;
   static const string PKTCLIENT;
   static const string PKTSERVER;
   static const string PKTTOBALANCE;
