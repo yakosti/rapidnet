@@ -20,13 +20,15 @@
 
 #include "ns3/log.h"
 #include "parser-util.h"
-#include "auxiliary.h"
+#include "sdn-auxiliary.h"
 
 using namespace std;
 using namespace ns3;
 using namespace rapidnet_compiler;
 
 class Variable;
+class ConstraintsTemplate;
+class SimpConstraints;
 
 //TODO: change VarMap into a class
 typedef map<Variable*, Variable*> VarMap;
@@ -60,9 +62,13 @@ public:
 					const map<Variable*, int>,
 					const map<int, Variable*>){}
 
+	virtual void CreateVarInst(VarMap&){}
+
 	virtual void PrintTerm() =0;
 
 	virtual void PrintInstance(const map<Variable*, int>&) const =0;
+
+	virtual void PrintInstance(const map<Variable*, int>&, VarMap&) const{}
 };
 
 
@@ -155,9 +161,13 @@ public:
 					const map<Variable*, int>,
 					const map<int, Variable*>);
 
+	virtual void CreateVarInst(VarMap&);
+
 	void PrintTerm();
 
 	void PrintInstance(const map<Variable*, int>&) const;
+
+	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
 
 	~UserFunction();
 
@@ -184,6 +194,8 @@ public:
     void PrintTerm(){}
 
     virtual void PrintInstance(const map<Variable*, int>&) const{}
+
+    virtual void PrintInstance(const map<Variable*, int>&, VarMap&) const{}
 };
 
 
@@ -204,6 +216,8 @@ public:
 	void PrintTerm();
 
 	void PrintInstance(const map<Variable*, int>&) const;
+
+	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
 
 private:
 	int value;
@@ -229,6 +243,8 @@ public:
 
 	void PrintInstance(const map<Variable*, int>&) const;
 
+	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
+
 private:
 	double value;
 };
@@ -251,6 +267,8 @@ public:
 
 	void PrintInstance(const map<Variable*, int>&) const;
 
+	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
+
 private:
 	string value;
 };
@@ -272,6 +290,8 @@ public:
 	void PrintTerm();
 
 	void PrintInstance(const map<Variable*, int>&) const;
+
+	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
 
 private:
 	bool value;
@@ -310,11 +330,15 @@ public:
 					const map<Variable*, int>,
 					const map<int, Variable*>);
 
+	virtual void CreateVarInst(VarMap&);
+
 	void GetVars(vector<Variable*>&);
 
 	void PrintTerm();
 
 	void PrintInstance(const map<Variable*, int>&) const;
+
+	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
 
 	void PrintOp() const;
 
@@ -355,16 +379,35 @@ class Formula
 public:
 	Formula(){}
 
-	virtual Formula* Clone(){return NULL;}
+	virtual Formula* Clone(){return new Formula();}
 
 	virtual void Print() const{}
 
 	virtual void VarReplace(const VarMap&){}
 
+	virtual void VarReplace(SimpConstraints& simp)
+		{cout << "Default variable replacement.";}
+
+	//TODO: This function is not good practice
+	virtual void ArgSwap(){}
+
+	//ERROR: Aweful idea
+	virtual void NullifyMem(){}
+
 	virtual ~Formula(){}
 };
 
-class True: public Formula{};
+class True: public Formula
+{
+public:
+	True(){}
+
+	True(const True&){}
+
+	True* Clone();
+
+	void Print() const{cout << "True";}
+};
 
 class False: public Formula{};
 
@@ -389,6 +432,13 @@ public:
 
 	void VarReplace(const VarMap&);
 
+	void VarReplace(SimpConstraints&);
+
+	void ArgSwap();
+
+	//ERROR: Aweful function
+	void NullifyMem();
+
 	Connective* Clone();
 
 	ConnType GetConnType();
@@ -408,11 +458,6 @@ private:
 };
 
 
-
-
-
-
-
 class Quantifier: public Formula
 {
 public:
@@ -421,11 +466,15 @@ public:
 		EXISTS
 	};
 
-	Quantifier(QuanType q, const vector<Variable*>& b, Formula* f);
+	Quantifier(QuanType, const vector<Variable*>&, Formula*);
+
+	Quantifier(QuanType, const vector<Variable*>&, const ConstraintsTemplate*);
 
 	Quantifier(const Quantifier&);
 
 	void VarReplace(const VarMap&);
+
+	void VarReplace(SimpConstraints&);
 
 	Quantifier* Clone();
 
@@ -532,7 +581,7 @@ public:
 
 	Term* GetRightE();
 
-	bool IsEquiv();
+	bool IsEquiv() const;
 
 	bool IsUnif();
 
@@ -548,9 +597,13 @@ public:
 	//TODO: make SimpConstraints const
 	void VarReplace(SimpConstraints&);
 
+	virtual void CreateVarInst(VarMap&);
+
 	void Print() const;
 
 	void PrintInstance(const map<Variable*, int>&) const;
+
+	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
 
 	void PrintOp() const;
 
@@ -578,15 +631,21 @@ public:
 
 	void ReplaceVar(SimpConstraints&);
 
+	void RemoveUnif();
+
 	ConstraintsTemplate* Revert() const;
 
 	const ConstraintList& GetConstraints() const {return constraints;}
 
-	bool IsEmpty();
+	bool IsEmpty() const;
+
+	void CreateVarInst(VarMap&);
 
 	void PrintTemplate() const;
 
 	void PrintInstance(const map<Variable*, int>&) const;
+
+	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
 
 	~ConstraintsTemplate();
 
@@ -595,6 +654,7 @@ private:
 };
 
 typedef list<const ConstraintsTemplate*> ConsList;
+typedef list<Formula*> FormList;
 
 class SimpConstraints
 {
@@ -603,7 +663,13 @@ public:
 
 	SimpConstraints(const ConsList&);
 
+	SimpConstraints(const list<ConstraintsTemplate*>&);
+
+	void Initialize(const ConsList&);
+
 	void CreateEquiClass();
+
+	Variable* FindRootVar(Variable*);
 
 	const map<Variable*, list<Variable*> >& GetEquiClass() {return equiClass;}
 

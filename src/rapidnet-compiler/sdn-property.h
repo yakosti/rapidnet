@@ -20,7 +20,6 @@ using namespace std;
 class Property
 {
 public:
-
 	//Hardcode property inputList
 	Property();
 
@@ -41,6 +40,8 @@ public:
 	const list<PredicateInstance*>& GetUniPred() const{return univPredList;}
 
 	const list<PredicateInstance*>& GetExistPred() const{return existPredList;}
+
+	const list<Variable*>& GetExistVars() const{return existVars;}
 
 	const ConstraintsTemplate* GetUniCons() const{return univConsList;}
 
@@ -87,9 +88,12 @@ public:
 
 	const AnnotMap& GetInv() const {return invs;}
 
+	void Print() const;
+
 	~Invariant();
 
 private:
+	list<Variable*> vlist;
 	AnnotMap invs;
 };
 

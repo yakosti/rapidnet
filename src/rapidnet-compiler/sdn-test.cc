@@ -5,8 +5,11 @@
  *      Author: chen
  */
 
-#ifndef SDN_TEST_H_
-#define SDN_TEST_H_
+#ifndef SDN_TEST_CC_
+#define SDN_TEST_CC_
+
+#include "sdn-parse-smtlib.h"
+
 
 /*
  * *******************************************************************************
@@ -770,4 +773,4 @@ void test_parsing() {
 
 
 
-#endif /* SDN_TEST_H_ */
+#endif /* SDN_TEST_CC_ */

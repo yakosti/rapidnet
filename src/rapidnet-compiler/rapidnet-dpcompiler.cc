@@ -28,6 +28,7 @@
 #include <fstream>
 #include <string>
 #include <sys/wait.h>
+#include <ctime>
 
 #include "ol-context.h"
 #include "eca-context.h"
@@ -43,12 +44,14 @@
 #include "sdn-derivation.h"
 #include "sdn-property.h"
 #include "sdn-verification.h"
-#include "sdn-test.h"
-#include "z3++.h"
+//#include "sdn-parse-smtlib.h"
 
 using namespace std;
 using namespace ns3;
 using namespace ns3::rapidnet_compiler;
+
+NS_LOG_COMPONENT_DEFINE ("RapidNetDPGraph");
+
 
 /**
  * \brief Preprocesses the overlog file using the C-preprocessor
@@ -166,6 +169,7 @@ void parseOverlog (string overlogFile, Ptr<OlContext> ctxt,
 void compile (string overlogFile, bool provenanceEnabled)
 {
   NS_LOG_INFO ("Compiling NDLog file:\t" << overlogFile);
+
   // Parse
   Ptr<OlContext> ctxt (new OlContext ());
   Ptr<TableStore> tableStore (new TableStore (ctxt));
@@ -177,6 +181,7 @@ void compile (string overlogFile, bool provenanceEnabled)
 
   //Input recursive invariant
   Invariant inv = Invariant();
+  inv.Print();
   Ptr<NewDPGraph> newGraph (new NewDPGraph(graphNdlog, inv));
   //newGraph->Print();
 
@@ -189,7 +194,7 @@ void compile (string overlogFile, bool provenanceEnabled)
 
   //Dpool construction
   Ptr<Dpool> dpool (new Dpool(newGraph, miniGraph, baseProp, inv));
-  dpool->PrintDpool();
+  //dpool->PrintDpool();
   //dpool->PrintAllDeriv();
 
   //Verify invariant property
@@ -197,6 +202,8 @@ void compile (string overlogFile, bool provenanceEnabled)
 
   //Property verification
   //User-defined property
+
+  int start_s=clock();
   Property p = Property();
   p.Print();
 
@@ -205,9 +212,8 @@ void compile (string overlogFile, bool provenanceEnabled)
   bool res = CheckProperty(*dpool, p);
   cout << "Is the property valid? " << (res?"Yes":"No") << endl;
 
-  /* adding smt solver part */
-  //const DerivNodeList& dlist = dpool->GetDerivList("advertisements");
-  //writeToFile("testing_constraints", dlist); //laykuan testing
+  int stop_s=clock();
+  cout << "Running time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << "ms" << endl;
 
   //test_check_sat();
 }
@@ -217,17 +223,19 @@ void compile (string overlogFile, bool provenanceEnabled)
 //NDLog program should have no value as argument of a tuple
 int main (int argc, char** argv)
 {
-  LogComponentEnable ("RapidNetDPGraph", LOG_LEVEL_FUNCTION);
+//  LogComponentEnable ("RapidNetDPGraph", LOG_LEVEL_FUNCTION);
 //  LogComponentEnable ("DPGraph", LOG_LEVEL_FUNCTION);
-//  LogComponentEnable ("Formula", LOG_LEVEL_FUNCTION);
-//  LogComponentEnable ("Dpool", LOG_LEVEL_FUNCTION);
-  LogComponentEnable ("Property", LOG_LEVEL_FUNCTION);
-  LogComponentEnable ("Dpool", LOG_INFO);
+  LogComponentEnable ("Formula", LOG_LEVEL_FUNCTION);
+  LogComponentEnable ("Dpool", LOG_LEVEL_FUNCTION);
+  LogComponentEnable ("Verification", LOG_LEVEL_FUNCTION);
+//  LogComponentEnable ("Property", LOG_LEVEL_FUNCTION);
+  LogComponentEnable ("RapidNetDPGraph", LOG_INFO);
+//  LogComponentEnable ("Dpool", LOG_INFO);
   LogComponentEnable ("DPGraph", LOG_INFO);
-  LogComponentEnable ("Formula", LOG_INFO);
-//  LogComponentEnable ("Property", LOG_INFO);
-
-  test_parsing();
+//  LogComponentEnable ("Formula", LOG_INFO);
+  LogComponentEnable ("Property", LOG_INFO);
+//  LogComponentEnable ("Verification", LOG_INFO);
+  //test_parsing();
 
   string overlogFile;
   string baseoverlogFile = DEFAULT_RN_APP_BASE;

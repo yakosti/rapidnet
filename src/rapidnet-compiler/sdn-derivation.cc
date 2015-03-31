@@ -29,6 +29,18 @@ DpoolNode::DpoolNode(const PredicateInstance* pred)
 }
 
 void
+DpoolNode::CreateDerivInst(VarMap& vmap)
+{
+	const vector<Variable*> varVec = head->GetArgs();
+	vector<Variable*>::const_iterator itv;
+	for (itv = varVec.begin();itv < varVec.end();itv++)
+	{
+		Variable* newVar = new Variable(Variable::STRING, false);
+		vmap.insert(VarMap::value_type(*itv, newVar));
+	}
+}
+
+void
 DpoolNode::PrintHead() const
 {
 	head->PrintTuple();
@@ -38,6 +50,12 @@ void
 DpoolNode::PrintHeadInst(const map<Variable*, int>& valueMap) const
 {
 	head->PrintInstance(valueMap);
+}
+
+void
+DpoolNode::PrintHeadInst(const map<Variable*, int>& valueMap, VarMap& vmap) const
+{
+	head->PrintInstance(valueMap, vmap);
 }
 
 void
@@ -78,22 +96,39 @@ DerivNode::GetAllObligs() const
 
 void
 DerivNode::FindSubTuple(const list<PredicateInstance*>& plist,
-					    map<string, list<const Tuple*> >& tlist) const
+					    ExQuanTuple& tlist,
+						const DerivNode* desigHead) const
 {
 	//Assume tlist has been initialized according to plist
 	string tpName = head->GetName();
-	map<string, list<const Tuple*> >::iterator itm;
+	NS_LOG_DEBUG("Find tuple: " << tpName);
+	ExQuanTuple::iterator itm;
 	itm = tlist.find(tpName);
 	if (itm != tlist.end())
 	{
 		//The tuple needs to be registered
-		itm->second.push_back(head);
+		TupleLineage newLineage = TupleLineage(head, desigHead);
+		itm->second.push_back(newLineage);
 	}
 
 	DpoolNodeList::const_iterator itd;
+	NS_LOG_DEBUG("Size of dpool:" << bodyDerivs.size());
 	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
 	{
-		(*itd)->FindSubTuple(plist, tlist);
+		(*itd)->FindSubTuple(plist, tlist, desigHead);
+	}
+}
+
+void
+DerivNode::CreateDerivInst(VarMap& vmap)
+{
+	DpoolNode::CreateDerivInst(vmap);
+	ruleConstraints->CreateVarInst(vmap);
+
+	DpoolNodeList::iterator itd;
+	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
+	{
+		(*itd)->CreateDerivInst(vmap);
 	}
 }
 
@@ -119,7 +154,6 @@ DerivNode::PrintDerivNode() const
 	cout << "Rule name:" << ruleName;
 	cout << endl;
 	cout << "Body tuples:" << endl;
-	NS_LOG_DEBUG("Number of bodies: " << bodyDerivs.size());
 	DpoolNodeList::const_iterator itd;
 	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
 	{
@@ -151,7 +185,6 @@ DerivNode::PrintInstance(const map<Variable*, int>& valueMap) const
 	cout << "Rule name:" << ruleName;
 	cout << endl;
 	cout << "Body tuples:" << endl;
-	NS_LOG_DEBUG("Number of bodies: " << bodyDerivs.size());
 	DpoolNodeList::const_iterator itd;
 	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
 	{
@@ -168,10 +201,36 @@ DerivNode::PrintInstance(const map<Variable*, int>& valueMap) const
 }
 
 void
+DerivNode::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) const
+{
+	cout << endl;
+	cout << "%%%%%%%%%%%%%% Derivation Instance %%%%%%%%%%%%%" << endl;
+	cout << "Head:";
+	head->PrintInstance(valueMap, vmap);
+	cout << endl;
+	cout << "Rule name:" << ruleName;
+	cout << endl;
+	cout << "Body tuples:" << endl;
+	DpoolNodeList::const_iterator itd;
+	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
+	{
+		(*itd)->PrintHeadInst(valueMap, vmap);
+		cout << endl;
+	}
+	if (ruleConstraints != NULL)
+	{
+		cout << "Constraints:" << endl;
+		ruleConstraints->PrintInstance(valueMap, vmap);
+		cout << endl;
+	}
+	cout << "%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
+}
+
+void
 DerivNode::PrintDerivation() const
 {
 	PrintDerivNode();
-	PrintCumuCons();
+	//PrintCumuCons();
 
 	DpoolNodeList::const_iterator itd;
 	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
@@ -192,6 +251,22 @@ DerivNode::PrintExecution(map<Variable*, int>& valueMap) const
 	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
 	{
 		(*itd)->PrintExecution(valueMap);
+		cout << endl;
+	}
+	cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+}
+
+void
+DerivNode::PrintExecInst(map<Variable*, int>& valueMap, VarMap& vmap) const
+{
+	cout << endl;
+	cout << "~~~~~~~~~~~~~~~ Execution Trace ~~~~~~~~~~~~~~" << endl;
+	PrintInstance(valueMap, vmap);
+
+	DpoolNodeList::const_iterator itd;
+	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
+	{
+		(*itd)->PrintExecInst(valueMap, vmap);
 		cout << endl;
 	}
 	cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
@@ -225,18 +300,22 @@ BaseNode::BaseNode(string tpName, int argSize):
 
 void
 BaseNode::FindSubTuple(const list<PredicateInstance*>& plist,
-				  	   map<string, list<const Tuple*> >& tlist) const
+				  	   ExQuanTuple& tlist,
+					   const DerivNode* desigHead) const
 {
 	//Assume tlist has been initialized according to plist
 	string tpName = head->GetName();
-	map<string, list<const Tuple*> >::iterator itm;
+	NS_LOG_DEBUG("Find tuple: " << tpName);
+	ExQuanTuple::iterator itm;
 	itm = tlist.find(tpName);
 	if (itm != tlist.end())
 	{
 		//The tuple needs to be registered
-		itm->second.push_back(head);
+		TupleLineage newLineage = TupleLineage(head, desigHead);
+		itm->second.push_back(newLineage);
 	}
 }
+
 
 void
 BaseNode::PrintCumuCons() const
@@ -281,6 +360,21 @@ BaseNode::PrintInstance(const map<Variable*, int>& valueMap) const
 }
 
 void
+BaseNode::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) const
+{
+	cout << endl;
+	cout << "@@@@@@@@@@ Base Instance @@@@@@@@@" << endl;
+	cout << "Head instance: " << endl;
+	head->PrintInstance(valueMap, vmap);
+	cout << endl;
+	if (cts != NULL)
+	{
+		cts->PrintInstance(valueMap, vmap);
+	}
+	cout << "@@@@@@@@@@@@@@@@@@@@@" << endl;
+}
+
+void
 BaseNode::PrintDerivation() const
 {
 	PrintDerivNode();
@@ -290,6 +384,12 @@ void
 BaseNode::PrintExecution(map<Variable*, int>& valueMap) const
 {
 	PrintInstance(valueMap);
+}
+
+void
+BaseNode::PrintExecInst(map<Variable*, int>& valueMap, VarMap& vmap) const
+{
+	PrintInstance(valueMap, vmap);
 }
 
 BaseNode::~BaseNode()
@@ -321,16 +421,19 @@ PropNode::AddInvariant(Formula* inv)
 
 void
 PropNode::FindSubTuple(const list<PredicateInstance*>& plist,
-					   map<string, list<const Tuple*> >& tlist) const
+					   ExQuanTuple& tlist,
+					   const DerivNode* desigHead) const
 {
 	//Assume tlist has been initialized according to plist
 	string tpName = head->GetName();
-	map<string, list<const Tuple*> >::iterator itm;
+	NS_LOG_DEBUG("Find tuple: " << tpName);
+	ExQuanTuple::iterator itm;
 	itm = tlist.find(tpName);
 	if (itm != tlist.end())
 	{
 		//The tuple needs to be registered
-		itm->second.push_back(head);
+		TupleLineage newLineage = TupleLineage(head, desigHead);
+		itm->second.push_back(newLineage);
 	}
 }
 
@@ -373,6 +476,24 @@ PropNode::PrintInstance(const map<Variable*, int>& valueMap) const
 }
 
 void
+PropNode::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) const
+{
+	cout << endl;
+	cout << "++++++++++++ Recursive Instance +++++++++++" << endl;
+	cout << "Head:";
+	head->PrintInstance(valueMap, vmap);
+	cout << endl;
+
+	cout << "User-annotated formula:" << endl;
+	Formula* newForm = prop->Clone();
+	newForm->VarReplace(vmap);
+	newForm->Print();
+	cout << "+++++++++++++++++++++++";
+	cout << endl;
+	delete newForm;
+}
+
+void
 PropNode::PrintDerivation() const
 {
 	PrintDerivNode();
@@ -382,6 +503,12 @@ void
 PropNode::PrintExecution(map<Variable*, int>& valueMap) const
 {
 	PrintInstance(valueMap);
+}
+
+void
+PropNode::PrintExecInst(map<Variable*, int>& valueMap, VarMap& vmap) const
+{
+	PrintInstance(valueMap, vmap);
 }
 
 PropNode::~PropNode()
@@ -425,7 +552,6 @@ Dpool::Dpool(const Ptr<NewDPGraph> newGraph,
 		{
 			NS_LOG_DEBUG("No annot case");
 			int argSize = (*itml)->GetArgLength();
-			NS_LOG_DEBUG("Tuple length: " << argSize);
 			BaseNode* newNode = new BaseNode(nodeName, argSize);
 			BaseNodeList blist(1, newNode);
 			baseMap.insert(BaseMap::value_type(nodeName, blist));
@@ -475,7 +601,6 @@ Dpool::ProcessRuleNode(const Tuple* ruleHead,
 					   vector<DpoolNode*> bodyDerivs,
 					   VarMap vmap)
 {
-	NS_LOG_DEBUG("Size of bodyList: " << bodyList.size());
 	if (curPos == bodyList.end())
 	{
 		//All possible derivations of body tuples
@@ -641,65 +766,114 @@ Dpool::UpdateDerivNode(string tpName, DerivNode* dnode)
 	derivations[tpName].push_back(dnode);
 }
 
-bool
+//TODO: There are potential memory leak problems with VerifyInvariants
+void
 Dpool::VerifyInvariants(const Invariant& inv) const
 {
-	Formula* proofObl = NULL;
+	NS_LOG_FUNCTION("Verifying Invariants...");
 	const AnnotMap& invariant = inv.GetInv();
 	AnnotMap::const_iterator ita;
+
 	//Check each invariant in the annotation
 	for (ita = invariant.begin();ita != invariant.end();ita++)
 	{
+		//Soundness: (C1 => C) /\ (C2 => C) /\ ... /\ (Ci => C)
+		//Completeness: (C => C1) \/ (C => C2) \/ ... \/ (C => Ci)
+		bool soundFlag = true;
+		bool completeFlag = false;
+
 		string tpName = ita->first;
 		const Annotation& annot = ita->second;
 		PredicateInstance* predInst = annot.first;
 		int predArgSize = predInst->GetArgs().size();
 		//All headers should be unified to the unifTuple
 		Tuple unifTuple = Tuple(tpName, predArgSize);
+		NS_LOG_DEBUG("Unification tuple:");
+		unifTuple.PrintTuple();
+		cout << endl;
 
 		//Unify variables in the invariant
 		Formula* tupleInv = annot.second->Clone();
 		VarMap invMap = unifTuple.CreateVarMap(predInst);
 		tupleInv->VarReplace(invMap);
+		NS_LOG_DEBUG("Original Invariant Property:");
+		unifTuple.PrintTuple();
+		cout << endl;
+		tupleInv->Print();
+		cout << endl;
 
-		//Check soundness and completeness
-		//Invariant <=> Constraints1 \/ Constraints2 \/ ... \/ Constraintsn
 		const DerivNodeList& dlist = derivations.at(tpName);
 		DerivNodeList::const_iterator itd;
-		Formula* disjForm = NULL;
+		//Collect constraints and invariants from all derivations
 		for (itd = dlist.begin();itd != dlist.end();itd++)
 		{
-			//Enumerate all possible derivations, including recursive ones
-			Formula* conjForm = NULL;
+			NS_LOG_DEBUG("Print derivations");
+			(*itd)->PrintDerivation();
+			cout << endl;
+
+			Formula* localInv = tupleInv->Clone();
 			const Tuple* head = (*itd)->GetHead();
 			VarMap vmap = head->CreateVarMap(&unifTuple);
 
+			list<ConstraintsTemplate*> newclist = list<ConstraintsTemplate*>();
 			const ConsList& clist = (*itd)->GetCumuConsts();
-			ConsList::const_iterator itc;
-			for (itc = clist.begin();itc != clist.end();itc++)
+			ConsList::const_iterator itcl;
+			for (itcl = clist.begin();itcl != clist.end();itcl++)
 			{
-				const ConstraintList& ctsList = (*itc)->GetConstraints();
-				ConstraintList::const_iterator itct;
-				for (itct = ctsList.begin();itct != ctsList.end();itct++)
-				{
-					Constraint* cons = new Constraint(**itct);
-					if (conjForm == NULL)
-					{
-						conjForm = cons;
-					}
-					else
-					{
-						conjForm = new Connective(Connective::AND, conjForm, cons);
-					}
-				}
+				ConstraintsTemplate* consTemp = new ConstraintsTemplate(**itcl);
+				consTemp->ReplaceVar(vmap);
+				newclist.push_back(consTemp);
 			}
 
+			FormList newflist = FormList();
 			FormList& flist = (*itd)->GetInvariants();
 			FormList::iterator itf;
 			for (itf = flist.begin();itf != flist.end();itf++)
 			{
 				Formula* newForm = (*itf)->Clone();
 				newForm->VarReplace(vmap);
+				newflist.push_back(newForm);
+			}
+
+			//Simplify constraints
+			SimpConstraints simpCons = SimpConstraints(newclist);
+			NS_LOG_DEBUG("Print simplified constraints:");
+			simpCons.Print();
+			cout << endl;
+
+			//Replace variables in Formulas of derivations
+			for (itf = newflist.begin();itf != newflist.end();itf++)
+			{
+				(*itf)->VarReplace(simpCons);
+			}
+
+			//Replace variables in the invariant
+			localInv->VarReplace(simpCons);
+
+			//Create proof obligation for invariant checking
+			Formula* conjForm = NULL;
+
+			//Add constraints
+			const ConstraintsTemplate& simpTemp = simpCons.GetConstraints();
+			const ConstraintList& cslist = simpTemp.GetConstraints();
+			ConstraintList::const_iterator itcs;
+			for (itcs = cslist.begin();itcs != cslist.end();itcs++)
+			{
+				Constraint* cons = new Constraint(**itcs);
+				if (conjForm == NULL)
+				{
+					conjForm = cons;
+				}
+				else
+				{
+					conjForm = new Connective(Connective::AND, conjForm, cons);
+				}
+			}
+
+			//Add formulas
+			for (itf = newflist.begin();itf != newflist.end();itf++)
+			{
+				Formula* newForm = (*itf)->Clone();
 				if (conjForm == NULL)
 				{
 					conjForm = newForm;
@@ -710,25 +884,80 @@ Dpool::VerifyInvariants(const Invariant& inv) const
 				}
 			}
 
-			//Create the disjunctive formula of C1 \/ C2...\/ Cn
-			if (disjForm == NULL)
+			//Check:
+			//(1) Completeness: C => Ci
+			if (completeFlag == false)
 			{
-				disjForm = conjForm;
+				Formula* completeForm = new Connective(Connective::IMPLY, localInv, conjForm);
+				Formula* negCompleteForm = new Connective(Connective::NOT, completeForm, NULL);
+				FormList cflist = FormList(1, negCompleteForm);
+				map<Variable*, int> completeAssign = check_sat_generalized(cflist);
+				if (completeAssign.size() > 0)
+				{
+					cout << "This part of completeness does not hold!" << endl;
+				}
+				else
+				{
+					cout << "Completeness holds!" << endl;
+					completeFlag = true;
+				}
+
+				completeForm->NullifyMem();
+				delete negCompleteForm;
 			}
-			else
+
+			//(2) Soundness: Ci => C;
+			if (soundFlag == true)
 			{
-				disjForm = new Connective(Connective::OR, disjForm, conjForm);
+				Formula* soundForm = new Connective(Connective::IMPLY, conjForm, localInv);
+				Formula* negSoundForm = new Connective(Connective::NOT, soundForm, NULL);
+				FormList sflist = FormList(1, negSoundForm);
+				map<Variable*, int> soundAssign = check_sat_generalized(sflist);
+				if (soundAssign.size() > 0)
+				{
+					cout << "Soundness does not hold!" << endl;
+					soundFlag = false;
+				}
+				else
+				{
+					cout << "This part of soundness holds!" << endl;
+				}
+
+				soundForm->NullifyMem();
+				delete negSoundForm;
+			}
+
+			list<ConstraintsTemplate*>::iterator itnew;
+			cout << "newclist size: " << newclist.size() << endl;
+			for (itnew = newclist.begin();itnew != newclist.end();itnew++)
+			{
+				delete (*itnew);
+			}
+
+			delete localInv;
+			delete conjForm;
+
+
+			if (soundFlag == false && completeFlag == true)
+			{
+				NS_LOG_INFO("Soundness & Completeness neither holds!");
+				delete tupleInv;
+				return;
 			}
 		}
 
-		Formula* soundForm = new Connective(Connective::IMPLY, disjForm, tupleInv);
-		//TODO: Verify soundForm
-		Formula* completeForm = new Connective(Connective::IMPLY, tupleInv, disjForm);
-		//TODO: Verify completeForm
-	}
+		if (soundFlag == true)
+		{
+			NS_LOG_INFO("Soundness holds");
+		}
 
-	//TODO: What's the return value here?
-	return true;
+		if (completeFlag == true)
+		{
+			NS_LOG_INFO("Completeness holds");
+		}
+
+		delete tupleInv;
+	}
 }
 
 const DerivNodeList&
@@ -737,6 +966,11 @@ Dpool::GetDerivList(string tpName) const
 	return derivations.at(tpName);
 }
 
+void
+Dpool::CreateDerivInst(const DpoolNode& dnode, VarMap& vmap)
+{
+
+}
 
 void
 Dpool::PrintDpool() const

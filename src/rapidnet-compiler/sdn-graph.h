@@ -21,7 +21,6 @@
 #include "sdn-property.h"
 #include "ol-context.h"
 #include "parser-util.h"
-#include "auxiliary.h"
 
 using namespace std;
 using namespace ns3;
@@ -64,6 +63,8 @@ public:
 	void PrintTuple() const;
 
 	void PrintInstance(const map<Variable*, int>&);
+
+	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
 
 	~Tuple();
 

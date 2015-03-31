@@ -28,6 +28,12 @@ void Term::PrintTerm(){}
 
 /* ***************************** FORMULA *********************************** */
 
+True*
+True::Clone()
+{
+	return (new True(*this));
+}
+
 Connective::Connective(ConnType ct, Formula* formL, Formula* formR):
     conntype(ct), leftF(formL), rightF(formR){}
 
@@ -43,6 +49,28 @@ Connective::VarReplace(const VarMap& vmap)
 {
 	leftF->VarReplace(vmap);
 	rightF->VarReplace(vmap);
+}
+
+void
+Connective::VarReplace(SimpConstraints& simpCon)
+{
+	leftF->VarReplace(simpCon);
+	rightF->VarReplace(simpCon);
+}
+
+void
+Connective::ArgSwap()
+{
+	Formula* temp = leftF;
+	leftF = rightF;
+	rightF = temp;
+}
+
+void
+Connective::NullifyMem()
+{
+	leftF = NULL;
+	rightF = NULL;
 }
 
 Connective*
@@ -79,8 +107,15 @@ Connective::Print() const
 
 Connective::~Connective()
 {
-	delete leftF;
-	delete rightF;
+	if (leftF != NULL)
+	{
+		delete leftF;
+	}
+
+	if (rightF != NULL)
+	{
+		delete rightF;
+	}
 }
 
 /* ***************************** FORMULA *********************************** */
@@ -93,6 +128,28 @@ Connective::~Connective()
 
 Quantifier::Quantifier(QuanType q, const vector<Variable*>& b, Formula* f):
   quantype(q),boundVarList(b),fml(f){}
+
+Quantifier::Quantifier(QuanType q, const vector<Variable*>& b, const ConstraintsTemplate* consTemp):
+	quantype(q),boundVarList(b)
+{
+	const ConstraintList& conslist = consTemp->GetConstraints();
+	Formula* conjForm = NULL;
+	ConstraintList::const_iterator itcs;
+	for (itcs = conslist.begin();itcs != conslist.end();itcs++)
+	{
+		Constraint* cons = new Constraint(**itcs);
+		if (conjForm == NULL)
+		{
+			conjForm = cons;
+		}
+		else
+		{
+			conjForm = new Connective(Connective::AND, conjForm, cons);
+		}
+	}
+
+	fml = conjForm;
+}
 
 Quantifier::Quantifier(const Quantifier& qtf)
 {
@@ -116,6 +173,21 @@ Quantifier::VarReplace(const VarMap& vmap)
 	}
 
 	fml->VarReplace(vmap);
+}
+
+void
+Quantifier::VarReplace(SimpConstraints& simpCon)
+{
+	vector<Variable*>::iterator itv;
+	for (itv = boundVarList.begin();itv != boundVarList.end();itv++)
+	{
+		Variable* newVar = simpCon.FindRootVar(*itv);
+		if (newVar != NULL)
+		{
+			*itv = newVar;
+		}
+	}
+	fml->VarReplace(simpCon);
 }
 
 Quantifier*
@@ -158,7 +230,10 @@ Quantifier::Print() const
 
 Quantifier::~Quantifier()
 {
-	delete fml;
+	if (fml != NULL)
+	{
+		delete fml;
+	}
 }
 
 /* ***************************** Quantifier *********************************** */
@@ -302,12 +377,12 @@ PredicateInstance::~PredicateInstance()
 Constraint::Constraint(Operator opt, Term* exprL, Term* exprR):
     op(opt),leftE(exprL),rightE(exprR)
 {
-	NS_LOG_FUNCTION("Constraint default constructor.");
+	NS_LOG_FUNCTION("Constraint default constructor." << this);
 }
 
 Constraint::Constraint(const Constraint& cst)
 {
-	NS_LOG_FUNCTION("Constraint copy constructor.");
+	NS_LOG_FUNCTION("Constraint copy constructor." << this);
 	op = cst.op;
 	leftE = cst.leftE->Clone();
 	rightE = cst.rightE->Clone();
@@ -315,7 +390,8 @@ Constraint::Constraint(const Constraint& cst)
 
 Constraint::~Constraint()
 {
-	NS_LOG_FUNCTION("Destruct Constraint...");
+	NS_LOG_FUNCTION("Destruct Constraint: " << this);
+	this->Print();
 	Variable* var = dynamic_cast<Variable*>(leftE);
 	if (var == NULL)
 	{
@@ -407,8 +483,46 @@ Constraint::PrintInstance(const map<Variable*, int>& valueMap) const
 	}
 }
 
+void
+Constraint::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) const
+{
+	Variable* var = NULL;
+	int value = 0;
+	var = dynamic_cast<Variable*>(leftE);
+	if (var == NULL)
+	{
+		leftE->PrintInstance(valueMap, vmap);
+	}
+	else
+	{
+		Variable* instVar = vmap.at(var);
+		value = valueMap.at(instVar);
+		cout << "(";
+		instVar->PrintTerm();
+		cout << ")";
+		cout << value;
+	}
+
+	PrintOp();
+
+	var = dynamic_cast<Variable*>(rightE);
+	if (var == NULL)
+	{
+		rightE->PrintInstance(valueMap, vmap);
+	}
+	else
+	{
+		Variable* instVar = vmap.at(var);
+		value = valueMap.at(instVar);
+		cout << "(";
+		instVar->PrintTerm();
+		cout << ")";
+		cout << value;
+	}
+}
+
 bool
-Constraint::IsEquiv()
+Constraint::IsEquiv() const
 {
 	return ((op == Constraint::EQ)?true:false);
 }
@@ -426,7 +540,6 @@ Constraint::IsUnif()
 	}
 
 	return false;
-
 }
 
 void
@@ -531,6 +644,30 @@ Constraint::VarReplace(SimpConstraints& simpCons)
 }
 
 void
+Constraint::CreateVarInst(VarMap& vmap)
+{
+	Variable* var = dynamic_cast<Variable*>(leftE);
+	if (var != NULL)
+	{
+		if (vmap.find(var) == vmap.end())
+		{
+			Variable* newVar = new Variable(Variable::STRING, false);
+			vmap.insert(VarMap::value_type(var, newVar));
+		}
+	}
+
+	var = dynamic_cast<Variable*>(rightE);
+	if (var != NULL)
+	{
+		if (vmap.find(var) == vmap.end())
+		{
+			Variable* newVar = new Variable(Variable::STRING, false);
+			vmap.insert(VarMap::value_type(var, newVar));
+		}
+	}
+}
+
+void
 Constraint::PrintOp() const
 {
   switch(op){
@@ -607,7 +744,7 @@ Variable::CreateNewVar()
 	Variable::varCount = Variable::varCount + 1;
 	ostringstream countStream;
 	countStream << Variable::varCount;
-	name =  "variable"+ countStream.str();
+	name =  "var"+ countStream.str();
 }
 
 Variable::TypeCode Variable::GetVariableType() {
@@ -775,6 +912,23 @@ UserFunction::VarReplace(UnionFindSet ufs,
 	}
 }
 
+void
+UserFunction::CreateVarInst(VarMap& vmap)
+{
+	vector<Term*>::iterator itv;
+	for (itv = args.begin();itv != args.end();itv++)
+	{
+		Variable* var = dynamic_cast<Variable*>(*itv);
+		if (var != NULL)
+		{
+			if (vmap.find(var) == vmap.end())
+			{
+				Variable* newVar = new Variable(Variable::STRING, false);
+				vmap.insert(VarMap::value_type(var, newVar));
+			}
+		}
+	}
+}
 
 vector<Term*>& UserFunction::GetArgs() {
   return args;
@@ -828,6 +982,34 @@ UserFunction::PrintInstance(const map<Variable*, int>& valueMap) const
 	cout << ")";
 }
 
+void
+UserFunction::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) const
+{
+	schema->PrintName();
+	cout << "(";
+	Variable* var = NULL;
+	vector<Term*>::const_iterator it;
+	for (it = args.begin(); it != args.end(); it++)
+	{
+		if (it != args.begin())
+		{
+		  cout << ",";
+		}
+		var = dynamic_cast<Variable*>(*it);
+		if (var == NULL)
+		{
+			(*it)->PrintInstance(valueMap, vmap);
+		}
+		else
+		{
+			Variable* instVar = vmap.at(var);
+			int value = valueMap.at(instVar);
+			cout << value;
+		}
+	}
+	cout << ")";
+}
+
 /* **************************** USER FUNCTION ********************************* */
 
 
@@ -859,6 +1041,12 @@ void IntVal::PrintTerm() {
 
 void
 IntVal::PrintInstance(const map<Variable*, int>& valueMap) const
+{
+	cout << value;
+}
+
+void
+IntVal::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) const
 {
 	cout << value;
 }
@@ -899,6 +1087,12 @@ DoubleVal::PrintInstance(const map<Variable*, int>& valueMap) const
 	cout << value;
 }
 
+void
+DoubleVal::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) const
+{
+	cout << value;
+}
+
 /* ****************************** DoubleVal ********************************** */
 
 
@@ -931,6 +1125,12 @@ void StringVal::PrintTerm() {
 
 void
 StringVal::PrintInstance(const map<Variable*, int>& valueMap) const
+{
+	cout << value;
+}
+
+void
+StringVal::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) const
 {
 	cout << value;
 }
@@ -968,6 +1168,12 @@ void BoolVal::PrintTerm() {
 
 void
 BoolVal::PrintInstance(const map<Variable*, int>& valueMap) const
+{
+	cout << value;
+}
+
+void
+BoolVal::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) const
 {
 	cout << value;
 }
@@ -1077,6 +1283,31 @@ Arithmetic::VarReplace(UnionFindSet ufs,
 }
 
 void
+Arithmetic::CreateVarInst(VarMap& vmap)
+{
+	Variable* var = dynamic_cast<Variable*>(leftE);
+	if (var != NULL)
+	{
+		if (vmap.find(var) == vmap.end())
+		{
+			Variable* newVar = new Variable(Variable::STRING, false);
+			vmap.insert(VarMap::value_type(var, newVar));
+		}
+	}
+
+	var = dynamic_cast<Variable*>(rightE);
+	if (var != NULL)
+	{
+		if (vmap.find(var) == vmap.end())
+		{
+			Variable* newVar = new Variable(Variable::STRING, false);
+			vmap.insert(VarMap::value_type(var, newVar));
+		}
+	}
+}
+
+
+void
 Arithmetic::GetVars(vector<Variable*>& vlist)
 {
 	leftE->GetVars(vlist);
@@ -1119,6 +1350,38 @@ Arithmetic::PrintInstance(const map<Variable*, int>& valueMap) const
 	}
 }
 
+void
+Arithmetic::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) const
+{
+	Variable* var = NULL;
+	int value = 0;
+	var = dynamic_cast<Variable*>(leftE);
+	if (var == NULL)
+	{
+		leftE->PrintInstance(valueMap, vmap);
+	}
+	else
+	{
+		Variable* instVar = vmap.at(var);
+		value = valueMap.at(instVar);
+		cout << value;
+	}
+
+	PrintOp();
+
+	var = dynamic_cast<Variable*>(rightE);
+	if (var == NULL)
+	{
+		rightE->PrintInstance(valueMap);
+	}
+	else
+	{
+		Variable* instVar = vmap.at(var);
+		value = valueMap.at(instVar);
+		cout << value;
+	}
+}
+
 void Arithmetic::PrintOp() const{
   switch(op){
   case Arithmetic::PLUS:
@@ -1156,11 +1419,13 @@ Arithmetic::~Arithmetic()
 //Implementation of ConstraintsTemplate
 ConstraintsTemplate::ConstraintsTemplate()
 {
+	NS_LOG_FUNCTION("Create ConstraintsTemplate: " << this);
 	constraints = ConstraintList();
 }
 
 ConstraintsTemplate::ConstraintsTemplate(const ConstraintsTemplate& ct)
 {
+	NS_LOG_FUNCTION("Create ConstraintsTemplate: " << this);
 	ConstraintList::const_iterator it;
 	Constraint* newCons;
 	for (it = ct.constraints.begin(); it != ct.constraints.end();it++)
@@ -1196,6 +1461,22 @@ ConstraintsTemplate::ReplaceVar(SimpConstraints& simpCons)
 	}
 }
 
+void
+ConstraintsTemplate::RemoveUnif()
+{
+	ConstraintList::iterator itc;
+	for (itc = constraints.begin();itc != constraints.end();itc++)
+	{
+		if ((*itc)->IsUnif())
+		{
+			delete (*itc);
+			(*itc) = NULL;
+		}
+	}
+
+	constraints.remove(NULL);
+}
+
 ConstraintsTemplate*
 ConstraintsTemplate::Revert() const
 {
@@ -1213,7 +1494,7 @@ ConstraintsTemplate::Revert() const
 
 ConstraintsTemplate::~ConstraintsTemplate()
 {
-	NS_LOG_FUNCTION("Dectruct ConstraintsTemplate...");
+	NS_LOG_FUNCTION("Destruct ConstraintsTemplate: " << this);
 	ConstraintList::iterator it;
 	for (it = constraints.begin(); it != constraints.end(); it++)
 	{
@@ -1222,14 +1503,25 @@ ConstraintsTemplate::~ConstraintsTemplate()
 }
 
 bool
-ConstraintsTemplate::IsEmpty()
+ConstraintsTemplate::IsEmpty() const
 {
 	return (constraints.size() == 0?true:false);
 }
 
 void
+ConstraintsTemplate::CreateVarInst(VarMap& vmap)
+{
+	ConstraintList::iterator itc;
+	for (itc = constraints.begin();itc != constraints.end();itc++)
+	{
+		(*itc)->CreateVarInst(vmap);
+	}
+}
+
+void
 ConstraintsTemplate::PrintTemplate() const
 {
+	NS_LOG_FUNCTION("Printing template:");
 	ConstraintList::const_iterator itc;
 	for (itc = constraints.begin(); itc != constraints.end(); itc++)
 	{
@@ -1251,6 +1543,18 @@ ConstraintsTemplate::PrintInstance(const map<Variable*, int>& valueMap) const
 	}
 }
 
+void
+ConstraintsTemplate::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) const
+{
+	ConstraintList::const_iterator itc;
+	for (itc = constraints.begin(); itc != constraints.end(); itc++)
+	{
+	  cout << "\t";
+	  (*itc)->PrintInstance(valueMap, vmap);
+	  cout << endl;
+	}
+}
+
 SimpConstraints::SimpConstraints()
 {
 	cts = ConstraintsTemplate();
@@ -1260,7 +1564,26 @@ SimpConstraints::SimpConstraints()
 	equiClass = map<Variable*, list<Variable*> >();
 }
 
-SimpConstraints::SimpConstraints(const ConsList& ctempList)
+
+SimpConstraints::SimpConstraints(const list<ConstraintsTemplate*>& clist)
+{
+	ConsList conList = ConsList();
+	list<ConstraintsTemplate*>::const_iterator itl;
+	for (itl = clist.begin();itl != clist.end();itl++)
+	{
+		conList.push_back(*itl);
+	}
+
+	Initialize(conList);
+}
+
+SimpConstraints::SimpConstraints(const ConsList& clist)
+{
+	Initialize(clist);
+}
+
+void
+SimpConstraints::Initialize(const ConsList& ctempList)
 {
 	int count = 0;
 	pair<map<Variable*,int>::iterator, bool> ret;
@@ -1279,6 +1602,7 @@ SimpConstraints::SimpConstraints(const ConsList& ctempList)
 			vector<Variable*> vlist;
 			(*itc)->GetVars(vlist);
 			vector<Variable*>::iterator itv;
+
 			for (itv = vlist.begin();itv != vlist.end();itv++)
 			{
 				ret = varTable.insert(map<Variable*, int>::value_type(*itv, count));
@@ -1314,7 +1638,6 @@ SimpConstraints::SimpConstraints(const ConsList& ctempList)
 	}
 	CreateEquiClass();
 
-	Constraint* newCst;
 	//Third iteration: Build a new ConstraintsTemplate
 	for (itcl = ctempList.begin();itcl != ctempList.end();itcl++)
 	{
@@ -1325,7 +1648,7 @@ SimpConstraints::SimpConstraints(const ConsList& ctempList)
 			//insert non-equality constraints
 			if ((*itc)->IsUnif() == false)
 			{
-				newCst = new Constraint(**itc);
+				Constraint* newCst = new Constraint(**itc);
 				newCst->VarReplace(varSet, varTable, varRevTable);
 				cts.AddConstraint(newCst);
 			}
@@ -1356,6 +1679,23 @@ SimpConstraints::CreateEquiClass()
 		}
 	}
 
+}
+
+Variable*
+SimpConstraints::FindRootVar(Variable* var)
+{
+	map<Variable*, int>::iterator itm = varTable.find(var);
+	if (itm != varTable.end())
+	{
+		int value = itm->second;
+		int root = varSet.Root(value);
+		Variable* rootVar = varRevTable.at(root);
+		return rootVar;
+	}
+	else
+	{
+		return NULL;
+	}
 }
 
 void

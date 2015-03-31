@@ -5,8 +5,8 @@
  *      Author: cchen
  */
 
-#ifndef AUXILIARY_H_
-#define AUXILIARY_H_
+#ifndef SDN_AUXILIARY_H_
+#define SDN_AUXILIARY_H_
 
 #include <vector>
 
@@ -33,4 +33,4 @@ private:
 
 
 
-#endif /* AUXILIARY_H_ */
+#endif /* SDN_AUXILIARY_H_ */

@@ -15,7 +15,7 @@
 #include "sdn-formula.h"
 #include "sdn-graph.h"
 #include "sdn-property.h"
-//#include "parser-util.h"
+#include "sdn-parse-smtlib.h"
 
 using namespace std;
 
@@ -25,8 +25,6 @@ class DpoolNode;
 class BaseNode;
 class PropNode;
 
-typedef list<const ConstraintsTemplate*> ConsList;
-typedef list<Formula*> FormList;
 typedef list<DerivNode*> DerivNodeList;
 typedef list<BaseNode*> BaseNodeList;
 typedef list<PropNode*> PropNodeList;
@@ -34,6 +32,10 @@ typedef list<DpoolNode*> DpoolNodeList;
 typedef map<string, DerivNodeList> DerivMap;
 typedef map<string, BaseNodeList> BaseMap;
 typedef map<string, PropNodeList> PropMap;
+
+typedef pair<const Tuple*, const DerivNode*> TupleLineage;
+typedef map<string, list<TupleLineage> > ExQuanTuple;
+
 
 typedef pair<const ConsList&, const FormList&> Obligation;
 
@@ -48,12 +50,18 @@ public:
 
 	const Tuple* GetHead() const {return head;}
 
-	void FindSubTuple(const list<PredicateInstance*>& plist,
-					map<string, list<const Tuple*> >& tlist) const{}
+	virtual void FindSubTuple(const list<PredicateInstance*>& plist,
+					  	  	  ExQuanTuple& tlist,
+							  const DerivNode* desigHead) const{}
+
+	//TODO: Don't let the user do the garbage collection
+	virtual void CreateDerivInst(VarMap&);
 
 	void PrintHead() const;
 
 	void PrintHeadInst(const map<Variable*, int>&) const;
+
+	void PrintHeadInst(const map<Variable*, int>&, VarMap&) const;
 
 	virtual void PrintCumuCons() const{}
 
@@ -62,11 +70,15 @@ public:
 
 	virtual void PrintInstance(const map<Variable*, int>&) const{}
 
+	virtual void PrintInstance(const map<Variable*, int>&, VarMap&) const{}
+
 	//Print the whole derivation represented by the DerivNode
 	virtual void PrintDerivation() const{}
 
 	//Print a real execution corresponding to the derivation
 	virtual void PrintExecution(map<Variable*, int>&) const{}
+
+	virtual void PrintExecInst(map<Variable*, int>&, VarMap&) const{}
 
 	virtual ~DpoolNode(){}
 
@@ -106,11 +118,12 @@ public:
 	const DpoolNodeList& GetBodyDerivs() const{return bodyDerivs;}
 
 	void FindSubTuple(const list<PredicateInstance*>&,
-					  map<string, list<const Tuple*> >&) const;
+					  ExQuanTuple&,
+					  const DerivNode*) const;
+
+	void CreateDerivInst(VarMap&);
 
 	void PrintHead() const;
-
-	void PrintHeadInst(const map<Variable*, int>&) const;
 
 	void PrintCumuCons() const;
 
@@ -119,11 +132,16 @@ public:
 
 	void PrintInstance(const map<Variable*, int>&) const;
 
+	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
+
 	//Print the whole derivation represented by the DerivNode
 	void PrintDerivation() const;
 
 	//Print a real execution corresponding to the derivation
 	void PrintExecution(map<Variable*, int>&) const;
+
+	//From derivation to instances to execution traces
+	void PrintExecInst(map<Variable*, int>&, VarMap&) const;
 
 	virtual ~DerivNode();
 
@@ -148,7 +166,8 @@ public:
 	const ConstraintsTemplate* GetCons() const{return cts;}
 
 	void FindSubTuple(const list<PredicateInstance*>&,
-					map<string, list<const Tuple*> >&) const;
+					  ExQuanTuple&,
+					  const DerivNode*) const;
 
 	void PrintCumuCons() const;
 
@@ -156,9 +175,13 @@ public:
 
 	void PrintInstance(const map<Variable*, int>&) const;
 
+	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
+
 	void PrintDerivation() const;
 
 	void PrintExecution(map<Variable*, int>&) const;
+
+	void PrintExecInst(map<Variable*, int>&, VarMap&) const;
 
 	~BaseNode();
 private:
@@ -175,7 +198,8 @@ public:
 	Formula* GetInv() {return prop;}
 
 	void FindSubTuple(const list<PredicateInstance*>&,
-					  map<string, list<const Tuple*> >&) const;
+					  ExQuanTuple&,
+					  const DerivNode*) const;
 
 	void PrintCumuCons() const;
 
@@ -183,9 +207,13 @@ public:
 
 	void PrintInstance(const map<Variable*, int>&) const;
 
+	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
+
 	void PrintDerivation() const;
 
 	void PrintExecution(map<Variable*, int>&) const;
+
+	void PrintExecInst(map<Variable*, int>&, VarMap&) const;
 
 	~PropNode();
 private:
@@ -215,11 +243,13 @@ public:
 
 	void UpdateDerivNode(string tpName, DerivNode* dnode);
 
-	bool VerifyInvariants(const Invariant&) const;
+	void VerifyInvariants(const Invariant&) const;
 
 	const DerivMap& GetDerivation() const{return derivations;}
 
 	const DerivNodeList& GetDerivList(string tpName) const;
+
+	void CreateDerivInst(const DpoolNode&, VarMap&);
 
 	void PrintDpool() const;
 

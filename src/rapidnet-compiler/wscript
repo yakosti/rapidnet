@@ -3,9 +3,9 @@
 def configure(conf):
   conf.env['BOOST_DATE_TIME'] = conf.check(lib='boost_date_time', define_name='BOOST_DATE_TIME', uselib='BOOST_DATE_TIME')
   conf.report_optional_feature("boost_date_time", "boost_date_time library",
-  conf.env['BOOST_DATE_TIME'], "library 'boost_date_time' not found")
+  conf.env['BOOST_DATE_TIME'], "library 'boost_date_time' not found")  
 
-
+  
 def build(bld):
     module = bld.create_ns3_module('rapidnet-compiler', ['node'])
     module.source = [
@@ -21,10 +21,11 @@ def build(bld):
         'sdn-graph.cc',
         'sdn-derivation.cc',
         'sdn-formula.cc',
-        'auxiliary.cc',
+        'sdn-auxiliary.cc',
         'sdn-property.cc',
-
-        ]
+        'sdn-parse-smtlib.cc',
+        'sdn-verification.cc',        
+        ]    
 
     headers = bld.new_task_gen('ns3header')
     headers.module = 'rapidnet-compiler'
@@ -41,26 +42,26 @@ def build(bld):
         'sdn-derivation.h',
         'sdn-graph.h',
         'sdn-formula.h',
-        'auxiliary.h',
+        'sdn-auxiliary.h',
         'sdn-property.h',
         'sdn-parse-smtlib.h',
-        'sdn-verification.h'
-        ]
+        'sdn-verification.h',        
+        ]     
+    
 
-    obj = bld.create_ns3_program('rapidnet-compiler')
-    obj.source = 'rapidnet-compiler.cc'
-    objdp = bld.create_ns3_program('rapidnet-dpcompiler')
-    objdp.source = 'rapidnet-dpcompiler.cc'
+    # obj = bld.create_ns3_program('rapidnet-compiler')
+    # obj.source = 'rapidnet-compiler.cc'
+    obj = bld.create_ns3_program('rapidnet-dpcompiler')
+    obj.source = 'rapidnet-dpcompiler.cc'
 
     ## ********************** Linux ********************************* ##
-    #objdp.env.append_value("CXXFLAGS", "-I/usr/include")
-    #objdp.env.append_value("LINKFLAGS", ["-L/usr/lib"])
-    #objdp.env.append_value("LIB", ["z3"])
+    # obj.env.append_value("CXXFLAGS", "-I/usr/include")
+    # obj.env.append_value("LINKFLAGS", ["-L/usr/lib"])
+    # obj.env.append_value("LIB", ["z3"])
 
     ## ********************** MacOS ********************************* ##
-    objdp.env.append_value("CXXFLAGS", "-I/opt/local/Library/Frameworks/Python.framework/Versions/2.7/include")
-    objdp.env.append_value("LINKFLAGS", "-L/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib")
-    objdp.env.append_value("LIB", ["z3"])
+    # obj.env.append_value("CXXFLAGS", "-I/opt/local/Library/Frameworks/Python.framework/Versions/2.7/include")
+    # obj.env.append_value("LINKFLAGS", "-L/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib")
+    # obj.env.append_value("LIB", ["z3"])
     
-    bld.env.append_value('LINKFLAGS', '-lgmp')
-	
+    bld.env.append_value('LINKFLAGS', ['-lgmp', '-lz3'])

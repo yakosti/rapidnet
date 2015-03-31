@@ -4,8 +4,6 @@
 #include <iostream>
 #include <string>
 #include "sdn-formula.h"
-#include "sdn-graph.h"
-#include "sdn-derivation.h"
 #include <stdio.h>
 #include <vector>
 #include <algorithm>
@@ -18,6 +16,16 @@
 
 using namespace z3;
 using namespace std;
+
+//TODO: avoid global variables
+extern std::map<string, string> all_free_variables;
+extern std::map<string, string> all_bound_variables;
+extern std::map<string, string> all_predicate_schemas;
+extern std::map<string, string> all_function_schemas;
+extern std::map<string, string> all_constants;
+
+// mapping from var to variable
+extern std::map<string, Variable*> name_to_rapidnet_variable;
 
 /* 
  * *******************************************************************************
@@ -34,41 +42,6 @@ string parseConstraint(Constraint* c);
 string parseConnective(Connective* c);
 string parseQuantifier(Quantifier* q);
 
-/* for check-sat */
-struct Pair {
-    int first;
-    string second;
-};
-
-// All seperate variables should have DIFFERENT names
-// (variableName, variableDeclaration)
-std::map<string, string> all_free_variables;
-std::map<string, string> all_bound_variables;
-std::map<string, string> all_predicate_schemas;
-std::map<string, string> all_function_schemas;
-std::map<string, string> all_constants;
-
-// name of var, variable
-std::map<string, Variable*> name_to_rapidnet_variable;
-
-std::map<Variable*, Pair*> temp_map;
-
-/* 
- * *******************************************************************************
- *                                                                               *
- *                              DECLARE VARIABLES                                *
- *                                                                               *
- * *******************************************************************************
- */
-
-
-
-
-
-
-
-
-
 
 /* 
  * *******************************************************************************
@@ -78,50 +51,12 @@ std::map<Variable*, Pair*> temp_map;
  * *******************************************************************************
  */
 
-void clearAllVariables() {
-	all_free_variables.clear();
-	all_bound_variables.clear();
-	all_predicate_schemas.clear();
-	all_function_schemas.clear();
-	all_constants.clear();
-	name_to_rapidnet_variable.clear();
-}
+void clearAllVariables();
 
-string IntegerToString(int number) {
-	std::ostringstream ostr; //output string stream
-	ostr << number; 
-	std::string theNumberString = ostr.str(); //the str() function of the stream 
-	return theNumberString;
-}
+string IntegerToString(int);
 
 /* likely will delete */
-string get_console_output(const char* filename) {
-	char* result = (char*) malloc(100);
-	strcpy(result, "cvc4 "); // copy string one into the result.
-	strcat(result, filename); // append string two to the result.
-	
-	FILE* fp = popen(result, "r");
-    if (fp == NULL) { 
-        throw std::invalid_argument("Reading file failed");
-    } 
-    char buffer[1028];
-    string str = ""; 
-    while (fgets(buffer, 1028, fp) != NULL) { 
-        str = str + buffer;
-    } 
-    pclose(fp);
-    return str;
-}
-
-/* 
- * *******************************************************************************
- *                                                                               *
- *                              HELPER FUNCTIONS                                 *
- *                                                                               *
- * *******************************************************************************
- */
-
-
+string get_console_output(const char*);
 
 /* 
  * *******************************************************************************
@@ -132,191 +67,23 @@ string get_console_output(const char* filename) {
  */
 
 
-void print_rapidnet_names_and_values(std::map<Variable*, int> mymap) {
-	std::cout << "\n******** Printing Rapidnet -> Int Subst map **********" << endl;
-	for (std::map<Variable*, int>::const_iterator it = mymap.begin(); it != mymap.end(); it++) {
-	    cout << "Variable is mapped to: "<< it->first->GetVariableName() << " = " << it->second << endl;
-	}
-	std::cout << "******** Printing Rapidnet -> Int Subst map **********\n" << endl;
-}
+void print_rapidnet_names_and_values(std::map<Variable*, int>);
 
-string truncate_string_at_exclamation(string str) {
-	string nstr = "";
-	for (int n = 0; n<str.size(); n++) {
-    	if (str[n] == '!') {
-    		return nstr;
-    	} else {
-    		nstr += str[n];
-    	}
-	}
-	return nstr;
-}
+string truncate_string_at_exclamation(string);
 
-/* map from Z3 model to valu */
-map<Variable*, int> map_substititions(context & c, model m) {
-	map<Variable*, int> variable_map;
-    for (int i = 0; i < m.size(); i++) {
-        func_decl v = m[i];
-        string namestr = Z3_get_symbol_string(c, v.name());
-        string cnamestr = truncate_string_at_exclamation(namestr);
+/* map from Z3 model to value */
+map<Variable*, int> map_substititions(context &, model);
 
-        if (v.arity() == 0) { // is a constant 
-        	expr value = m.get_const_interp(v);
-        	Variable* rapidnet_var = name_to_rapidnet_variable[cnamestr];
-        	int myint = -1; //default value
-        	Z3_get_numeral_int(c, value, &myint);
-        	if (rapidnet_var) variable_map[rapidnet_var] = myint; //only add to map if var exists
-        } 
-    }
-    return variable_map;
-}
+string variables_declaration_to_str(std::map<string,string>);
 
-string variables_declaration_to_str(std::map<string,string> mymap) {
-	string str = "";
-	for (std::map<string, string>::const_iterator it = mymap.begin(); it != mymap.end(); it++) {
-		str += it->second + "\n";
-	}
-	return str;
-}
+map<Variable*, int> checking_with_z3(string);
 
-map<Variable*, int> checking_with_z3(string str_to_check) {
-	context c;
-	solver s(c);
+map<Variable*, int> check_sat(const ConsList&, const FormList&);
 
-	Z3_ast parsed = Z3_parse_smtlib2_string(c, str_to_check.c_str(), 0, 0, 0, 0, 0, 0);
-    expr e(c, parsed);
-    s.add(e); // <--- Add to solver here
-
-    map<Variable*, int> mapsubst;
-
-    if (s.check() == sat) {
-        model m = s.get_model();
-        std::cout << "@@@@@@@ SAT MODEL @@@@@@@@\n" << m << endl;
-        mapsubst = map_substititions(c, m);
-        print_rapidnet_names_and_values(mapsubst);
-    } else {
-    	std::cout << "@@@@@@@ UNSAT MODEL @@@@@@@@\n"  << endl;
-    }
-    return mapsubst;
-}
-
-map<Variable*, int> check_sat(const ConsList& clist, const FormList& flist) {
-	ConsList::const_iterator itl;
-	ConstraintList::const_iterator itc;
-	string constraint_str = "";
-	int ccount = 0;
-	for (itl = clist.begin(); itl != clist.end(); itl++) {
-		const ConstraintList& cl = (*itl)->GetConstraints();
-		for (itc = cl.begin(); itc != cl.end(); itc++) {
-			Constraint* newCons = (Constraint*)*itc;
-			if (dynamic_cast<Constraint*>(newCons)) {
-				newCons->Print();
-				string constr = parseConstraint(newCons);
-				ccount += 1;
-				string counterstr = "c" + IntegerToString(ccount);
-				constraint_str += "(assert " + constr + ")\n";
-			} 
-		}
-	}
-
-	/* formula */
-	FormList::const_iterator itf;
-	string formula_str = "";
-	int fcount = 0;
-	for (itf = flist.begin(); itf != flist.end(); itf++) {
-	    Formula* nform = (Formula*)*itf;
-	    string formstr = parseFormula(nform);
-	   	fcount += 1;
-	    string fcountstr = "f" + IntegerToString(fcount);
-	    formula_str += "(assert " + formstr + ")\n";
-	}	
-
-	string fvstr = variables_declaration_to_str(all_free_variables);
-	string pstr = variables_declaration_to_str(all_predicate_schemas);
-	string fstr = variables_declaration_to_str(all_function_schemas);
-	string cstr = variables_declaration_to_str(all_constants);
-	
-	string to_check = fvstr + pstr + fstr + cstr + constraint_str + formula_str;
-	cout << "\n Testing if this is satisfiable: \n" << to_check << endl;
-
-	map<Variable*, int> mapsubst = checking_with_z3(to_check);
-
-	clearAllVariables();
-	return mapsubst;
-}
-
-map<Variable*, int> check_sat_generalized(const FormList& flist) {
-	/* formula */
-	FormList::const_iterator itf;
-	string formula_str = "";
-	int fcount = 0;
-	for (itf = flist.begin(); itf != flist.end(); itf++) {
-	    Formula* nform = (Formula*)*itf;
-	    string formstr = parseFormula(nform);
-	   	fcount += 1;
-	    string fcountstr = "f" + IntegerToString(fcount);
-	    formula_str += "(assert " + formstr + ")\n";
-	}	
-
-	string fvstr = variables_declaration_to_str(all_free_variables);
-	string pstr = variables_declaration_to_str(all_predicate_schemas);
-	string fstr = variables_declaration_to_str(all_function_schemas);
-	string cstr = variables_declaration_to_str(all_constants);
-	
-	string to_check = fvstr + pstr + fstr + cstr + formula_str;
-	cout << "\n Testing if this is satisfiable: \n" << to_check << endl;
-
-	map<Variable*, int> mapsubst = checking_with_z3(to_check);
-
-	clearAllVariables();
-	return mapsubst;
-}
-
+map<Variable*, int> check_sat_generalized(const FormList&);
 
 /* To be removed when everything is build out */
-void z3_model_test() {
-    std::cout << "z3_parsing_get_model_example\n";
-
-    context c;
-    string testing = "(set-option :produce-models true)(set-logic AUFLIA)(declare-fun x () Int)(declare-fun y () Int)(declare-fun z () Int)(declare-fun w () Int)(assert (= x y))(assert (= z w))(assert (distinct x w))";
-
-    Z3_ast parsed = Z3_parse_smtlib2_string(c, testing.c_str(), 0,0,0,0,0,0);
-    expr e(c, parsed);
-
-    solver s(c);
-
-    s.add(e); // <--- Add constraints to solver here
-
-    if (s.check() == sat) {
-        std::cout << "SAT\n";
-    } else {
-        std::cout << "UNSAT\n";
-    }
-
-    model m = s.get_model();
-    std::cout << m << "\n";
-
-    // traversing the model
-    for (unsigned i = 0; i < m.size(); i++) {
-        func_decl v = m[i];
-        // this problem contains only constants
-        assert(v.arity() == 0); 
-        std::cout << v.name() << " = " << m.get_const_interp(v) << "\n";
-    }
-}
-
-
-/* 
- * *******************************************************************************
- *                                                                               *
- *                                WRITE TO Z3	                                 *
- *                                                                               *
- * *******************************************************************************
- */
-
-
-
-
+void z3_model_test();
 
 /* 
  * *******************************************************************************
@@ -326,97 +93,11 @@ void z3_model_test() {
  * *******************************************************************************
  */
 
-void writeDeclaration(std::map<string,string> mymap, ofstream& myfile) {
-	if (myfile.is_open()) {
-		for (std::map<string,string>::const_iterator it = mymap.begin(); it != mymap.end(); it++) {
-			myfile << it->second + "\n";
-		}
-	}
-}
+void writeDeclaration(std::map<string,string>, ofstream&);
 
-vector<string> parse_one_derivation(const DerivNode* deriv) {
-	deriv->PrintDerivation();
-	const ConstraintsTemplate* contemp = deriv->GetConstraints();
-	const ConstraintList& clist = contemp->GetConstraints();
+void printDeclaration(std::map<string,string>);
 
-	ConstraintList::const_iterator itc;
-	vector<string> all_constraints;
-	for (itc = clist.begin(); itc != clist.end(); itc++) {
-	    Constraint* newCons = new Constraint((**itc));
-	    newCons->Print();
-	    string constr = parseFormula(newCons);
-	    all_constraints.push_back("(assert" + constr + ")\n");
-	}
-	return all_constraints;
-}
-
-
-void printDeclaration(std::map<string,string> mymap) {
-	for (std::map<string,string>::const_iterator it = mymap.begin(); it != mymap.end(); it++) {
-	    cout << it->second << endl;
-	}
-}
-
-
-const char* dlist_filename(const char* dlist_name, int counter) {
-	stringstream temp_str;
-	temp_str<<counter;
-	std::string str = temp_str.str();
-	const char* pchar = str.c_str();
-	char* result = (char*)malloc(100);
-
-	strcpy(result, dlist_name); // copy string one into the result.
-	strcat(result, pchar); // append string two to the result.
-	strcat(result, ".smt2");
-
-	return result;
-}
-
-
-/* Call only at the end 
- */
-void writeToFile(const char* filename, const DerivNodeList& dlist) {
-	DerivNodeList::const_iterator itd;
-	int counter = 0;
-
-	for (itd = dlist.begin(); itd != dlist.end(); itd++) { 
-		counter = counter+1;
-		
-		ofstream myfile;
-		const char* dfname = dlist_filename(filename, counter);
-		myfile.open(dfname);
-
-		vector<string> all_constraints = parse_one_derivation(*itd);
-
-		// print all the variables declarations
-		writeDeclaration(all_free_variables, myfile);
-		writeDeclaration(all_bound_variables, myfile);
-		writeDeclaration(all_predicate_schemas, myfile);
-		writeDeclaration(all_function_schemas, myfile);
-
-		//assert the constraints
-		for (int i=0; i<all_constraints.size(); i++) {
-			string constrd = all_constraints[i];
-			myfile << constrd;
-		}
-
-		myfile.close();
-
-		string output = get_console_output(dfname);
-  		cout << "result of running cvc4 on file: " << output << endl;
-	}
-}
-
-
-/* 
- * *******************************************************************************
- *                                                                               *
- *                                WRITE TO FILE                                  *
- *                                                                               *
- * *******************************************************************************
- */
-
-
+const char* dlist_filename(const char*, int);
 
 
 /* 
@@ -428,97 +109,32 @@ void writeToFile(const char* filename, const DerivNodeList& dlist) {
  */
 
 
-string parseVariableType(Variable::TypeCode v) {
-	switch (v) {
-		case Variable::INT:
-			return "Int";
-		case Variable::BOOL:
-			return "Bool";
-		case Variable::DOUBLE:
-			return "Real";
-		case Variable::STRING:
-			return "Int";
-		default:
-			throw std::invalid_argument("Not a valid type, must be INT/BOOL/DOUBLE/STRING");
-	}
-}
+string parseVariableType(Variable::TypeCode);
 
 /* need to store SMTLIB declaration
  * need to store name->rapidnet variable also
  */
-string parseFreeVariable(Variable* v) {
-	Variable::TypeCode vartype = v->GetVariableType();
-	string varname = v->GetVariableName();
+string parseFreeVariable(Variable*);
 
-	//present, return stored variable
-	if (all_free_variables.find(varname) != all_free_variables.end()) return varname;
-	name_to_rapidnet_variable[varname] = v;
+string parseBoundVariable(Variable*, string);
 
-	//absent, create and store in hash map
-	switch (vartype) {
-		case Variable::INT: {
-			string declare = "(declare-fun " + varname + " () Int)";
-			all_free_variables[varname] = declare;
-			return varname;
-		} case Variable::DOUBLE: {
-			string declare = "(declare-fun " + varname + " () Real)";
-			all_free_variables[varname] = declare;
-			return varname;
-		} case Variable::BOOL: {
-			string declare = "(declare-fun " + varname + " () Bool)";
-			all_free_variables[varname] = declare;
-			return varname;
-		} case Variable::STRING: {
-			string declare = "(declare-fun " + varname + " () Int)";
-			all_free_variables[varname] = declare;
-			return varname;
-		} default: {
-			throw std::invalid_argument("Not a valid variable type, must be INT/DOUBLE/BOOL/STRING");
-		}
-	}
-}
+string parsePredicateSchema(const PredicateSchema*);
 
+string parsePredicateInstance(PredicateInstance*);
 
-string parseBoundVariable(Variable* v, string qt) {
-	Variable::TypeCode vartype = v->GetVariableType();
-	string varname = v->GetVariableName();
+string parseFormula(Formula*);
 
-	//present, return stored variable
-	if (all_bound_variables.find(varname) != all_bound_variables.end()) return varname;
+string parseConnective(Connective*);
 
-	//absent, create and store in hash map, but return variable name only
-	switch (vartype) {
-		case Variable::INT: {
-			string declare = qt + " ((" + varname + " Int))";
-			all_bound_variables[varname] = declare;
-			return varname;
-		} case Variable::DOUBLE: {
-			string declare = qt + " ((" + varname + " Real))";
-			all_bound_variables[varname] = declare;
-			return varname;
-		} case Variable::BOOL: {
-			string declare = qt + " ((" + varname + " Bool))";
-			all_bound_variables[varname] = declare;
-			return varname;
-		} case Variable::STRING: {
-			string declare = qt + " ((" + varname + " Int))";
-			all_bound_variables[varname] = declare;
-			return varname;
-		} default: {
-			throw std::invalid_argument("Not a valid variable type, must be INT/DOUBLE/BOOL/STRING");
-		}
-	}
-}
+string parseConstraint(Constraint*);
 
+string parseArithmetic(Arithmetic*);
 
-/* 
- * *******************************************************************************
- *                                                                               *
- *                                    BASE CASE                                  *
- *                                                                               *
- * *******************************************************************************
- */
+string makeQuantifierString(string, vector<Variable*>, string);
 
+string parseQuantifier(Quantifier*);
+
+string parseFunctionSchema(FunctionSchema*);
 
 
 string parsePredicateSchema(const PredicateSchema* s) {
@@ -694,39 +310,14 @@ string parseUserFunction(UserFunction* uf) {
 	return user_function_smtlib;
 }
 
+string parseUserFunction(UserFunction*);
+
 
 /* Parse Terms
  * needs bitvector for double integers
  * constants are store here
  */
-string parseTerm(Term* t) {
-	if (dynamic_cast<IntVal*>(t)) {
-		int value = ((IntVal*)t)->GetIntValue();
-		string strvalue = IntegerToString(value);
-	 	return strvalue;
-	} else if (dynamic_cast<BoolVal*>(t)) {
-		bool value = ((BoolVal*)t)->GetBoolValue();
-	 	if (value) return "true";
-	 	return "false";
-	} else if (dynamic_cast<StringVal*>(t)) { //constants are saved here 
-		string value = ((StringVal*)t)->GetStringValue();
-		string constant_smtlib = "(declare-const " + value + " Int)";
-		all_constants[value] = constant_smtlib;
-		return value;
-	} else if (dynamic_cast<Variable*>(t)) {
-		Variable* v = (Variable*)t;
-		bool isbound = v->GetFreeOrBound();
-		if (isbound) return v->GetVariableName();
-		return parseFreeVariable(v);
-	} else if (dynamic_cast<UserFunction*>(t)) {
-		return parseUserFunction((UserFunction*)t);
-	} else if (dynamic_cast<Arithmetic*>(t)){ 
-		return parseArithmetic((Arithmetic*)t);
-	} else {
-		throw std::invalid_argument("invalid term");
-	}
-}
-
+string parseTerm(Term*);
 #endif
 
 
