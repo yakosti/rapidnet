@@ -49,10 +49,10 @@ def build(bld):
         ]     
     
 
-    # obj = bld.create_ns3_program('rapidnet-compiler')
-    # obj.source = 'rapidnet-compiler.cc'
-    obj = bld.create_ns3_program('rapidnet-dpcompiler')
-    obj.source = 'rapidnet-dpcompiler.cc'
+    obj = bld.create_ns3_program('rapidnet-compiler')
+    obj.source = 'rapidnet-compiler.cc'
+    objdp = bld.create_ns3_program('rapidnet-dpcompiler')
+    objdp.source = 'rapidnet-dpcompiler.cc'
 
     ## ********************** Linux ********************************* ##
     # obj.env.append_value("CXXFLAGS", "-I/usr/include")
