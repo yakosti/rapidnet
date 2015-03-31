@@ -28,6 +28,7 @@
 #include <fstream>
 #include <string>
 #include <sys/wait.h>
+#include <ctime>
 
 #include "ol-context.h"
 #include "eca-context.h"
@@ -168,6 +169,7 @@ void parseOverlog (string overlogFile, Ptr<OlContext> ctxt,
 void compile (string overlogFile, bool provenanceEnabled)
 {
   NS_LOG_INFO ("Compiling NDLog file:\t" << overlogFile);
+
   // Parse
   Ptr<OlContext> ctxt (new OlContext ());
   Ptr<TableStore> tableStore (new TableStore (ctxt));
@@ -196,17 +198,22 @@ void compile (string overlogFile, bool provenanceEnabled)
   //dpool->PrintAllDeriv();
 
   //Verify invariant property
-  dpool->VerifyInvariants(inv);
+  //dpool->VerifyInvariants(inv);
 
   //Property verification
   //User-defined property
-//  Property p = Property();
-//  p.Print();
-//
-//  NS_LOG_DEBUG("Property constructed.");
-//  //Verify the property
-//  bool res = CheckProperty(*dpool, p);
-//  cout << "Is the property valid? " << (res?"Yes":"No") << endl;
+
+  int start_s=clock();
+  Property p = Property();
+  p.Print();
+
+  NS_LOG_DEBUG("Property constructed.");
+  //Verify the property
+  bool res = CheckProperty(*dpool, p);
+  cout << "Is the property valid? " << (res?"Yes":"No") << endl;
+
+  int stop_s=clock();
+  cout << "Running time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << "ms" << endl;
 
   //test_check_sat();
 }
@@ -219,11 +226,11 @@ int main (int argc, char** argv)
 //  LogComponentEnable ("RapidNetDPGraph", LOG_LEVEL_FUNCTION);
 //  LogComponentEnable ("DPGraph", LOG_LEVEL_FUNCTION);
   LogComponentEnable ("Formula", LOG_LEVEL_FUNCTION);
-//  LogComponentEnable ("Dpool", LOG_LEVEL_FUNCTION);
-//  LogComponentEnable ("Verification", LOG_LEVEL_FUNCTION);
+  LogComponentEnable ("Dpool", LOG_LEVEL_FUNCTION);
+  LogComponentEnable ("Verification", LOG_LEVEL_FUNCTION);
 //  LogComponentEnable ("Property", LOG_LEVEL_FUNCTION);
   LogComponentEnable ("RapidNetDPGraph", LOG_INFO);
-  LogComponentEnable ("Dpool", LOG_INFO);
+//  LogComponentEnable ("Dpool", LOG_INFO);
   LogComponentEnable ("DPGraph", LOG_INFO);
 //  LogComponentEnable ("Formula", LOG_INFO);
   LogComponentEnable ("Property", LOG_INFO);

@@ -168,6 +168,34 @@ Tuple::PrintInstance(const map<Variable*, int>& valueMap)
 	cout << ")";
 }
 
+void
+Tuple::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) const
+{
+	cout << tpName << "(";
+	vector<Variable*>::const_iterator it;
+	for (it = args.begin(); it != args.end(); it++)
+	{
+		  if (it != args.begin())
+		  {
+			 cout << ",";
+		  }
+
+		  Variable* instVar = vmap.at(*it);
+		  map<Variable*, int>::const_iterator itm;
+		  itm = valueMap.find(instVar);
+		  int value = 0;
+		  if (itm != valueMap.end())
+		  {
+			  value = itm->second;
+		  }
+		  cout << "(";
+		  instVar->PrintTerm();
+		  cout << ")";
+		  cout << value;
+	}
+	cout << ")";
+}
+
 Tuple::~Tuple()
 {
 	vector<Variable*>::iterator it;

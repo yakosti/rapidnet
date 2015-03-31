@@ -61,9 +61,13 @@ public:
 					const map<Variable*, int>,
 					const map<int, Variable*>){}
 
+	virtual void CreateVarInst(VarMap&){}
+
 	virtual void PrintTerm() =0;
 
 	virtual void PrintInstance(const map<Variable*, int>&) const =0;
+
+	virtual void PrintInstance(const map<Variable*, int>&, VarMap&) const{}
 };
 
 
@@ -156,9 +160,13 @@ public:
 					const map<Variable*, int>,
 					const map<int, Variable*>);
 
+	virtual void CreateVarInst(VarMap&);
+
 	void PrintTerm();
 
 	void PrintInstance(const map<Variable*, int>&) const;
+
+	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
 
 	~UserFunction();
 
@@ -185,6 +193,8 @@ public:
     void PrintTerm(){}
 
     virtual void PrintInstance(const map<Variable*, int>&) const{}
+
+    virtual void PrintInstance(const map<Variable*, int>&, VarMap&) const{}
 };
 
 
@@ -205,6 +215,8 @@ public:
 	void PrintTerm();
 
 	void PrintInstance(const map<Variable*, int>&) const;
+
+	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
 
 private:
 	int value;
@@ -230,6 +242,8 @@ public:
 
 	void PrintInstance(const map<Variable*, int>&) const;
 
+	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
+
 private:
 	double value;
 };
@@ -252,6 +266,8 @@ public:
 
 	void PrintInstance(const map<Variable*, int>&) const;
 
+	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
+
 private:
 	string value;
 };
@@ -273,6 +289,8 @@ public:
 	void PrintTerm();
 
 	void PrintInstance(const map<Variable*, int>&) const;
+
+	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
 
 private:
 	bool value;
@@ -311,11 +329,15 @@ public:
 					const map<Variable*, int>,
 					const map<int, Variable*>);
 
+	virtual void CreateVarInst(VarMap&);
+
 	void GetVars(vector<Variable*>&);
 
 	void PrintTerm();
 
 	void PrintInstance(const map<Variable*, int>&) const;
+
+	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
 
 	void PrintOp() const;
 
@@ -356,7 +378,7 @@ class Formula
 public:
 	Formula(){}
 
-	virtual Formula* Clone(){return NULL;}
+	virtual Formula* Clone(){return new Formula();}
 
 	virtual void Print() const{}
 
@@ -374,7 +396,17 @@ public:
 	virtual ~Formula(){}
 };
 
-class True: public Formula{};
+class True: public Formula
+{
+public:
+	True(){}
+
+	True(const True&){}
+
+	True* Clone();
+
+	void Print() const{cout << "True";}
+};
 
 class False: public Formula{};
 
@@ -562,9 +594,13 @@ public:
 	//TODO: make SimpConstraints const
 	void VarReplace(SimpConstraints&);
 
+	virtual void CreateVarInst(VarMap&);
+
 	void Print() const;
 
 	void PrintInstance(const map<Variable*, int>&) const;
+
+	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
 
 	void PrintOp() const;
 
@@ -598,11 +634,15 @@ public:
 
 	const ConstraintList& GetConstraints() const {return constraints;}
 
-	bool IsEmpty();
+	bool IsEmpty() const;
+
+	void CreateVarInst(VarMap&);
 
 	void PrintTemplate() const;
 
 	void PrintInstance(const map<Variable*, int>&) const;
+
+	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
 
 	~ConstraintsTemplate();
 

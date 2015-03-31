@@ -64,6 +64,8 @@ public:
 
 	void PrintInstance(const map<Variable*, int>&);
 
+	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
+
 	~Tuple();
 
 private:
