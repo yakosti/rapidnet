@@ -272,11 +272,13 @@ bool CheckExistProp(const Property& prop,
 			flist.push_back(newForm);
 		}
 
+		NS_LOG_DEBUG("Delete here?");
 		//Deallocate memory of copyclist
 		for (itcp = copyclist.begin();itcp != copyclist.end();itcp++)
 		{
 			delete (*itcp);
 		}
+		NS_LOG_DEBUG("Delete here??");
 	}
 
 
@@ -323,17 +325,18 @@ bool CheckExistProp(const Property& prop,
 
 	//Collect universally quantified constraints
 	const ConstraintsTemplate* cTemp = prop.GetUniCons();
-	ConstraintsTemplate uniCons(*cTemp);
-	uniCons.ReplaceVar(headMap);
+	ConstraintsTemplate* uniCons = new ConstraintsTemplate(*cTemp);
+	uniCons->ReplaceVar(headMap);
+
 
 	//Replace variables with representative ones of the equivalent class
 	list<SimpConstraints*>::iterator its;
 	for (its = slist.begin();its != slist.end();its++)
 	{
-		uniCons.ReplaceVar(**its);
+		uniCons->ReplaceVar(**its);
 	}
 
-	cslist.push_back(&uniCons);
+	cslist.push_back(uniCons);
 
 //	cout << "cslist contents:" << endl;
 //	for (ConsList::iterator itc = cslist.begin();itc != cslist.end();itc++)
@@ -342,40 +345,62 @@ bool CheckExistProp(const Property& prop,
 //	}
 
 	//Check satisfiability of cslist + flist.
-	NS_LOG_INFO("Check satisfiability of the assumption.");
-	map<Variable*, int> assumpValue = check_sat(cslist, flist);
-	if (assumpValue.size() == 0)
+	NS_LOG_INFO("Check satisfiability of the assumption:");
+
+	//Check if there is at least one Constraint or Formula
+	ConsList::iterator itcp;
+	bool EmptyAssump = true;
+	for (itcp = cslist.begin();itcp != cslist.end();itcp++)
 	{
-		//Assumption is not satisfiable
-		NS_LOG_INFO("Assumption of the property is unsatisfiable "
-				"for this derivation branch.");
-
-		//Deallocate memory of free variables
-		map<const DerivNode*, VarMap>::iterator itm;
-		for (itm = dInstMap.begin();itm != dInstMap.end();itm++)
+		if (!(*itcp)->IsEmpty())
 		{
-			VarMap& instMap = itm->second;
-			VarMap::iterator itvm;
-			for (itvm = instMap.begin();itvm != instMap.end();itvm++)
+			EmptyAssump = false;
+			break;
+		}
+	}
+	if (EmptyAssump == true && flist.size() > 0)
+	{
+		EmptyAssump = false;
+	}
+
+	map<Variable*, int> assumpValue;
+	if (EmptyAssump == false)
+	{
+		NS_LOG_DEBUG("The property contains assumption.");
+		assumpValue = check_sat(cslist, flist);
+		if (assumpValue.size() == 0)
+		{
+			//Assumption is not satisfiable
+			NS_LOG_INFO("Assumption of the property is unsatisfiable "
+					"for this derivation branch.");
+
+			//Deallocate memory of free variables
+			map<const DerivNode*, VarMap>::iterator itm;
+			for (itm = dInstMap.begin();itm != dInstMap.end();itm++)
 			{
-				delete itvm->second;
+				VarMap& instMap = itm->second;
+				VarMap::iterator itvm;
+				for (itvm = instMap.begin();itvm != instMap.end();itvm++)
+				{
+					delete itvm->second;
+				}
 			}
-		}
 
-		//Release memory allocated to slist;
-		list<SimpConstraints*>::iterator itl;
-		for (itl = slist.begin();itl != slist.end();itl++)
-		{
-			delete (*itl);
-		}
+			//Release memory allocated to slist;
+			list<SimpConstraints*>::iterator itl;
+			for (itl = slist.begin();itl != slist.end();itl++)
+			{
+				delete (*itl);
+			}
 
-		FormList::iterator itfl;
-		for (itfl = flist.begin();itfl != flist.end();itfl++)
-		{
-			delete (*itfl);
-		}
+			FormList::iterator itfl;
+			for (itfl = flist.begin();itfl != flist.end();itfl++)
+			{
+				delete (*itfl);
+			}
 
-		return true;
+			return true;
+		}
 	}
 
 
@@ -429,7 +454,7 @@ bool CheckExistProp(const Property& prop,
 				pair<const DerivNode*, SimpConstraints&> newPair(*itd, **itsl);
 				pairList.push_back(newPair);
 			}
-			GenCounterExp(assignment, pairList, dInstMap);
+			//GenCounterExp(assignment, pairList, dInstMap);
 			veriResult = false;
 		}
 		else
@@ -454,6 +479,8 @@ bool CheckExistProp(const Property& prop,
 		DerivNodeList::const_iterator itdc;
 		for (itdc = dlist.begin();itdc != dlist.end();itdc++)
 		{
+			string tpName = (*itdc)->GetHead()->GetName();
+			NS_LOG_DEBUG("Search existentially quantified predicates in: " << tpName);
 			(*itdc)->FindSubTuple(existPlist, exTupleList, *itdc);
 		}
 
@@ -476,7 +503,7 @@ bool CheckExistProp(const Property& prop,
 					pairList.push_back(newPair);
 				}
 
-				GenCounterExp(assumpValue, pairList,  dInstMap);
+				//GenCounterExp(assumpValue, pairList,  dInstMap);
 				return false;
 			}
 		}
@@ -514,8 +541,10 @@ bool CheckExistProp(const Property& prop,
 	for (itl = slist.begin();itl != slist.end();itl++)
 	{
 		(*itl)->Print();
-		//delete (*itl);
+		delete (*itl);
 	}
+
+	NS_LOG_DEBUG("Reach here?");
 
 	FormList::iterator itfl;
 	for (itfl = flist.begin();itfl != flist.end();itfl++)
@@ -523,6 +552,11 @@ bool CheckExistProp(const Property& prop,
 		delete (*itfl);
 	}
 
+	delete uniCons;
+
+	NS_LOG_DEBUG("Reach here??");
+
+	//TODO: See how interleaved design leads to chaos
 	//Deallocate memory of free variables
 	map<const DerivNode*, VarMap>::iterator itm;
 	for (itm = dInstMap.begin();itm != dInstMap.end();itm++)
@@ -534,6 +568,8 @@ bool CheckExistProp(const Property& prop,
 			delete itvm->second;
 		}
 	}
+
+	NS_LOG_DEBUG("Reach here???");
 
 	return veriResult;
 }
@@ -548,7 +584,9 @@ bool CheckRecurUniv(const DerivMap& dmap,
 	NS_LOG_FUNCTION("Enumerate universally quantified predicates...");
 	if (itc == plist.end())
 	{
-		return CheckExistProp(prop, dlist);
+		bool res = CheckExistProp(prop, dlist);
+		NS_LOG_DEBUG("Reach here???");
+		return res;
 	}
 
 	string predName = (*itc)->GetName();

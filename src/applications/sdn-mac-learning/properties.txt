@@ -13,10 +13,10 @@ forall Switch, Mac_A, OutPort, flowEntry(Switch, MAC_A, OutPort) ->
 2. Forall: (@End-host) Have received a frame B that is not destined to end-host A 
         -> (@Switch) Switch does not have a routing entry for B's dest address
 
-forall Switch, Nei, Mac_A, Mac_B, Outport, 
-	Mac_A!=Mac_B ->
-		packet(Switch, Nei, Mac_A, Mac_B) ->
-		forall Mac, (flowEntry(Switch, Mac, Outport) -> Mac!=Mac_B)
+forall EndHost, Switch, SrcMac, DstMac, Outport, Mac, 
+	packet(EndHost, Switch, SrcMac, DstMac), 
+	flowEntry(Switch, Mac, Outport), DstMac != EndHost -> Mac != DstMac
+
 
 3. (@Switch) Not exist a routing entry to MAC address A -> (@Switch) never have received/forwarded a packet sourced from A
 QUESTION: IS THE SWITCH THE SAME IN THE ANTECEDENT AND CONSEQUENT? 

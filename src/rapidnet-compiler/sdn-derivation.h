@@ -50,9 +50,9 @@ public:
 
 	const Tuple* GetHead() const {return head;}
 
-	void FindSubTuple(const list<PredicateInstance*>& plist,
-					  ExQuanTuple& tlist,
-					  const DerivNode* desigHead) const{}
+	virtual void FindSubTuple(const list<PredicateInstance*>& plist,
+					  	  	  ExQuanTuple& tlist,
+							  const DerivNode* desigHead) const{}
 
 	//TODO: Don't let the user do the garbage collection
 	virtual void CreateDerivInst(VarMap&);

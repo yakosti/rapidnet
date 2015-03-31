@@ -28,6 +28,12 @@ void Term::PrintTerm(){}
 
 /* ***************************** FORMULA *********************************** */
 
+True*
+True::Clone()
+{
+	return (new True(*this));
+}
+
 Connective::Connective(ConnType ct, Formula* formL, Formula* formR):
     conntype(ct), leftF(formL), rightF(formR){}
 
@@ -349,12 +355,12 @@ PredicateInstance::~PredicateInstance()
 Constraint::Constraint(Operator opt, Term* exprL, Term* exprR):
     op(opt),leftE(exprL),rightE(exprR)
 {
-	NS_LOG_FUNCTION("Constraint default constructor.");
+	NS_LOG_FUNCTION("Constraint default constructor." << this);
 }
 
 Constraint::Constraint(const Constraint& cst)
 {
-	NS_LOG_FUNCTION("Constraint copy constructor.");
+	NS_LOG_FUNCTION("Constraint copy constructor." << this);
 	op = cst.op;
 	leftE = cst.leftE->Clone();
 	rightE = cst.rightE->Clone();
@@ -363,6 +369,7 @@ Constraint::Constraint(const Constraint& cst)
 Constraint::~Constraint()
 {
 	NS_LOG_FUNCTION("Destruct Constraint: " << this);
+	this->Print();
 	Variable* var = dynamic_cast<Variable*>(leftE);
 	if (var == NULL)
 	{
@@ -1390,11 +1397,13 @@ Arithmetic::~Arithmetic()
 //Implementation of ConstraintsTemplate
 ConstraintsTemplate::ConstraintsTemplate()
 {
+	NS_LOG_FUNCTION("Create ConstraintsTemplate: " << this);
 	constraints = ConstraintList();
 }
 
 ConstraintsTemplate::ConstraintsTemplate(const ConstraintsTemplate& ct)
 {
+	NS_LOG_FUNCTION("Create ConstraintsTemplate: " << this);
 	ConstraintList::const_iterator it;
 	Constraint* newCons;
 	for (it = ct.constraints.begin(); it != ct.constraints.end();it++)
@@ -1472,7 +1481,7 @@ ConstraintsTemplate::~ConstraintsTemplate()
 }
 
 bool
-ConstraintsTemplate::IsEmpty()
+ConstraintsTemplate::IsEmpty() const
 {
 	return (constraints.size() == 0?true:false);
 }
@@ -1490,6 +1499,7 @@ ConstraintsTemplate::CreateVarInst(VarMap& vmap)
 void
 ConstraintsTemplate::PrintTemplate() const
 {
+	NS_LOG_FUNCTION("Printing template:");
 	ConstraintList::const_iterator itc;
 	for (itc = constraints.begin(); itc != constraints.end(); itc++)
 	{
@@ -1606,7 +1616,6 @@ SimpConstraints::Initialize(const ConsList& ctempList)
 	}
 	CreateEquiClass();
 
-	Constraint* newCst;
 	//Third iteration: Build a new ConstraintsTemplate
 	for (itcl = ctempList.begin();itcl != ctempList.end();itcl++)
 	{
@@ -1617,7 +1626,7 @@ SimpConstraints::Initialize(const ConsList& ctempList)
 			//insert non-equality constraints
 			if ((*itc)->IsUnif() == false)
 			{
-				newCst = new Constraint(**itc);
+				Constraint* newCst = new Constraint(**itc);
 				newCst->VarReplace(varSet, varTable, varRevTable);
 				cts.AddConstraint(newCst);
 			}
