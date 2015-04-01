@@ -63,8 +63,6 @@ r2 trustedControllerMemory(@Controller, Switch, Dst) :-
 	openConnectionToController(@Switch, Controller),
 	Tport == 1 .
 
-<<<<<<< HEAD
-=======
 /* ************************************************* */
 
 /* 
@@ -76,18 +74,13 @@ r3 trustedControllerMemory(@Controller, Switch, Dst) :-
 	pktIn(@Switch, Src, Tport, Dst),
 	openConnectionToController(@Switch, Controller),
 	Tport == 1 .
->>>>>>> 234bd412253fef2676661a30b82bfa7b4fc03f18
 
 /* ************************************************* */
 
 /* 
  * a packet from trusted hosts with a forwarding rule
  */
-<<<<<<< HEAD
 r3 pktReceived(@Dst, PortDst, Src, Tport, Switch) :- 
-=======
-r4 pktReceived(@Dst, PortDst, Src, Tport, Switch) :- 
->>>>>>> 234bd412253fef2676661a30b82bfa7b4fc03f18
  	pktIn(@Switch, Src, Tport, Dst),
 	perFlowRule(@Switch, Src, Tport, Dst, PortDst),
 	Tport == 1 .
@@ -99,11 +92,7 @@ r4 pktReceived(@Dst, PortDst, Src, Tport, Switch) :-
  * Packet from unstrusted host appeared on switch
  * Send it to the controller to check if it is trused
  */
-<<<<<<< HEAD
 r4 pktFromSwitch(@Controller, Switch, Src, Uport, Dst) :- 
-=======
-r5 pktFromSwitch(@Controller, Switch, Src, Uport, Dst) :- 
->>>>>>> 234bd412253fef2676661a30b82bfa7b4fc03f18
 	pktIn(@Switch, Src, Uport, Dst),
 	controllerConnection(@Switch, Controller),
 	Uport == 2 .
@@ -114,11 +103,7 @@ r5 pktFromSwitch(@Controller, Switch, Src, Uport, Dst) :-
  * Controller tells the switch it can forward the packet to the trusted hosts
  *  	by inserting a per flow rule into the swtich for that host
  */
-<<<<<<< HEAD
 r5 perFlowRule(@Switch, Src, Uport, Dst, Tport) :-  
-=======
-r6 perFlowRule(@Switch, Src, Uport, Dst, Tport) :-  
->>>>>>> 234bd412253fef2676661a30b82bfa7b4fc03f18
 	pktFromSwitch(@Controller, Switch, Src, Uport, Dst), 
 	trustedControllerMemory(@Controller, Switch, Src),
 	Uport == 2,
@@ -131,11 +116,7 @@ r6 perFlowRule(@Switch, Src, Uport, Dst, Tport) :-
  * so it forst the packet to the target trusted host
  * (current) A packet from untrusted hosts with a forwarding rule also falls into this category
  */
-<<<<<<< HEAD
 r6 pktReceived(@Dst, Tport, Src, Uport, Switch) :-
-=======
-r7 pktReceived(@Dst, Tport, Src, Uport, Switch) :-
->>>>>>> 234bd412253fef2676661a30b82bfa7b4fc03f18
 	perFlowRule(@Switch, Src, Uport, Dst, Tport),
  	pktIn(@Switch, Src, Uport, Dst),
  	Uport == 2,
