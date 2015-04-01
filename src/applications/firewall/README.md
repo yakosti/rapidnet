@@ -4,11 +4,18 @@
 
 ### English
 
-For every packet sent from an untrusted host to a trusted host, there exists a packet sent to that untrusted host from some trusted host. (VeriCon generates counterexamples)
+(@Switch) For every packet sent from an untrusted host to a trusted host, there exists a packet sent to that untrusted host from some trusted host. (VeriCon generates counterexamples)
 
 ### Logic
 
-
+```
+forall Switch, Src, SrcPort, Dst
+  pktIn(Switch, Src, SrcPort, Dst) AND SrcPort = UNTRUSTED_PORT 
+    ->
+    exists Originator, OriginatorPort,
+      pktReceived(Src, SrcPort, Originator, OriginatorPort, Switch)
+      AND OriginatorPort = TRUSTED_PORT 
+```
 
 ## Safety Invariant 2
 
@@ -32,12 +39,13 @@ forall Switch, Src, Uport, Dst, Tport,
 
 ### English
 
-If `trustedControllerMemory` records a host, in the past, Switch must have forwarded Controller a packet from a trusted host, destined for an untrusted host 
+If `trustedControllerMemory` records a host, in the past, Switch must have forwarded Controller a packet from a trusted host
 
 ### Logic
 
 ```
 forall trustedControllerMemory(Controller, Switch, Host) 
   ->
-  exists Host, PktIn(Switch, Src, Tport, Host) 
+  exists Host, PktIn(Switch, Src, SrcPort, Host) 
+  AND SrcPort = TRUSTED_PORT
 ```
