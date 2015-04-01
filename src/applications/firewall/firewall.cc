@@ -23,8 +23,7 @@ const string Firewall::PKTFROMSWITCH = "pktFromSwitch";
 const string Firewall::PKTIN = "pktIn";
 const string Firewall::PKTRECEIVED = "pktReceived";
 const string Firewall::R2TRUSTEDCONTROLLERMEMORYSEND = "r2trustedControllerMemorysend";
-const string Firewall::R3TRUSTEDCONTROLLERMEMORYSEND = "r3trustedControllerMemorysend";
-const string Firewall::R6PERFLOWRULESEND = "r6perFlowRulesend";
+const string Firewall::R5PERFLOWRULESEND = "r5perFlowRulesend";
 const string Firewall::TRUSTEDCONTROLLERMEMORY = "trustedControllerMemory";
 const string Firewall::TRUSTEDCONTROLLERMEMORYDELETE = "trustedControllerMemoryDelete";
 
@@ -137,45 +136,33 @@ Firewall::DemuxRecv (Ptr<Tuple> tuple)
     {
       R2Eca1Del (tuple);
     }
-  if (IsRecvEvent (tuple, R3TRUSTEDCONTROLLERMEMORYSEND))
-    {
-      R3Eca0RemoteIns (tuple);
-    }
   if (IsInsertEvent (tuple, PKTIN))
     {
       R3Eca0Ins (tuple);
     }
-  if (IsInsertEvent (tuple, OPENCONNECTIONTOCONTROLLER))
+  if (IsInsertEvent (tuple, PERFLOWRULE))
     {
       R3Eca1Ins (tuple);
     }
-  if (IsInsertEvent (tuple, PKTIN))
-    {
-      R4Eca0Ins (tuple);
-    }
-  if (IsInsertEvent (tuple, PERFLOWRULE))
-    {
-      R4Eca1Ins (tuple);
-    }
   if (IsRecvEvent (tuple, CONTROLLERCONNECTION))
     {
-      R5_eca (tuple);
+      R4_eca (tuple);
     }
-  if (IsRecvEvent (tuple, R6PERFLOWRULESEND))
+  if (IsRecvEvent (tuple, R5PERFLOWRULESEND))
     {
-      R6ECAMat (tuple);
+      R5ECAMat (tuple);
     }
   if (IsRecvEvent (tuple, PKTFROMSWITCH))
     {
-      R6_eca (tuple);
+      R5_eca (tuple);
     }
   if (IsInsertEvent (tuple, PERFLOWRULE))
     {
-      R7Eca0Ins (tuple);
+      R6Eca0Ins (tuple);
     }
   if (IsInsertEvent (tuple, PKTIN))
     {
-      R7Eca1Ins (tuple);
+      R6Eca1Ins (tuple);
     }
 }
 
@@ -375,90 +362,9 @@ Firewall::R2Eca1Del (Ptr<Tuple> openConnectionToController)
 }
 
 void
-Firewall::R3Eca0RemoteIns (Ptr<Tuple> r3trustedControllerMemorysend)
-{
-  RAPIDNET_LOG_INFO ("R3Eca0RemoteIns triggered");
-
-  Ptr<Tuple> result = r3trustedControllerMemorysend;
-
-  result = result->Project (
-    TRUSTEDCONTROLLERMEMORY,
-    strlist ("r3trustedControllerMemorysend_attr1",
-      "r3trustedControllerMemorysend_attr2",
-      "r3trustedControllerMemorysend_attr3"),
-    strlist ("trustedControllerMemory_attr1",
-      "trustedControllerMemory_attr2",
-      "trustedControllerMemory_attr3"));
-
-  Insert (result);
-}
-
-void
 Firewall::R3Eca0Ins (Ptr<Tuple> pktIn)
 {
   RAPIDNET_LOG_INFO ("R3Eca0Ins triggered");
-
-  Ptr<RelationBase> result;
-
-  result = GetRelation (OPENCONNECTIONTOCONTROLLER)->Join (
-    pktIn,
-    strlist ("openConnectionToController_attr1"),
-    strlist ("pktIn_attr1"));
-
-  result = result->Select (Selector::New (
-    Operation::New (RN_EQ,
-      VarExpr::New ("pktIn_attr3"),
-      ValueExpr::New (Int32Value::New (1)))));
-
-  result = result->Project (
-    R3TRUSTEDCONTROLLERMEMORYSEND,
-    strlist ("openConnectionToController_attr2",
-      "pktIn_attr1",
-      "pktIn_attr4",
-      "openConnectionToController_attr2"),
-    strlist ("r3trustedControllerMemorysend_attr1",
-      "r3trustedControllerMemorysend_attr2",
-      "r3trustedControllerMemorysend_attr3",
-      RN_DEST));
-
-  Send (result);
-}
-
-void
-Firewall::R3Eca1Ins (Ptr<Tuple> openConnectionToController)
-{
-  RAPIDNET_LOG_INFO ("R3Eca1Ins triggered");
-
-  Ptr<RelationBase> result;
-
-  result = GetRelation (PKTIN)->Join (
-    openConnectionToController,
-    strlist ("pktIn_attr1"),
-    strlist ("openConnectionToController_attr1"));
-
-  result = result->Select (Selector::New (
-    Operation::New (RN_EQ,
-      VarExpr::New ("pktIn_attr3"),
-      ValueExpr::New (Int32Value::New (1)))));
-
-  result = result->Project (
-    R3TRUSTEDCONTROLLERMEMORYSEND,
-    strlist ("openConnectionToController_attr2",
-      "openConnectionToController_attr1",
-      "pktIn_attr4",
-      "openConnectionToController_attr2"),
-    strlist ("r3trustedControllerMemorysend_attr1",
-      "r3trustedControllerMemorysend_attr2",
-      "r3trustedControllerMemorysend_attr3",
-      RN_DEST));
-
-  Send (result);
-}
-
-void
-Firewall::R4Eca0Ins (Ptr<Tuple> pktIn)
-{
-  RAPIDNET_LOG_INFO ("R4Eca0Ins triggered");
 
   Ptr<RelationBase> result;
 
@@ -491,9 +397,9 @@ Firewall::R4Eca0Ins (Ptr<Tuple> pktIn)
 }
 
 void
-Firewall::R4Eca1Ins (Ptr<Tuple> perFlowRule)
+Firewall::R3Eca1Ins (Ptr<Tuple> perFlowRule)
 {
-  RAPIDNET_LOG_INFO ("R4Eca1Ins triggered");
+  RAPIDNET_LOG_INFO ("R3Eca1Ins triggered");
 
   Ptr<RelationBase> result;
 
@@ -526,9 +432,9 @@ Firewall::R4Eca1Ins (Ptr<Tuple> perFlowRule)
 }
 
 void
-Firewall::R5_eca (Ptr<Tuple> controllerConnection)
+Firewall::R4_eca (Ptr<Tuple> controllerConnection)
 {
-  RAPIDNET_LOG_INFO ("R5_eca triggered");
+  RAPIDNET_LOG_INFO ("R4_eca triggered");
 
   Ptr<RelationBase> result;
 
@@ -561,19 +467,19 @@ Firewall::R5_eca (Ptr<Tuple> controllerConnection)
 }
 
 void
-Firewall::R6ECAMat (Ptr<Tuple> r6perFlowRulesend)
+Firewall::R5ECAMat (Ptr<Tuple> r5perFlowRulesend)
 {
-  RAPIDNET_LOG_INFO ("R6ECAMat triggered");
+  RAPIDNET_LOG_INFO ("R5ECAMat triggered");
 
-  Ptr<Tuple> result = r6perFlowRulesend;
+  Ptr<Tuple> result = r5perFlowRulesend;
 
   result = result->Project (
     PERFLOWRULE,
-    strlist ("r6perFlowRulesend_attr1",
-      "r6perFlowRulesend_attr2",
-      "r6perFlowRulesend_attr3",
-      "r6perFlowRulesend_attr4",
-      "r6perFlowRulesend_attr5"),
+    strlist ("r5perFlowRulesend_attr1",
+      "r5perFlowRulesend_attr2",
+      "r5perFlowRulesend_attr3",
+      "r5perFlowRulesend_attr4",
+      "r5perFlowRulesend_attr5"),
     strlist ("perFlowRule_attr1",
       "perFlowRule_attr2",
       "perFlowRule_attr3",
@@ -584,9 +490,9 @@ Firewall::R6ECAMat (Ptr<Tuple> r6perFlowRulesend)
 }
 
 void
-Firewall::R6_eca (Ptr<Tuple> pktFromSwitch)
+Firewall::R5_eca (Ptr<Tuple> pktFromSwitch)
 {
-  RAPIDNET_LOG_INFO ("R6_eca triggered");
+  RAPIDNET_LOG_INFO ("R5_eca triggered");
 
   Ptr<RelationBase> result;
 
@@ -604,27 +510,27 @@ Firewall::R6_eca (Ptr<Tuple> pktFromSwitch)
       ValueExpr::New (Int32Value::New (2)))));
 
   result = result->Project (
-    R6PERFLOWRULESEND,
+    R5PERFLOWRULESEND,
     strlist ("pktFromSwitch_attr2",
       "pktFromSwitch_attr3",
       "pktFromSwitch_attr4",
       "pktFromSwitch_attr5",
       "Tport",
       "pktFromSwitch_attr2"),
-    strlist ("r6perFlowRulesend_attr1",
-      "r6perFlowRulesend_attr2",
-      "r6perFlowRulesend_attr3",
-      "r6perFlowRulesend_attr4",
-      "r6perFlowRulesend_attr5",
+    strlist ("r5perFlowRulesend_attr1",
+      "r5perFlowRulesend_attr2",
+      "r5perFlowRulesend_attr3",
+      "r5perFlowRulesend_attr4",
+      "r5perFlowRulesend_attr5",
       RN_DEST));
 
   Send (result);
 }
 
 void
-Firewall::R7Eca0Ins (Ptr<Tuple> perFlowRule)
+Firewall::R6Eca0Ins (Ptr<Tuple> perFlowRule)
 {
-  RAPIDNET_LOG_INFO ("R7Eca0Ins triggered");
+  RAPIDNET_LOG_INFO ("R6Eca0Ins triggered");
 
   Ptr<RelationBase> result;
 
@@ -662,9 +568,9 @@ Firewall::R7Eca0Ins (Ptr<Tuple> perFlowRule)
 }
 
 void
-Firewall::R7Eca1Ins (Ptr<Tuple> pktIn)
+Firewall::R6Eca1Ins (Ptr<Tuple> pktIn)
 {
-  RAPIDNET_LOG_INFO ("R7Eca1Ins triggered");
+  RAPIDNET_LOG_INFO ("R6Eca1Ins triggered");
 
   Ptr<RelationBase> result;
 

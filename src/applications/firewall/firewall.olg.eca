@@ -5,13 +5,10 @@ ECA Rule r2Eca0Ins ACTION_REMOTE_SEND<r2trustedControllerMemorysend(@Controller,
 ECA Rule r2Eca0Del ACTION_REMOTE_SEND<trustedControllerMemoryDelete(@Controller, Switch, Dst)> :- EVENT_DELETE<pktIn(@Switch, Src, Tport, Dst)>, openConnectionToController(@Switch, Controller), Tport == 1.
 ECA Rule r2Eca1Ins ACTION_REMOTE_SEND<r2trustedControllerMemorysend(@Controller, Switch, Dst)> :- EVENT_INSERT<openConnectionToController(@Switch, Controller)>, pktIn(@Switch, Src, Tport, Dst), Tport == 1.
 ECA Rule r2Eca1Del ACTION_REMOTE_SEND<trustedControllerMemoryDelete(@Controller, Switch, Dst)> :- EVENT_DELETE<openConnectionToController(@Switch, Controller)>, pktIn(@Switch, Src, Tport, Dst), Tport == 1.
-ECA Rule r3Eca0RemoteIns ACTION_ADD<trustedControllerMemory(@Controller, Switch, Dst)> :- EVENT_RECV<r3trustedControllerMemorysend(@Controller, Switch, Dst)>.
-ECA Rule r3Eca0Ins ACTION_REMOTE_SEND<r3trustedControllerMemorysend(@Controller, Switch, Dst)> :- EVENT_INSERT<pktIn(@Switch, Src, Tport, Dst)>, openConnectionToController(@Switch, Controller), Tport == 1.
-ECA Rule r3Eca1Ins ACTION_REMOTE_SEND<r3trustedControllerMemorysend(@Controller, Switch, Dst)> :- EVENT_INSERT<openConnectionToController(@Switch, Controller)>, pktIn(@Switch, Src, Tport, Dst), Tport == 1.
-ECA Rule r4Eca0Ins ACTION_REMOTE_SEND<pktReceived(@Dst, PortDst, Src, Tport, Switch)> :- EVENT_INSERT<pktIn(@Switch, Src, Tport, Dst)>, perFlowRule(@Switch, Src, Tport, Dst, PortDst), Tport == 1.
-ECA Rule r4Eca1Ins ACTION_REMOTE_SEND<pktReceived(@Dst, PortDst, Src, Tport, Switch)> :- EVENT_INSERT<perFlowRule(@Switch, Src, Tport, Dst, PortDst)>, pktIn(@Switch, Src, Tport, Dst), Tport == 1.
-ECA Rule r5_eca ACTION_REMOTE_SEND<pktFromSwitch(@Controller, Switch, Src, Uport, Dst)> :- EVENT_RECV<controllerConnection(@Switch, Controller)>, pktIn(@Switch, Src, Uport, Dst), Uport == 2.
-ECA Rule r6ECAMat ACTION_ADD<perFlowRule(@Switch, Src, Uport, Dst, Tport)> :- EVENT_RECV<r6perFlowRulesend(@Switch, Src, Uport, Dst, Tport)>.
-ECA Rule r6_eca ACTION_REMOTE_SEND<r6perFlowRulesend(@Switch, Src, Uport, Dst, Tport)> :- EVENT_RECV<pktFromSwitch(@Controller, Switch, Src, Uport, Dst)>, trustedControllerMemory(@Controller, Switch, Src), Uport == 2, Tport := 1.
-ECA Rule r7Eca0Ins ACTION_REMOTE_SEND<pktReceived(@Dst, Tport, Src, Uport, Switch)> :- EVENT_INSERT<perFlowRule(@Switch, Src, Uport, Dst, Tport)>, pktIn(@Switch, Src, Uport, Dst), Uport == 2, Tport == 1.
-ECA Rule r7Eca1Ins ACTION_REMOTE_SEND<pktReceived(@Dst, Tport, Src, Uport, Switch)> :- EVENT_INSERT<pktIn(@Switch, Src, Uport, Dst)>, perFlowRule(@Switch, Src, Uport, Dst, Tport), Uport == 2, Tport == 1.
+ECA Rule r3Eca0Ins ACTION_REMOTE_SEND<pktReceived(@Dst, PortDst, Src, Tport, Switch)> :- EVENT_INSERT<pktIn(@Switch, Src, Tport, Dst)>, perFlowRule(@Switch, Src, Tport, Dst, PortDst), Tport == 1.
+ECA Rule r3Eca1Ins ACTION_REMOTE_SEND<pktReceived(@Dst, PortDst, Src, Tport, Switch)> :- EVENT_INSERT<perFlowRule(@Switch, Src, Tport, Dst, PortDst)>, pktIn(@Switch, Src, Tport, Dst), Tport == 1.
+ECA Rule r4_eca ACTION_REMOTE_SEND<pktFromSwitch(@Controller, Switch, Src, Uport, Dst)> :- EVENT_RECV<controllerConnection(@Switch, Controller)>, pktIn(@Switch, Src, Uport, Dst), Uport == 2.
+ECA Rule r5ECAMat ACTION_ADD<perFlowRule(@Switch, Src, Uport, Dst, Tport)> :- EVENT_RECV<r5perFlowRulesend(@Switch, Src, Uport, Dst, Tport)>.
+ECA Rule r5_eca ACTION_REMOTE_SEND<r5perFlowRulesend(@Switch, Src, Uport, Dst, Tport)> :- EVENT_RECV<pktFromSwitch(@Controller, Switch, Src, Uport, Dst)>, trustedControllerMemory(@Controller, Switch, Src), Uport == 2, Tport := 1.
+ECA Rule r6Eca0Ins ACTION_REMOTE_SEND<pktReceived(@Dst, Tport, Src, Uport, Switch)> :- EVENT_INSERT<perFlowRule(@Switch, Src, Uport, Dst, Tport)>, pktIn(@Switch, Src, Uport, Dst), Uport == 2, Tport == 1.
+ECA Rule r6Eca1Ins ACTION_REMOTE_SEND<pktReceived(@Dst, Tport, Src, Uport, Switch)> :- EVENT_INSERT<pktIn(@Switch, Src, Uport, Dst)>, perFlowRule(@Switch, Src, Uport, Dst, Tport), Uport == 2, Tport == 1.
