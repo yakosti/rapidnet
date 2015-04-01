@@ -15,10 +15,18 @@ For every packet sent from an untrusted host to a trusted host, there exists a p
 ### English
 
 Flow table entries only contain forwarding rules from trusted hosts
+trusted hosts means that src is from a trusted port, or src is trusted on switch
 
 ### Logic
 
-
+```
+forall Switch, Src, Uport, Dst, Tport,
+  perFlowRule(Switch, Src, SrcPort, Dst, DstPort) 
+  ->
+  exists Controller,
+    SrcPort == TRUSTED_PORT 
+    OR (DstPort == UNTRUSTED_PORT AND trustedControllerMemory(Controller, Switch, Src))
+```
 
 ## Safety Invariant 3
 
