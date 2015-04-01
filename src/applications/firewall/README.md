@@ -4,12 +4,12 @@
 
 ### English
 
-(@Switch) For every packet sent from an untrusted host to a trusted host, there exists a packet sent to that untrusted host from some trusted host. (VeriCon generates counterexamples)
+For every packet switch sent from an untrusted host to a trusted host, in the past some untrusted host has received a packet from switch, send from some trusted host. (VeriCon generates counterexamples)
 
 ### Logic
 
 ```
-forall Switch, Src, SrcPort, Dst
+forall Switch, Src, SrcPort, Dst,
   pktIn(Switch, Src, SrcPort, Dst) AND SrcPort = UNTRUSTED_PORT 
     ->
     exists Originator, OriginatorPort,
@@ -21,18 +21,19 @@ forall Switch, Src, SrcPort, Dst
 
 ### English
 
-Flow table entries only contain forwarding rules from trusted hosts
-trusted hosts means that src is from a trusted port, or src is trusted on switch
+If the flow table on the switch contains an entry between Source (via untrusted port) and destination (via trusted port), then in the past the source (via untrusted port) has received a packet from some trusted host (via trusted port) from Switch
 
 ### Logic
 
 ```
-forall Switch, Src, Uport, Dst, Tport,
+forall Switch, Src, SrcPort, Dst, DstPort,
   perFlowRule(Switch, Src, SrcPort, Dst, DstPort) 
+  AND SrcPort = UNTRUSTED_PORT
+  AND DstPort = TRUSTED_PORT 
   ->
-  exists Controller,
-    SrcPort == TRUSTED_PORT 
-    OR (DstPort == UNTRUSTED_PORT AND trustedControllerMemory(Controller, Switch, Src))
+  exists Host, HostPort,
+    pktReceived(Src, SrcPort, Host, HostPort, Switch),
+    HostPort = TRUSTED_PORT
 ```
 
 ## Safety Invariant 3
