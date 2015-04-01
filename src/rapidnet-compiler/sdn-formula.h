@@ -66,9 +66,9 @@ public:
 
 	virtual void PrintTerm() =0;
 
-	virtual void PrintInstance(const map<Variable*, int>&) const =0;
+	virtual void PrintInstance(const map<Variable*, int>&, bool) const =0;
 
-	virtual void PrintInstance(const map<Variable*, int>&, VarMap&) const{}
+	virtual void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const{}
 };
 
 
@@ -104,7 +104,7 @@ public:
 
 	void PrintTerm();
 
-	virtual void PrintInstance(const map<Variable*, int>&) const{}
+	virtual void PrintInstance(const map<Variable*, int>&, bool) const{}
 
 private:
 	string name;
@@ -165,9 +165,9 @@ public:
 
 	void PrintTerm();
 
-	void PrintInstance(const map<Variable*, int>&) const;
+	void PrintInstance(const map<Variable*, int>&, bool) const;
 
-	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
+	void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const;
 
 	~UserFunction();
 
@@ -193,9 +193,9 @@ public:
 
     void PrintTerm(){}
 
-    virtual void PrintInstance(const map<Variable*, int>&) const{}
+    virtual void PrintInstance(const map<Variable*, int>&, bool) const{}
 
-    virtual void PrintInstance(const map<Variable*, int>&, VarMap&) const{}
+    virtual void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const{}
 };
 
 
@@ -215,9 +215,9 @@ public:
 
 	void PrintTerm();
 
-	void PrintInstance(const map<Variable*, int>&) const;
+	void PrintInstance(const map<Variable*, int>&, bool) const;
 
-	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
+	void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const;
 
 private:
 	int value;
@@ -241,9 +241,9 @@ public:
 
 	void PrintTerm();	
 
-	void PrintInstance(const map<Variable*, int>&) const;
+	void PrintInstance(const map<Variable*, int>&, bool) const;
 
-	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
+	void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const;
 
 private:
 	double value;
@@ -265,9 +265,9 @@ public:
 
 	void PrintTerm();	
 
-	void PrintInstance(const map<Variable*, int>&) const;
+	void PrintInstance(const map<Variable*, int>&, bool) const;
 
-	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
+	void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const;
 
 private:
 	string value;
@@ -289,9 +289,9 @@ public:
 
 	void PrintTerm();
 
-	void PrintInstance(const map<Variable*, int>&) const;
+	void PrintInstance(const map<Variable*, int>&, bool) const;
 
-	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
+	void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const;
 
 private:
 	bool value;
@@ -336,9 +336,9 @@ public:
 
 	void PrintTerm();
 
-	void PrintInstance(const map<Variable*, int>&) const;
+	void PrintInstance(const map<Variable*, int>&, bool) const;
 
-	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
+	void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const;
 
 	void PrintOp() const;
 
@@ -519,7 +519,6 @@ private:
 
 
 
-
 class PredicateInstance: public Formula
 {
 public:
@@ -601,9 +600,9 @@ public:
 
 	void Print() const;
 
-	void PrintInstance(const map<Variable*, int>&) const;
+	void PrintInstance(const map<Variable*, int>&, bool) const;
 
-	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
+	void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const;
 
 	void PrintOp() const;
 
@@ -643,9 +642,9 @@ public:
 
 	void PrintTemplate() const;
 
-	void PrintInstance(const map<Variable*, int>&) const;
+	void PrintInstance(const map<Variable*, int>&, bool) const;
 
-	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
+	void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const;
 
 	~ConstraintsTemplate();
 

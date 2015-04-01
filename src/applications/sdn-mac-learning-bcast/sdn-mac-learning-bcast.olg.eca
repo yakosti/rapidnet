@@ -1,0 +1,13 @@
+ECA Rule rc1_eca ACTION_REMOTE_SEND<flowMod(@Switch, SrcMac, InPort)> :- EVENT_RECV<ofPacket(@Controller, Switch, InPort, SrcMac, DstMac)>, ofconn(@Controller, Switch).
+ECA Rule rc2_eca ACTION_REMOTE_SEND<broadcast(@Switch, InPort, SrcMac, DstMac)> :- EVENT_RECV<ofPacket(@Controller, Switch, InPort, SrcMac, DstMac)>, ofconn(@Controller, Switch).
+ECA Rule rs1_eca ACTION_LOCAL_SEND<matchingPacket(@Switch, SrcMac, DstMac, InPort, TopPriority)> :- EVENT_RECV<packet(@Switch, Nei, SrcMac, DstMac)>, link(@Switch, Nei, InPort), maxPriority(@Switch, TopPriority).
+ECA Rule rs2_eca ACTION_LOCAL_SEND<matchingPacket(@Switch, SrcMac, DstMac, InPort, NextPriority)> :- EVENT_RECV<matchingPacket(@Switch, SrcMac, DstMac, InPort, Priority)>, flowEntry(@Switch, MacAdd, OutPort, Priority), Priority > 0, DstMac != MacAdd, NextPriority := Priority- 1.
+ECA Rule rs3_eca ACTION_REMOTE_SEND<packet(@OutNei, Switch, SrcMac, DstMac)> :- EVENT_RECV<matchingPacket(@Switch, SrcMac, DstMac, InPort, Priority)>, flowEntry(@Switch, MacAdd, OutPort, Priority), link(@Switch, OutNei, OutPort), Priority > 0, DstMac == MacAdd.
+ECA Rule rs4_eca ACTION_REMOTE_SEND<ofPacket(@Controller, Switch, InPort, SrcMac, DstMac)> :- EVENT_RECV<matchingPacket(@Switch, SrcMac, DstMac, InPort, Priority)>, ofconn(@Switch, Controller), Priority == 0.
+ECA Rule rs5_eca ACTION_ADD<flowEntry(@Switch, DstMac, OutPort, Priority)> :- EVENT_RECV<flowMod(@Switch, DstMac, OutPort)>, ofconn(@Switch, Controller), maxPriority(@Switch, TopPriority), Priority := TopPriority+ 1.
+ECA Rule rs6Eca0Ins ACTION_ADD<maxPriority(@Switch, Priority)> :- EVENT_INSERT<flowEntry(@Switch, DstMac, OutPort, Priority)>.
+ECA Rule rs6Eca0Del ACTION_DELETE<maxPriority(@Switch, Priority)> :- EVENT_DELETE<flowEntry(@Switch, DstMac, OutPort, Priority)>.
+ECA Rule rs7_eca ACTION_REMOTE_SEND<packet(@OutNei, Switch, SrcMac, DstMac)> :- EVENT_RECV<broadcast(@Switch, InPort, SrcMac, DstMac)>, link(@Switch, OutNei, OutPort), OutPort != InPort.
+ECA Rule rh1Eca0Ins ACTION_REMOTE_SEND<packet(@Switch, Host, SrcMac, DstMac)> :- EVENT_INSERT<initPacket(@Host, Switch, SrcMac, DstMac)>, link(@Host, Switch, OutPort).
+ECA Rule rh1Eca1Ins ACTION_REMOTE_SEND<packet(@Switch, Host, SrcMac, DstMac)> :- EVENT_INSERT<link(@Host, Switch, OutPort)>, initPacket(@Host, Switch, SrcMac, DstMac).
+ECA Rule rh2_eca ACTION_ADD<recvPacket(@Host, SrcMac, DstMac)> :- EVENT_RECV<packet(@Host, Switch, SrcMac, DstMac)>, link(@Host, Switch, InPort).

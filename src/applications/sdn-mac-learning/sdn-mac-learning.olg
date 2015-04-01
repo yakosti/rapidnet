@@ -1,3 +1,7 @@
+
+/*This sdn-mac-learning is not tested after modification!!!*/
+
+
 /*Database for controller*/
 materialize(ofconn,infinity,infinity,keys(2)). //Openflow connection to switch
 materialize(macPort,infinity,infinity,keys(2,3:int32)). //Mac-port dictionary
@@ -6,11 +10,13 @@ materialize(macPort,infinity,infinity,keys(2,3:int32)). //Mac-port dictionary
 /*To account for non-matching scenario,*/
 /*we assume there is always a flow entry corresponding to "default" action*/
 materialize(packet,infinity,infinity,keys(2,3:str,4:str)). //Packets to be sent
+materialize(initPacket,infinity,infinity,keys(3:str)). //Packets from sources
 materialize(ofconn,infinity,infinity,keys(2)). //Openflow connection to controller
 materialize(missEntry,infinity,infinity,keys(2:str)). //For packets that match no rule
 materialize(flowEntry,infinity,infinity,keys(2:str)). //Flow table at switch
 materialize(inPort,infinity,infinity,keys(3:int32)). //Inport table
 materialize(outPort,infinity,infinity,keys(3:int32)). //Outport table
+
 
 /*Controller program*/
 /*Record mac-port mapping*/
@@ -36,8 +42,8 @@ rs1 ofPacket(@C, S, InPort, SrcMac, DstMac) :-
 rs2 flowEntry(@S, Mac, OutPort) :-
 	flowMod(@S, Mac, OutPort).
 
-rs3 delete missEntry(@S, Mac) :-
-	flowMod(@S, Mac, OutPort).
+/*rs3 delete missEntry(@S, Mac) :-*/
+/*	flowMod(@S, Mac, OutPort).*/
 	
 /*Forward accordingly if a flow entry exists for the packet*/
 /*How do we specify the sending action on port?*/
@@ -47,6 +53,10 @@ rs4 packet(@OutNei, S, SrcMac, DstMac) :-
 	outPort(@S, OutNei, OutPort),	
 	flowEntry(@S, DstMac, OutPort).
 
+/*Host program*/
+rh1 packet(@OutNei, Host, SrcMac, DstMac) :-
+	initPacket(@Host, SrcMac, DstMac),
 
-
+rh2 recvPacket(@Host, SrcMac, DstMac) :-
+	packet(@Host, InNei, SrcMac, DstMac) :-
 	

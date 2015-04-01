@@ -192,10 +192,14 @@ void compile (string overlogFile, bool provenanceEnabled)
   //Base properties
   BaseProperty baseProp = BaseProperty();
 
+  //Base relational properties
+  BaseRelProperty baseRel = BaseRelProperty();
+  //baseRel.Print();
+
   //Dpool construction
   Ptr<Dpool> dpool (new Dpool(newGraph, miniGraph, baseProp, inv));
-  //dpool->PrintDpool();
-  //dpool->PrintAllDeriv();
+//  //dpool->PrintDpool();
+//  //dpool->PrintAllDeriv();
 
   //Verify invariant property
   //dpool->VerifyInvariants(inv);
@@ -209,8 +213,10 @@ void compile (string overlogFile, bool provenanceEnabled)
 
   NS_LOG_DEBUG("Property constructed.");
   //Verify the property
-  bool res = CheckProperty(*dpool, p);
-  cout << "Is the property valid? " << (res?"Yes":"No") << endl;
+  bool res = CheckProperty(*dpool, p, baseRel);
+  cout << endl;
+  cout << "Is the property valid? " << (res?"Yes":"No");
+  cout << endl;
 
   int stop_s=clock();
   cout << "Running time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << "ms" << endl;
@@ -224,16 +230,16 @@ void compile (string overlogFile, bool provenanceEnabled)
 int main (int argc, char** argv)
 {
 //  LogComponentEnable ("RapidNetDPGraph", LOG_LEVEL_FUNCTION);
-//  LogComponentEnable ("DPGraph", LOG_LEVEL_FUNCTION);
+  LogComponentEnable ("DPGraph", LOG_LEVEL_FUNCTION);
   LogComponentEnable ("Formula", LOG_LEVEL_FUNCTION);
   LogComponentEnable ("Dpool", LOG_LEVEL_FUNCTION);
   LogComponentEnable ("Verification", LOG_LEVEL_FUNCTION);
-//  LogComponentEnable ("Property", LOG_LEVEL_FUNCTION);
-  LogComponentEnable ("RapidNetDPGraph", LOG_INFO);
+  LogComponentEnable ("Property", LOG_LEVEL_FUNCTION);
+//  LogComponentEnable ("RapidNetDPGraph", LOG_INFO);
 //  LogComponentEnable ("Dpool", LOG_INFO);
-  LogComponentEnable ("DPGraph", LOG_INFO);
+//  LogComponentEnable ("DPGraph", LOG_INFO);
 //  LogComponentEnable ("Formula", LOG_INFO);
-  LogComponentEnable ("Property", LOG_INFO);
+//  LogComponentEnable ("Property", LOG_INFO);
 //  LogComponentEnable ("Verification", LOG_INFO);
   //test_parsing();
 

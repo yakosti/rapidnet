@@ -1,11 +1,11 @@
 Learning Bridge
 
 1. 
-forall Switch, Mac_A, OutPort, flowEntry(Switch, MAC_A, OutPort) ->
+forall Switch, Mac_A, OutPort, Priority, flowEntry(Switch, MAC_A, OutPort, Priority) ->
 	exists Nei, DstMac, packet(Switch, Nei, Mac_A, DstMac) 
 
 Result: True
-Time: 20ms
+Time: 60ms
 
 2. 
 forall EndHost, Switch, SrcMac, DstMac, Outport, Mac, 

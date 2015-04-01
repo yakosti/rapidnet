@@ -50,11 +50,26 @@ CheckRecurExist(const Property&,
 				list<SimpConstraints*>,
 				map<const DerivNode*, VarMap>& );
 
+void
+ConstructBaseObl(BaseRel&,
+				 list<TupleLineage>&,
+				 map<const DerivNode*, VarMap>&,
+				 FormList&);
+
+void
+CheckRecurBase(BaseRel&,
+			   list<PredicateInstance*>::iterator,
+			   list<TupleLineage>,
+			   ExQuanTuple&,
+			   map<const DerivNode*, VarMap>&,
+			   FormList&);
+
 //TODO: Separate the verification of universally
 //quantified constraints from CheckExistProp
 bool
 CheckExistProp(const Property&,
-			   const DerivNodeList&);
+			   const DerivNodeList&,
+			   BaseRelProperty&);
 
 //Return value: [true: property holds|false: property does not hold]
 bool
@@ -62,12 +77,14 @@ CheckRecurUniv(const DerivMap&,
 			   const Property&,
 			   const list<PredicateInstance*>&,
 			   list<PredicateInstance*>::const_iterator,
-			   DerivNodeList);
+			   DerivNodeList,
+			   BaseRelProperty&);
 
 //TODO: Add property checking for base tuples
 bool
 CheckProperty(const Dpool&,
-			  const Property&);
+			  const Property&,
+			  BaseRelProperty&);
 
 
 #endif /* SDN_VERIFICATION_H_ */

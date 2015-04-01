@@ -47,15 +47,15 @@ DpoolNode::PrintHead() const
 }
 
 void
-DpoolNode::PrintHeadInst(const map<Variable*, int>& valueMap) const
+DpoolNode::PrintHeadInst(const map<Variable*, int>& valueMap, bool printVar) const
 {
-	head->PrintInstance(valueMap);
+	head->PrintInstance(valueMap, printVar);
 }
 
 void
-DpoolNode::PrintHeadInst(const map<Variable*, int>& valueMap, VarMap& vmap) const
+DpoolNode::PrintHeadInst(const map<Variable*, int>& valueMap, VarMap& vmap, bool printVar) const
 {
-	head->PrintInstance(valueMap, vmap);
+	head->PrintInstance(valueMap, vmap, printVar);
 }
 
 void
@@ -120,6 +120,22 @@ DerivNode::FindSubTuple(const list<PredicateInstance*>& plist,
 }
 
 void
+DerivNode::FindBaseTuple(ExQuanTuple& tlist,
+						const DerivNode* desigHead) const
+{
+	string tpName = head->GetName();
+	NS_LOG_DEBUG("Reach tuple: " << tpName);
+
+	DpoolNodeList::const_iterator itd;
+	NS_LOG_DEBUG("Size of dpool:" << bodyDerivs.size());
+	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
+	{
+		(*itd)->FindBaseTuple(tlist, desigHead);
+	}
+}
+
+
+void
 DerivNode::CreateDerivInst(VarMap& vmap)
 {
 	DpoolNode::CreateDerivInst(vmap);
@@ -175,12 +191,12 @@ DerivNode::PrintDerivNode() const
 }
 
 void
-DerivNode::PrintInstance(const map<Variable*, int>& valueMap) const
+DerivNode::PrintInstance(const map<Variable*, int>& valueMap, bool printVar) const
 {
 	cout << endl;
 	cout << "%%%%%%%%%%%%%% Derivation Instance %%%%%%%%%%%%%" << endl;
 	cout << "Head:";
-	head->PrintInstance(valueMap);
+	head->PrintInstance(valueMap, printVar);
 	cout << endl;
 	cout << "Rule name:" << ruleName;
 	cout << endl;
@@ -188,25 +204,25 @@ DerivNode::PrintInstance(const map<Variable*, int>& valueMap) const
 	DpoolNodeList::const_iterator itd;
 	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
 	{
-		(*itd)->PrintHeadInst(valueMap);
+		(*itd)->PrintHeadInst(valueMap, printVar);
 		cout << endl;
 	}
 	if (ruleConstraints != NULL)
 	{
 		cout << "Constraints:" << endl;
-		ruleConstraints->PrintInstance(valueMap);
+		ruleConstraints->PrintInstance(valueMap, printVar);
 		cout << endl;
 	}
 	cout << "%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
 }
 
 void
-DerivNode::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) const
+DerivNode::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap, bool printVar) const
 {
 	cout << endl;
 	cout << "%%%%%%%%%%%%%% Derivation Instance %%%%%%%%%%%%%" << endl;
 	cout << "Head:";
-	head->PrintInstance(valueMap, vmap);
+	head->PrintInstance(valueMap, vmap, printVar);
 	cout << endl;
 	cout << "Rule name:" << ruleName;
 	cout << endl;
@@ -214,13 +230,13 @@ DerivNode::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) cons
 	DpoolNodeList::const_iterator itd;
 	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
 	{
-		(*itd)->PrintHeadInst(valueMap, vmap);
+		(*itd)->PrintHeadInst(valueMap, vmap, printVar);
 		cout << endl;
 	}
 	if (ruleConstraints != NULL)
 	{
 		cout << "Constraints:" << endl;
-		ruleConstraints->PrintInstance(valueMap, vmap);
+		ruleConstraints->PrintInstance(valueMap, vmap, printVar);
 		cout << endl;
 	}
 	cout << "%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
@@ -241,32 +257,32 @@ DerivNode::PrintDerivation() const
 }
 
 void
-DerivNode::PrintExecution(map<Variable*, int>& valueMap) const
+DerivNode::PrintExecution(map<Variable*, int>& valueMap, bool printVar) const
 {
 	cout << endl;
 	cout << "~~~~~~~~~~~~~~~ Execution Trace ~~~~~~~~~~~~~~" << endl;
-	PrintInstance(valueMap);
+	PrintInstance(valueMap, printVar);
 
 	DpoolNodeList::const_iterator itd;
 	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
 	{
-		(*itd)->PrintExecution(valueMap);
+		(*itd)->PrintExecution(valueMap, printVar);
 		cout << endl;
 	}
 	cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
 }
 
 void
-DerivNode::PrintExecInst(map<Variable*, int>& valueMap, VarMap& vmap) const
+DerivNode::PrintExecInst(map<Variable*, int>& valueMap, VarMap& vmap, bool printVar) const
 {
 	cout << endl;
 	cout << "~~~~~~~~~~~~~~~ Execution Trace ~~~~~~~~~~~~~~" << endl;
-	PrintInstance(valueMap, vmap);
+	PrintInstance(valueMap, vmap, printVar);
 
 	DpoolNodeList::const_iterator itd;
 	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
 	{
-		(*itd)->PrintExecInst(valueMap, vmap);
+		(*itd)->PrintExecInst(valueMap, vmap, printVar);
 		cout << endl;
 	}
 	cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
@@ -316,6 +332,21 @@ BaseNode::FindSubTuple(const list<PredicateInstance*>& plist,
 	}
 }
 
+void
+BaseNode::FindBaseTuple(ExQuanTuple& tlist,
+					   const DerivNode* desigHead) const
+{
+	string tpName = head->GetName();
+	NS_LOG_DEBUG("Find base tuple: " << tpName);
+	ExQuanTuple::iterator itm;
+
+	pair<ExQuanTuple::iterator, bool> ret;
+	list<TupleLineage> emptyBaseList;
+	ret = tlist.insert(ExQuanTuple::value_type(tpName, emptyBaseList));
+
+	TupleLineage newLineage = TupleLineage(head, desigHead);
+	ret.first->second.push_back(newLineage);
+}
 
 void
 BaseNode::PrintCumuCons() const
@@ -345,31 +376,31 @@ BaseNode::PrintDerivNode() const
 }
 
 void
-BaseNode::PrintInstance(const map<Variable*, int>& valueMap) const
+BaseNode::PrintInstance(const map<Variable*, int>& valueMap, bool printVar) const
 {
 	cout << endl;
 	cout << "@@@@@@@@@@ Base Instance @@@@@@@@@" << endl;
 	cout << "Head instance: " << endl;
-	head->PrintInstance(valueMap);
+	head->PrintInstance(valueMap, printVar);
 	cout << endl;
 	if (cts != NULL)
 	{
-		cts->PrintInstance(valueMap);
+		cts->PrintInstance(valueMap, printVar);
 	}
 	cout << "@@@@@@@@@@@@@@@@@@@@@" << endl;
 }
 
 void
-BaseNode::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) const
+BaseNode::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap, bool printVar) const
 {
 	cout << endl;
 	cout << "@@@@@@@@@@ Base Instance @@@@@@@@@" << endl;
 	cout << "Head instance: " << endl;
-	head->PrintInstance(valueMap, vmap);
+	head->PrintInstance(valueMap, vmap, printVar);
 	cout << endl;
 	if (cts != NULL)
 	{
-		cts->PrintInstance(valueMap, vmap);
+		cts->PrintInstance(valueMap, vmap, printVar);
 	}
 	cout << "@@@@@@@@@@@@@@@@@@@@@" << endl;
 }
@@ -381,15 +412,15 @@ BaseNode::PrintDerivation() const
 }
 
 void
-BaseNode::PrintExecution(map<Variable*, int>& valueMap) const
+BaseNode::PrintExecution(map<Variable*, int>& valueMap, bool printVar) const
 {
-	PrintInstance(valueMap);
+	PrintInstance(valueMap, printVar);
 }
 
 void
-BaseNode::PrintExecInst(map<Variable*, int>& valueMap, VarMap& vmap) const
+BaseNode::PrintExecInst(map<Variable*, int>& valueMap, VarMap& vmap, bool printVar) const
 {
-	PrintInstance(valueMap, vmap);
+	PrintInstance(valueMap, vmap, printVar);
 }
 
 BaseNode::~BaseNode()
@@ -461,12 +492,12 @@ PropNode::PrintDerivNode() const
 }
 
 void
-PropNode::PrintInstance(const map<Variable*, int>& valueMap) const
+PropNode::PrintInstance(const map<Variable*, int>& valueMap, bool printVar) const
 {
 	cout << endl;
 	cout << "++++++++++++ Recursive Instance +++++++++++" << endl;
 	cout << "Head:";
-	head->PrintInstance(valueMap);
+	head->PrintInstance(valueMap, printVar);
 	cout << endl;
 
 	cout << "User-annotated formula:" << endl;
@@ -476,12 +507,12 @@ PropNode::PrintInstance(const map<Variable*, int>& valueMap) const
 }
 
 void
-PropNode::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) const
+PropNode::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap, bool printVar) const
 {
 	cout << endl;
 	cout << "++++++++++++ Recursive Instance +++++++++++" << endl;
 	cout << "Head:";
-	head->PrintInstance(valueMap, vmap);
+	head->PrintInstance(valueMap, vmap, printVar);
 	cout << endl;
 
 	cout << "User-annotated formula:" << endl;
@@ -500,15 +531,15 @@ PropNode::PrintDerivation() const
 }
 
 void
-PropNode::PrintExecution(map<Variable*, int>& valueMap) const
+PropNode::PrintExecution(map<Variable*, int>& valueMap, bool printVar) const
 {
-	PrintInstance(valueMap);
+	PrintInstance(valueMap, printVar);
 }
 
 void
-PropNode::PrintExecInst(map<Variable*, int>& valueMap, VarMap& vmap) const
+PropNode::PrintExecInst(map<Variable*, int>& valueMap, VarMap& vmap, bool printVar) const
 {
-	PrintInstance(valueMap, vmap);
+	PrintInstance(valueMap, vmap, printVar);
 }
 
 PropNode::~PropNode()

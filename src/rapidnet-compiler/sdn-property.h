@@ -77,6 +77,42 @@ private:
 	ConsAnnotMap propSet;
 };
 
+//Base relational property format:
+//forall vars, p1 /\ p2 ... /\ pn, Formula*
+class BaseRel
+{
+public:
+	BaseRel();
+
+	void InsertPred(string);
+
+	void UpdateFormula(Formula*);
+
+	void Print();
+
+	~BaseRel();
+
+public:
+	map<string, Variable*> varMap;
+	list<PredicateInstance*> basePreds;
+	Formula* baseForm;
+};
+
+class BaseRelProperty
+{
+public:
+	BaseRelProperty();
+
+	list<BaseRel*>& GetPropSet() {return propSet;}
+
+	void Print();
+
+	~BaseRelProperty();
+
+private:
+	list<BaseRel*> propSet;
+};
+
 typedef pair<PredicateInstance*, Formula*> Annotation;
 typedef map<string, Annotation> AnnotMap;
 

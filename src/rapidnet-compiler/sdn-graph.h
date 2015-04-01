@@ -62,9 +62,9 @@ public:
 
 	void PrintTuple() const;
 
-	void PrintInstance(const map<Variable*, int>&);
+	void PrintInstance(const map<Variable*, int>&, bool printVar);
 
-	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
+	void PrintInstance(const map<Variable*, int>&, VarMap&, bool printVar) const;
 
 	~Tuple();
 

@@ -391,7 +391,7 @@ Constraint::Constraint(const Constraint& cst)
 Constraint::~Constraint()
 {
 	NS_LOG_FUNCTION("Destruct Constraint: " << this);
-	this->Print();
+	//this->Print();
 	Variable* var = dynamic_cast<Variable*>(leftE);
 	if (var == NULL)
 	{
@@ -454,14 +454,14 @@ Constraint::Print() const
 }
 
 void
-Constraint::PrintInstance(const map<Variable*, int>& valueMap) const
+Constraint::PrintInstance(const map<Variable*, int>& valueMap, bool printVar) const
 {
 	Variable* var = NULL;
 	int value = 0;
 	var = dynamic_cast<Variable*>(leftE);
 	if (var == NULL)
 	{
-		leftE->PrintInstance(valueMap);
+		leftE->PrintInstance(valueMap, printVar);
 	}
 	else
 	{
@@ -474,7 +474,7 @@ Constraint::PrintInstance(const map<Variable*, int>& valueMap) const
 	var = dynamic_cast<Variable*>(rightE);
 	if (var == NULL)
 	{
-		rightE->PrintInstance(valueMap);
+		rightE->PrintInstance(valueMap, printVar);
 	}
 	else
 	{
@@ -484,22 +484,25 @@ Constraint::PrintInstance(const map<Variable*, int>& valueMap) const
 }
 
 void
-Constraint::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) const
+Constraint::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap, bool printVar) const
 {
 	Variable* var = NULL;
 	int value = 0;
 	var = dynamic_cast<Variable*>(leftE);
 	if (var == NULL)
 	{
-		leftE->PrintInstance(valueMap, vmap);
+		leftE->PrintInstance(valueMap, vmap, printVar);
 	}
 	else
 	{
 		Variable* instVar = vmap.at(var);
 		value = valueMap.at(instVar);
-		cout << "(";
-		instVar->PrintTerm();
-		cout << ")";
+		if (printVar == true)
+		{
+			cout << "(";
+			instVar->PrintTerm();
+			cout << ")";
+		}
 		cout << value;
 	}
 
@@ -508,15 +511,18 @@ Constraint::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) con
 	var = dynamic_cast<Variable*>(rightE);
 	if (var == NULL)
 	{
-		rightE->PrintInstance(valueMap, vmap);
+		rightE->PrintInstance(valueMap, vmap, printVar);
 	}
 	else
 	{
 		Variable* instVar = vmap.at(var);
 		value = valueMap.at(instVar);
-		cout << "(";
-		instVar->PrintTerm();
-		cout << ")";
+		if (printVar == true)
+		{
+			cout << "(";
+			instVar->PrintTerm();
+			cout << ")";
+		}
 		cout << value;
 	}
 }
@@ -956,7 +962,7 @@ void UserFunction::PrintTerm() {
 }
 
 void
-UserFunction::PrintInstance(const map<Variable*, int>& valueMap) const
+UserFunction::PrintInstance(const map<Variable*, int>& valueMap, bool printVar) const
 {
 	schema->PrintName();
 	cout << "(";
@@ -971,7 +977,7 @@ UserFunction::PrintInstance(const map<Variable*, int>& valueMap) const
 		var = dynamic_cast<Variable*>(*it);
 		if (var == NULL)
 		{
-			(*it)->PrintInstance(valueMap);
+			(*it)->PrintInstance(valueMap, printVar);
 		}
 		else
 		{
@@ -983,7 +989,7 @@ UserFunction::PrintInstance(const map<Variable*, int>& valueMap) const
 }
 
 void
-UserFunction::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) const
+UserFunction::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap, bool printVar) const
 {
 	schema->PrintName();
 	cout << "(";
@@ -998,7 +1004,7 @@ UserFunction::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) c
 		var = dynamic_cast<Variable*>(*it);
 		if (var == NULL)
 		{
-			(*it)->PrintInstance(valueMap, vmap);
+			(*it)->PrintInstance(valueMap, vmap, printVar);
 		}
 		else
 		{
@@ -1040,13 +1046,13 @@ void IntVal::PrintTerm() {
 }
 
 void
-IntVal::PrintInstance(const map<Variable*, int>& valueMap) const
+IntVal::PrintInstance(const map<Variable*, int>& valueMap, bool printVar) const
 {
 	cout << value;
 }
 
 void
-IntVal::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) const
+IntVal::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap, bool printVar) const
 {
 	cout << value;
 }
@@ -1082,13 +1088,13 @@ void DoubleVal::PrintTerm() {
 }
 
 void
-DoubleVal::PrintInstance(const map<Variable*, int>& valueMap) const
+DoubleVal::PrintInstance(const map<Variable*, int>& valueMap, bool printVar) const
 {
 	cout << value;
 }
 
 void
-DoubleVal::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) const
+DoubleVal::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap, bool printVar) const
 {
 	cout << value;
 }
@@ -1124,13 +1130,13 @@ void StringVal::PrintTerm() {
 }
 
 void
-StringVal::PrintInstance(const map<Variable*, int>& valueMap) const
+StringVal::PrintInstance(const map<Variable*, int>& valueMap, bool printVar) const
 {
 	cout << value;
 }
 
 void
-StringVal::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) const
+StringVal::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap, bool printVar) const
 {
 	cout << value;
 }
@@ -1167,13 +1173,13 @@ void BoolVal::PrintTerm() {
 }
 
 void
-BoolVal::PrintInstance(const map<Variable*, int>& valueMap) const
+BoolVal::PrintInstance(const map<Variable*, int>& valueMap, bool printVar) const
 {
 	cout << value;
 }
 
 void
-BoolVal::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) const
+BoolVal::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap, bool printVar) const
 {
 	cout << value;
 }
@@ -1321,14 +1327,14 @@ void Arithmetic::PrintTerm() {
 }
 
 void
-Arithmetic::PrintInstance(const map<Variable*, int>& valueMap) const
+Arithmetic::PrintInstance(const map<Variable*, int>& valueMap, bool printVar) const
 {
 	Variable* var = NULL;
 	int value = 0;
 	var = dynamic_cast<Variable*>(leftE);
 	if (var == NULL)
 	{
-		leftE->PrintInstance(valueMap);
+		leftE->PrintInstance(valueMap, printVar);
 	}
 	else
 	{
@@ -1341,7 +1347,7 @@ Arithmetic::PrintInstance(const map<Variable*, int>& valueMap) const
 	var = dynamic_cast<Variable*>(rightE);
 	if (var == NULL)
 	{
-		rightE->PrintInstance(valueMap);
+		rightE->PrintInstance(valueMap, printVar);
 	}
 	else
 	{
@@ -1351,14 +1357,14 @@ Arithmetic::PrintInstance(const map<Variable*, int>& valueMap) const
 }
 
 void
-Arithmetic::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) const
+Arithmetic::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap, bool printVar) const
 {
 	Variable* var = NULL;
 	int value = 0;
 	var = dynamic_cast<Variable*>(leftE);
 	if (var == NULL)
 	{
-		leftE->PrintInstance(valueMap, vmap);
+		leftE->PrintInstance(valueMap, vmap, printVar);
 	}
 	else
 	{
@@ -1372,7 +1378,7 @@ Arithmetic::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) con
 	var = dynamic_cast<Variable*>(rightE);
 	if (var == NULL)
 	{
-		rightE->PrintInstance(valueMap);
+		rightE->PrintInstance(valueMap, vmap, printVar);
 	}
 	else
 	{
@@ -1532,25 +1538,25 @@ ConstraintsTemplate::PrintTemplate() const
 }
 
 void
-ConstraintsTemplate::PrintInstance(const map<Variable*, int>& valueMap) const
+ConstraintsTemplate::PrintInstance(const map<Variable*, int>& valueMap, bool printVar) const
 {
 	ConstraintList::const_iterator itc;
 	for (itc = constraints.begin(); itc != constraints.end(); itc++)
 	{
 	  cout << "\t";
-	  (*itc)->PrintInstance(valueMap);
+	  (*itc)->PrintInstance(valueMap, printVar);
 	  cout << endl;
 	}
 }
 
 void
-ConstraintsTemplate::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) const
+ConstraintsTemplate::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap, bool printVar) const
 {
 	ConstraintList::const_iterator itc;
 	for (itc = constraints.begin(); itc != constraints.end(); itc++)
 	{
 	  cout << "\t";
-	  (*itc)->PrintInstance(valueMap, vmap);
+	  (*itc)->PrintInstance(valueMap, vmap, printVar);
 	  cout << endl;
 	}
 }
