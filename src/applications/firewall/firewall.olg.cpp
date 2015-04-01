@@ -80,7 +80,7 @@ r3 trustedControllerMemory(@Controller, Switch, Dst) :-
 /* 
  * a packet from trusted hosts with a forwarding rule
  */
-r4 pktReceived(@Dst, PortDst, Src, Tport, Switch) :- 
+r3 pktReceived(@Dst, PortDst, Src, Tport, Switch) :- 
  	pktIn(@Switch, Src, Tport, Dst),
 	perFlowRule(@Switch, Src, Tport, Dst, PortDst),
 	Tport == 1 .
@@ -92,7 +92,7 @@ r4 pktReceived(@Dst, PortDst, Src, Tport, Switch) :-
  * Packet from unstrusted host appeared on switch
  * Send it to the controller to check if it is trused
  */
-r5 pktFromSwitch(@Controller, Switch, Src, Uport, Dst) :- 
+r4 pktFromSwitch(@Controller, Switch, Src, Uport, Dst) :- 
 	pktIn(@Switch, Src, Uport, Dst),
 	controllerConnection(@Switch, Controller),
 	Uport == 2 .
@@ -103,7 +103,7 @@ r5 pktFromSwitch(@Controller, Switch, Src, Uport, Dst) :-
  * Controller tells the switch it can forward the packet to the trusted hosts
  *  	by inserting a per flow rule into the swtich for that host
  */
-r6 perFlowRule(@Switch, Src, Uport, Dst, Tport) :-  
+r5 perFlowRule(@Switch, Src, Uport, Dst, Tport) :-  
 	pktFromSwitch(@Controller, Switch, Src, Uport, Dst), 
 	trustedControllerMemory(@Controller, Switch, Src),
 	Uport == 2,
@@ -116,7 +116,7 @@ r6 perFlowRule(@Switch, Src, Uport, Dst, Tport) :-
  * so it forst the packet to the target trusted host
  * (current) A packet from untrusted hosts with a forwarding rule also falls into this category
  */
-r7 pktReceived(@Dst, Tport, Src, Uport, Switch) :-
+r6 pktReceived(@Dst, Tport, Src, Uport, Switch) :-
 	perFlowRule(@Switch, Src, Uport, Dst, Tport),
  	pktIn(@Switch, Src, Uport, Dst),
  	Uport == 2,
