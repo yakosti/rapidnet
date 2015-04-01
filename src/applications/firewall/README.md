@@ -39,13 +39,15 @@ forall Switch, Src, Uport, Dst, Tport,
 
 ### English
 
-If `trustedControllerMemory` records a host, in the past, Switch must have forwarded Controller a packet from a trusted host
+If trusted controller memory records that a Switch trusts Host2, then Host2 once received a packet sent by Switch from trusted Host1 to Host2.
 
 ### Logic
 
 ```
-forall trustedControllerMemory(Controller, Switch, Host) 
+forall Controller, Switch, Host
+  trustedControllerMemory(Controller, Switch, Host) 
   ->
-  exists Host, PktIn(Switch, Src, SrcPort, Host) 
-  AND SrcPort = TRUSTED_PORT
+  exists HostPort, Src, SrcPort
+    pktReceived(Host, HostPort, Src, SrcPort, Switch)
+    AND SrcPort = TRUSTED_PORT
 ```
