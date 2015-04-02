@@ -19,6 +19,7 @@
 
 using namespace std;
 
+class DpoolInstNode;
 class Dpool;
 class DerivNode;
 class DpoolNode;
@@ -37,8 +38,26 @@ typedef pair<const Tuple*, const DerivNode*> TupleLineage;
 //TODO: Change name of ExQuanTuple, because we also use this for base tuples found
 typedef map<string, list<TupleLineage> > ExQuanTuple;
 
+typedef pair<const DpoolNode*, DpoolInstNode*> DpoolTupleInst;
+typedef map<string, list<DpoolTupleInst> > DpoolTupleMap;
+
 
 typedef pair<const ConsList&, const FormList&> Obligation;
+
+//Provide instantiation for a derivation
+class DpoolInstNode
+{
+public:
+	DpoolInstNode();
+
+	~DpoolInstNode();
+
+public:
+	const DpoolNode* dnode;//const: we need to pass "this" to dnode
+	VarMap headMap;
+	VarMap ruleMap;
+	list<DpoolInstNode*> bodyList;
+};
 
 class DpoolNode
 {
@@ -55,11 +74,26 @@ public:
 					  	  	  ExQuanTuple& tlist,
 							  const DerivNode* desigHead) const{}
 
-	virtual void FindBaseTuple(ExQuanTuple& tlist,
-							  const DerivNode* desigHead) const{}
+	virtual void FindSubTuple(const list<PredicateInstance*>& plist,
+						  	  DpoolTupleMap& tlist,
+							  DpoolInstNode*) const{}
+
+	virtual void FindBaseTuple(ExQuanTuple&, const DerivNode*) const{}
+
+	virtual void FindBaseTuple(DpoolInstNode*, DpoolTupleMap&){}
+
+	VarMap CreateHeadInst();
+
+	virtual VarMap CreateBodyInst(list<Variable*>&){return VarMap();}
 
 	//TODO: Don't let the user do the garbage collection
 	virtual void CreateDerivInst(VarMap&);
+
+	virtual DpoolInstNode* CreateDerivInst(){}
+
+	virtual DpoolNode* DeepCopy(){return NULL;}
+
+	virtual void CollectConsInst(DpoolInstNode*, ConsList&, FormList&){}
 
 	void PrintHead() const;
 
@@ -76,28 +110,40 @@ public:
 
 	virtual void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const{}
 
+	virtual void PrintInstance(const map<Variable*, int>&, DpoolInstNode*, bool) const{}
+
 	//Print the whole derivation represented by the DerivNode
 	virtual void PrintDerivation() const{}
+
+	virtual void PrintDerivInst(DpoolInstNode*){}
+
+	virtual void PrintSimpDerivInst(DpoolInstNode*, SimpConstraints&){}
 
 	//Print a real execution corresponding to the derivation
 	virtual void PrintExecution(map<Variable*, int>&, bool printVar) const{}
 
 	virtual void PrintExecInst(map<Variable*, int>&, VarMap&, bool) const{}
 
+	virtual void PrintExecInst(map<Variable*, int>&, DpoolInstNode*, bool) const{}
+
 	virtual ~DpoolNode(){}
 
 protected:
 	Tuple* head;
+	list<Variable*> freeVars;
 };
 
 //DerivNode points to a derivation of a body tuple
 class DerivNode: public DpoolNode
 {
+	//TODO: Free variables could exist in ruleConstraints
+	//They need deallocation
+
 public:
-	DerivNode(const Tuple* tn, string rn, ConstraintsTemplate* consTemp,
-			  DpoolNodeList& dlist, ConsList& clist, FormList& flist):
+	DerivNode(const Tuple* tn, string rn,
+			  ConstraintsTemplate* consTemp,DpoolNodeList& dlist):
 				  DpoolNode(tn), ruleName(rn),ruleConstraints(consTemp),
-				  bodyDerivs(dlist), allConstraints(clist), allInvs(flist){}
+				  bodyDerivs(dlist){}
 
 	void AddRuleName(string);
 
@@ -108,10 +154,6 @@ public:
 	void UpdateCumuCons(ConsList&);
 
 	void ReplaceVar(VarMap& vmap);
-
-	const ConsList& GetCumuConsts() const{return allConstraints;}
-
-	FormList& GetInvariants() {return allInvs;}
 
 	//Obtain all constraints and invariants that should be satisfied
 	//to make execution possible
@@ -125,10 +167,24 @@ public:
 					  ExQuanTuple&,
 					  const DerivNode*) const;
 
+	void FindSubTuple(const list<PredicateInstance*>&,
+					  DpoolTupleMap&,
+					  DpoolInstNode*) const;
+
 	void FindBaseTuple(ExQuanTuple&,
 					   const DerivNode*) const;
 
+	void FindBaseTuple(DpoolInstNode*, DpoolTupleMap&);
+
+	VarMap CreateBodyInst(list<Variable*>&);
+
 	void CreateDerivInst(VarMap&);
+
+	DpoolInstNode* CreateDerivInst();
+
+	DpoolNode* DeepCopy();
+
+	void CollectConsInst(DpoolInstNode*, ConsList&, FormList&);
 
 	void PrintHead() const;
 
@@ -141,8 +197,15 @@ public:
 
 	void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const;
 
+	void PrintInstance(const map<Variable*, int>&, DpoolInstNode*, bool) const;
+
 	//Print the whole derivation represented by the DerivNode
 	void PrintDerivation() const;
+
+	void PrintDerivInst(DpoolInstNode*);
+
+	//Print the instantiation of a derivation in a simplified form
+	void PrintSimpDerivInst(DpoolInstNode*, SimpConstraints&);
 
 	//Print a real execution corresponding to the derivation
 	void PrintExecution(map<Variable*, int>&, bool printVar) const;
@@ -150,15 +213,14 @@ public:
 	//From derivation to instances to execution traces
 	void PrintExecInst(map<Variable*, int>&, VarMap&, bool) const;
 
+	void PrintExecInst(map<Variable*, int>&, DpoolInstNode*, bool) const;
+
 	virtual ~DerivNode();
 
 protected:
 	string ruleName;
 	ConstraintsTemplate* ruleConstraints;
 	DpoolNodeList bodyDerivs;
-
-	ConsList allConstraints; //Cumulative constraints of a derivation
-	FormList allInvs; //Cumulative invariants of a derivation
 };
 
 class BaseNode: public DpoolNode
@@ -170,28 +232,52 @@ public:
 
 	BaseNode(string, int);
 
+	void UpdateCons(ConstraintsTemplate*);
+
 	const ConstraintsTemplate* GetCons() const{return cts;}
 
 	void FindSubTuple(const list<PredicateInstance*>&,
 					  ExQuanTuple&,
 					  const DerivNode*) const;
 
+	void FindSubTuple(const list<PredicateInstance*>&,
+						  DpoolTupleMap&,
+						  DpoolInstNode*) const;
+
 	void FindBaseTuple(ExQuanTuple&,
 						 const DerivNode*) const;
+
+	void FindBaseTuple(DpoolInstNode*, DpoolTupleMap&);
+
+	DpoolNode* DeepCopy();
+
+	DpoolInstNode* CreateDerivInst();
+
+	VarMap CreateBodyInst(list<Variable*>&);
+
+	void CollectConsInst(DpoolInstNode*, ConsList&, FormList&);
 
 	void PrintCumuCons() const;
 
 	void PrintDerivNode() const;
 
+	void PrintDerivInst(DpoolInstNode*);
+
+	void PrintSimpDerivInst(DpoolInstNode*, SimpConstraints&);
+
 	void PrintInstance(const map<Variable*, int>&, bool) const;
 
 	void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const;
+
+	void PrintInstance(const map<Variable*, int>&, DpoolInstNode*, bool) const;
 
 	void PrintDerivation() const;
 
 	void PrintExecution(map<Variable*, int>&, bool printVar) const;
 
 	void PrintExecInst(map<Variable*, int>&, VarMap&, bool) const;
+
+	void PrintExecInst(map<Variable*, int>&, DpoolInstNode*, bool) const;
 
 	~BaseNode();
 private:
@@ -203,6 +289,8 @@ class PropNode: public DpoolNode
 public:
 	PropNode(const PredicateInstance*, Formula*);
 
+	PropNode(const Tuple*);
+
 	void AddInvariant(Formula*);
 
 	Formula* GetInv() {return prop;}
@@ -211,13 +299,31 @@ public:
 					  ExQuanTuple&,
 					  const DerivNode*) const;
 
+	void FindSubTuple(const list<PredicateInstance*>&,
+					  DpoolTupleMap&,
+					  DpoolInstNode*) const;
+
+	DpoolNode* DeepCopy();
+
+	DpoolInstNode* CreateDerivInst();
+
+	VarMap CreateBodyInst(list<Variable*>&);
+
+	void CollectConsInst(DpoolInstNode*, ConsList&, FormList&);
+
 	void PrintCumuCons() const;
 
 	void PrintDerivNode() const;
 
+	void PrintDerivInst(DpoolInstNode*);
+
+	void PrintSimpDerivInst(DpoolInstNode*, SimpConstraints&);
+
 	void PrintInstance(const map<Variable*, int>&, bool) const;
 
 	void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const;
+
+	void PrintInstance(const map<Variable*, int>&, DpoolInstNode*, bool) const;
 
 	void PrintDerivation() const;
 
@@ -225,8 +331,11 @@ public:
 
 	void PrintExecInst(map<Variable*, int>&, VarMap&, bool) const;
 
+	void PrintExecInst(map<Variable*, int>&, DpoolInstNode*, bool) const;
+
 	~PropNode();
 private:
+	//TODO: Create a new copy for variables in prop.
 	Formula* prop;
 };
 

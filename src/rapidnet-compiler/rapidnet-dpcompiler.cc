@@ -59,7 +59,7 @@ NS_LOG_COMPONENT_DEFINE ("RapidNetDPGraph");
  */
 string preprocessReadOverlogProgram (string overlogFilename)
 {
-  NS_LOG_INFO("Pre-processing...");
+  cout << "Pre-processing..." << endl;
   string processedFilename = overlogFilename + ".cpp";
   char* args[6];
   int count = 0;
@@ -103,7 +103,7 @@ string preprocessReadOverlogProgram (string overlogFilename)
     }
   else
     {
-      NS_LOG_INFO("Generated pre-processed file " << processedFilename);
+      cout << "Generated pre-processed file " << processedFilename << endl;
       ostringstream scriptStream;
       string line;
 
@@ -122,7 +122,7 @@ void printToFile (string filename, string contents)
     file.open (filename.c_str ());
     file << contents;
     file.close ();
-    NS_LOG_INFO("Generated dependency graph " << filename);
+    cout << "Generated dependency graph " << filename << endl;
 }
 
 /**
@@ -133,7 +133,7 @@ void parseOverlog (string overlogFile, Ptr<OlContext> ctxt,
   Ptr<TableStore> tableStore, bool provenanceEnabled)
 {
   string program = preprocessReadOverlogProgram (overlogFile);
-  NS_LOG_INFO("Parsing NDlog...");
+  cout << "Parsing NDlog..." << endl;
 
   istringstream istr (program);
   ctxt->ParseStream (&istr, provenanceEnabled);
@@ -198,8 +198,8 @@ void compile (string overlogFile, bool provenanceEnabled)
 
   //Dpool construction
   Ptr<Dpool> dpool (new Dpool(newGraph, miniGraph, baseProp, inv));
-//  //dpool->PrintDpool();
-//  //dpool->PrintAllDeriv();
+//  dpool->PrintDpool();
+//  dpool->PrintAllDeriv();
 
   //Verify invariant property
   //dpool->VerifyInvariants(inv);
@@ -207,12 +207,12 @@ void compile (string overlogFile, bool provenanceEnabled)
   //Property verification
   //User-defined property
 
-  int start_s=clock();
   Property p = Property();
   p.Print();
 
   NS_LOG_DEBUG("Property constructed.");
   //Verify the property
+  int start_s=clock();
   bool res = CheckProperty(*dpool, p, baseRel);
   cout << endl;
   cout << "Is the property valid? " << (res?"Yes":"No");
@@ -230,17 +230,18 @@ void compile (string overlogFile, bool provenanceEnabled)
 int main (int argc, char** argv)
 {
 //  LogComponentEnable ("RapidNetDPGraph", LOG_LEVEL_FUNCTION);
-  LogComponentEnable ("DPGraph", LOG_LEVEL_FUNCTION);
-  LogComponentEnable ("Formula", LOG_LEVEL_FUNCTION);
-  LogComponentEnable ("Dpool", LOG_LEVEL_FUNCTION);
-  LogComponentEnable ("Verification", LOG_LEVEL_FUNCTION);
-  LogComponentEnable ("Property", LOG_LEVEL_FUNCTION);
+//  LogComponentEnable ("DPGraph", LOG_LEVEL_FUNCTION);
+//  LogComponentEnable ("Formula", LOG_LEVEL_FUNCTION);
+//  LogComponentEnable ("Dpool", LOG_LEVEL_FUNCTION);
+//  LogComponentEnable ("Verification", LOG_LEVEL_FUNCTION);
+//  LogComponentEnable ("Property", LOG_LEVEL_FUNCTION);
+
 //  LogComponentEnable ("RapidNetDPGraph", LOG_INFO);
-//  LogComponentEnable ("Dpool", LOG_INFO);
-//  LogComponentEnable ("DPGraph", LOG_INFO);
-//  LogComponentEnable ("Formula", LOG_INFO);
-//  LogComponentEnable ("Property", LOG_INFO);
-//  LogComponentEnable ("Verification", LOG_INFO);
+  LogComponentEnable ("Dpool", LOG_INFO);
+  LogComponentEnable ("DPGraph", LOG_INFO);
+  LogComponentEnable ("Formula", LOG_INFO);
+  LogComponentEnable ("Property", LOG_INFO);
+  LogComponentEnable ("Verification", LOG_INFO);
   //test_parsing();
 
   string overlogFile;
