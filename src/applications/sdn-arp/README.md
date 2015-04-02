@@ -53,6 +53,6 @@ forall Switch, Controller, Port, DstMac, DstIp, SrcMac, SrcIP, Mac_A, IP_A,
    AND DstMac = MAC_A
    AND DstIp = IP_A
    ->
-   forall IP, Mac, ( (Mac!=Mac_A) -> (arpMapping(Controller,IP,Mac)!=arpMapping(@Controller,IP_A,Mac_A)) )
+   forall Ip, Mac, (arpMapping(Controller, IP, Mac) -> IP != IP_A)
 ```
 
