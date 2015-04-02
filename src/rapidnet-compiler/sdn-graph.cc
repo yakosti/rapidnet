@@ -145,7 +145,7 @@ Tuple::PrintTuple() const
 }
 
 void
-Tuple::PrintInstance(const map<Variable*, int>& valueMap)
+Tuple::PrintInstance(const map<Variable*, int>& valueMap, bool printVar)
 {
 	cout << tpName << "(";
 	vector<Variable*>::iterator it;
@@ -169,7 +169,7 @@ Tuple::PrintInstance(const map<Variable*, int>& valueMap)
 }
 
 void
-Tuple::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) const
+Tuple::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap, bool printVar) const
 {
 	cout << tpName << "(";
 	vector<Variable*>::const_iterator it;
@@ -188,9 +188,12 @@ Tuple::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap) const
 		  {
 			  value = itm->second;
 		  }
-		  cout << "(";
-		  instVar->PrintTerm();
-		  cout << ")";
+		  if (printVar == true)
+		  {
+			  cout << "(";
+			  instVar->PrintTerm();
+			  cout << ")";
+		  }
 		  cout << value;
 	}
 	cout << ")";
@@ -466,6 +469,7 @@ DPGraph::DPGraph(Ptr<OlContext> ctxt)
 
 	//Process rule by rule
 	vector<OlContext::Rule*>::iterator it;
+	NS_LOG_DEBUG("Size of Rules: " << rules->size());
 	for (it = rules->begin(); it != rules->end(); it++)
 	{
 		ProcessRule(*it);
@@ -1184,6 +1188,13 @@ MiniGraph::TopoSort(const Invariant& inv) const
 		NS_LOG_DEBUG("rNodeCount: " << rNodeCount);
 		NS_LOG_DEBUG("rNodeNum: " << rNodeNum);
 		NS_LOG_DEBUG("Size of processQueue: " << processQueue.size());
+		if (processQueue.size() == 0)
+		{
+			NS_LOG_ERROR("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+			NS_LOG_ERROR("Loop still exists in the dependency graph!!!");
+			NS_LOG_ERROR("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+			return topoOrder;
+		}
 		Node* curNode = processQueue.front();
 		NS_LOG_DEBUG("Topo sorting: " << curNode->GetName());
 		processQueue.pop_front();

@@ -34,6 +34,7 @@ typedef map<string, BaseNodeList> BaseMap;
 typedef map<string, PropNodeList> PropMap;
 
 typedef pair<const Tuple*, const DerivNode*> TupleLineage;
+//TODO: Change name of ExQuanTuple, because we also use this for base tuples found
 typedef map<string, list<TupleLineage> > ExQuanTuple;
 
 
@@ -54,31 +55,34 @@ public:
 					  	  	  ExQuanTuple& tlist,
 							  const DerivNode* desigHead) const{}
 
+	virtual void FindBaseTuple(ExQuanTuple& tlist,
+							  const DerivNode* desigHead) const{}
+
 	//TODO: Don't let the user do the garbage collection
 	virtual void CreateDerivInst(VarMap&);
 
 	void PrintHead() const;
 
-	void PrintHeadInst(const map<Variable*, int>&) const;
+	void PrintHeadInst(const map<Variable*, int>&, bool printVar) const;
 
-	void PrintHeadInst(const map<Variable*, int>&, VarMap&) const;
+	void PrintHeadInst(const map<Variable*, int>&, VarMap&, bool printVar) const;
 
 	virtual void PrintCumuCons() const{}
 
 	//Just print the current DerivNode
 	virtual void PrintDerivNode() const{}
 
-	virtual void PrintInstance(const map<Variable*, int>&) const{}
+	virtual void PrintInstance(const map<Variable*, int>&, bool) const{}
 
-	virtual void PrintInstance(const map<Variable*, int>&, VarMap&) const{}
+	virtual void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const{}
 
 	//Print the whole derivation represented by the DerivNode
 	virtual void PrintDerivation() const{}
 
 	//Print a real execution corresponding to the derivation
-	virtual void PrintExecution(map<Variable*, int>&) const{}
+	virtual void PrintExecution(map<Variable*, int>&, bool printVar) const{}
 
-	virtual void PrintExecInst(map<Variable*, int>&, VarMap&) const{}
+	virtual void PrintExecInst(map<Variable*, int>&, VarMap&, bool) const{}
 
 	virtual ~DpoolNode(){}
 
@@ -121,6 +125,9 @@ public:
 					  ExQuanTuple&,
 					  const DerivNode*) const;
 
+	void FindBaseTuple(ExQuanTuple&,
+					   const DerivNode*) const;
+
 	void CreateDerivInst(VarMap&);
 
 	void PrintHead() const;
@@ -130,18 +137,18 @@ public:
 	//Just print the current DerivNode
 	void PrintDerivNode() const;
 
-	void PrintInstance(const map<Variable*, int>&) const;
+	void PrintInstance(const map<Variable*, int>&, bool) const;
 
-	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
+	void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const;
 
 	//Print the whole derivation represented by the DerivNode
 	void PrintDerivation() const;
 
 	//Print a real execution corresponding to the derivation
-	void PrintExecution(map<Variable*, int>&) const;
+	void PrintExecution(map<Variable*, int>&, bool printVar) const;
 
 	//From derivation to instances to execution traces
-	void PrintExecInst(map<Variable*, int>&, VarMap&) const;
+	void PrintExecInst(map<Variable*, int>&, VarMap&, bool) const;
 
 	virtual ~DerivNode();
 
@@ -169,19 +176,22 @@ public:
 					  ExQuanTuple&,
 					  const DerivNode*) const;
 
+	void FindBaseTuple(ExQuanTuple&,
+						 const DerivNode*) const;
+
 	void PrintCumuCons() const;
 
 	void PrintDerivNode() const;
 
-	void PrintInstance(const map<Variable*, int>&) const;
+	void PrintInstance(const map<Variable*, int>&, bool) const;
 
-	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
+	void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const;
 
 	void PrintDerivation() const;
 
-	void PrintExecution(map<Variable*, int>&) const;
+	void PrintExecution(map<Variable*, int>&, bool printVar) const;
 
-	void PrintExecInst(map<Variable*, int>&, VarMap&) const;
+	void PrintExecInst(map<Variable*, int>&, VarMap&, bool) const;
 
 	~BaseNode();
 private:
@@ -205,15 +215,15 @@ public:
 
 	void PrintDerivNode() const;
 
-	void PrintInstance(const map<Variable*, int>&) const;
+	void PrintInstance(const map<Variable*, int>&, bool) const;
 
-	void PrintInstance(const map<Variable*, int>&, VarMap&) const;
+	void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const;
 
 	void PrintDerivation() const;
 
-	void PrintExecution(map<Variable*, int>&) const;
+	void PrintExecution(map<Variable*, int>&, bool printVar) const;
 
-	void PrintExecInst(map<Variable*, int>&, VarMap&) const;
+	void PrintExecInst(map<Variable*, int>&, VarMap&, bool) const;
 
 	~PropNode();
 private:

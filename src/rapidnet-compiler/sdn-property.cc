@@ -26,9 +26,9 @@ Property::Property()
 	//ProcessUniPred("path(x,y,z)", varMap);
 	//ProcessUniPred("flowEntry(s,m,o)", varMap);
 	ProcessUniPred("packet(a,b,c,d)", varMap);
-	ProcessUniPred("flowEntry(e,f,g)", varMap);
+	ProcessUniPred("flowEntry(e,f,g,h)", varMap);
 
-	ProcessUniCons(varMap);
+	//ProcessUniCons(varMap);
 
 	//ProcessExistPred("packet(a,b,c,d)", varMap);
 	//ProcessExistPred("link(m,n,c)", varMap);
@@ -156,38 +156,38 @@ Property::ProcessExistCons(const map<string, Variable*>& varMap)
 //	existConsList->AddConstraint(newCons);
 
 	//sdn-mac-learning.olg
-//	string var1 = "s";
-//	Variable* varPtr1 = varMap.find(var1)->second;
-//	string var2 = "a";
-//	Variable* varPtr2 = varMap.find(var2)->second;
-//
-//
-//	Constraint* newCons = new Constraint(Constraint::LT,
-//										 varPtr1,
-//										 varPtr2);
-//
-//	existConsList->AddConstraint(newCons);
-//
-//	string var3 = "m";
-//	Variable* varPtr3 = varMap.find(var3)->second;
-//	string var4 = "c";
-//	Variable* varPtr4 = varMap.find(var4)->second;
-//
-//	newCons = new Constraint(Constraint::LT,
-//										 varPtr3,
-//										 varPtr4);
-//
-//	existConsList->AddConstraint(newCons);
-
-	string var1 = "f";
+	string var1 = "a";
 	Variable* varPtr1 = varMap.find(var1)->second;
-	string var2 = "d";
+	string var2 = "e";
 	Variable* varPtr2 = varMap.find(var2)->second;
 
-	Constraint* newCons = new Constraint(Constraint::NEQ,
+
+	Constraint* newCons = new Constraint(Constraint::EQ,
 										 varPtr1,
 										 varPtr2);
+
 	existConsList->AddConstraint(newCons);
+
+	string var3 = "c";
+	Variable* varPtr3 = varMap.find(var3)->second;
+	string var4 = "f";
+	Variable* varPtr4 = varMap.find(var4)->second;
+
+	newCons = new Constraint(Constraint::EQ,
+										 varPtr3,
+										 varPtr4);
+
+	existConsList->AddConstraint(newCons);
+
+//	string var1 = "f";
+//	Variable* varPtr1 = varMap.find(var1)->second;
+//	string var2 = "d";
+//	Variable* varPtr2 = varMap.find(var2)->second;
+//
+//	Constraint* newCons = new Constraint(Constraint::NEQ,
+//										 varPtr1,
+//										 varPtr2);
+//	existConsList->AddConstraint(newCons);
 }
 
 
@@ -344,6 +344,149 @@ Property::~Property()
 	}
 }
 
+BaseRel::BaseRel()
+{
+	varMap = map<string, Variable*>();
+	basePreds = list<PredicateInstance*>();
+	baseForm = NULL;
+}
+
+void
+BaseRel::InsertPred(string pred)
+{
+	size_t leftParPos = pred.find("(");
+	string predName = pred.substr(0, leftParPos);
+	size_t rightParPos = pred.find(")");
+	string predArgs = pred.substr(leftParPos+1, (rightParPos - leftParPos - 1));
+
+	vector<Term*> args;
+	istringstream ss(predArgs);
+	string arg;
+	Variable* newVar = NULL;
+	while (getline(ss, arg, ','))
+	{
+		//TODO: Replace default type
+		NS_LOG_DEBUG("Process variable: " << arg);
+		newVar = new Variable(Variable::STRING, true);
+		args.push_back(newVar);
+		varMap.insert(map<string,Variable*>::value_type(arg, newVar));
+	}
+
+	int arg_length = args.size();
+	vector<Variable::TypeCode> typeVec = vector<Variable::TypeCode>(arg_length, Variable::STRING);
+	PredicateSchema* schema = new PredicateSchema(predName, typeVec);
+	PredicateInstance* predInst = new PredicateInstance(schema, args);
+	basePreds.push_back(predInst);
+}
+
+void
+BaseRel::UpdateFormula(Formula* fml)
+{
+	baseForm = fml;
+}
+
+void
+BaseRel::Print()
+{
+	cout << "***** Print Base Relational Prop *****" << endl;
+	list<PredicateInstance*>::iterator itl;
+	for (itl = basePreds.begin();itl != basePreds.end();itl++)
+	{
+		(*itl)->Print();
+		cout << endl;
+	}
+	cout << "," << endl;
+	baseForm->Print();
+	cout << "***************" << endl;
+	cout << endl;
+}
+
+
+BaseRel::~BaseRel()
+{
+	delete baseForm;
+	list<PredicateInstance*>::iterator itl;
+	for (itl = basePreds.begin();itl != basePreds.end();itl++)
+	{
+		delete (*itl);
+	}
+}
+
+BaseRelProperty::BaseRelProperty()
+{
+	propSet = list<BaseRel*>();
+
+	//sdn-mac-learning.olg
+	//Start constructing a BaseRel
+	BaseRel* barl = new BaseRel();
+
+	string pred = "inPort(v1,v2,v3)";
+	barl->InsertPred(pred);
+	pred = "outPort(v4,v5,v6)";
+	barl->InsertPred(pred);
+
+	map<string, Variable*>& vmap = barl->varMap;
+
+	string var1 = "v1";
+	Variable* varPtr1 = vmap.find(var1)->second;
+	string var2 = "v4";
+	Variable* varPtr2 = vmap.find(var2)->second;
+
+	Constraint* newCons1 = new Constraint(Constraint::EQ,
+										 varPtr1,
+										 varPtr2);
+
+	string var3 = "v2";
+	Variable* varPtr3 = vmap.find(var3)->second;
+	string var4 = "v5";
+	Variable* varPtr4 = vmap.find(var4)->second;
+
+	Constraint* newCons2 = new Constraint(Constraint::NEQ,
+										 varPtr3,
+										 varPtr4);
+
+	string var5 = "v3";
+	Variable* varPtr5 = vmap.find(var5)->second;
+	string var6 = "v6";
+	Variable* varPtr6 = vmap.find(var6)->second;
+
+	Constraint* newCons3 = new Constraint(Constraint::NEQ,
+										 varPtr5,
+										 varPtr6);
+
+	Formula* newConn = new Connective(Connective::AND, newCons2, newCons3);
+	Formula* form = new Connective(Connective::IMPLY, newCons1, newConn);
+
+	barl->UpdateFormula(form);
+	propSet.push_back(barl);
+	//BaseRel construction finished
+}
+
+
+void
+BaseRelProperty::Print()
+{
+	cout << "~~~~~~~~~~~ Print Base Relational Properties ~~~~~~~~~~~" << endl;
+	list<BaseRel*>::iterator itb;
+	for (itb = propSet.begin();itb != propSet.end();itb++)
+	{
+		(*itb)->Print();
+		cout << endl;
+	}
+
+	cout << "~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+}
+
+BaseRelProperty::~BaseRelProperty()
+{
+	NS_LOG_FUNCTION("Destruct base relational properties.");
+	list<BaseRel*>::iterator itb;
+	for (itb = propSet.begin();itb != propSet.end();itb++)
+	{
+		delete (*itb);
+	}
+}
+
 BaseProperty::BaseProperty()
 {
 	propSet = ConsAnnotMap();
@@ -387,11 +530,98 @@ BaseProperty::BaseProperty()
 //
 //	ConsAnnot cat = ConsAnnot(pInst, cts);
 //	propSet.insert(ConsAnnotMap::value_type(predName, cat));
+
+	//sdn-mac-learning.olg
+	string predName = "missEntry";
+	int argNum = 2;
+	PredicateSchema* scheme = new PredicateSchema(predName, argNum);
+	vector<Term*> args = vector<Term*>();
+	for (int i = 0;i < argNum;i++)
+	{
+		Variable* newVar = new Variable(Variable::STRING, true);
+		args.push_back(newVar);
+	}
+	//Use index to create formulas;
+	PredicateInstance* pInst = new PredicateInstance(scheme, args);
+	Constraint* ct = new Constraint(Constraint::NEQ, args[0], args[1]);
+	ConstraintsTemplate* cts = new ConstraintsTemplate();
+	cts->AddConstraint(ct);
+
+	ConsAnnot cat = ConsAnnot(pInst, cts);
+	propSet.insert(ConsAnnotMap::value_type(predName, cat));
+
+	//Constraint set on a base predicate
+	predName = "inPort";
+	argNum = 3;
+	scheme = new PredicateSchema(predName, argNum);
+	args = vector<Term*>();
+	for (int i = 0;i < argNum;i++)
+	{
+		Variable* newVar = new Variable(Variable::STRING, true);
+		args.push_back(newVar);
+	}
+	//Use index to create formulas;
+	pInst = new PredicateInstance(scheme, args);
+	Constraint* ct1 = new Constraint(Constraint::NEQ, args[0], args[1]);
+	Constraint* ct2 = new Constraint(Constraint::NEQ, args[1], args[2]);
+	Constraint* ct3 = new Constraint(Constraint::NEQ, args[0], args[2]);
+	cts = new ConstraintsTemplate();
+	cts->AddConstraint(ct1);
+	cts->AddConstraint(ct2);
+	cts->AddConstraint(ct3);
+
+	cat = ConsAnnot(pInst, cts);
+	propSet.insert(ConsAnnotMap::value_type(predName, cat));
+	//End of Constraint set on a base predicate
+
+	predName = "outPort";
+	argNum = 3;
+	scheme = new PredicateSchema(predName, argNum);
+	args = vector<Term*>();
+	for (int i = 0;i < argNum;i++)
+	{
+		Variable* newVar = new Variable(Variable::STRING, true);
+		args.push_back(newVar);
+	}
+	//Use index to create formulas;
+	pInst = new PredicateInstance(scheme, args);
+	ct1 = new Constraint(Constraint::NEQ, args[0], args[1]);
+	ct2 = new Constraint(Constraint::NEQ, args[1], args[2]);
+	ct3 = new Constraint(Constraint::NEQ, args[0], args[2]);
+	cts = new ConstraintsTemplate();
+	cts->AddConstraint(ct1);
+	cts->AddConstraint(ct2);
+	cts->AddConstraint(ct3);
+
+	cat = ConsAnnot(pInst, cts);
+	propSet.insert(ConsAnnotMap::value_type(predName, cat));
+
+	predName = "initPacket";
+	argNum = 4;
+	scheme = new PredicateSchema(predName, argNum);
+	args = vector<Term*>();
+	for (int i = 0;i < argNum;i++)
+	{
+		Variable* newVar = new Variable(Variable::STRING, true);
+		args.push_back(newVar);
+	}
+	//Use index to create formulas;
+	pInst = new PredicateInstance(scheme, args);
+	ct1 = new Constraint(Constraint::NEQ, args[0], args[1]);
+	ct2 = new Constraint(Constraint::NEQ, args[1], args[2]);
+	ct3 = new Constraint(Constraint::NEQ, args[0], args[2]);
+	cts = new ConstraintsTemplate();
+	cts->AddConstraint(ct1);
+	cts->AddConstraint(ct2);
+	cts->AddConstraint(ct3);
+
+	cat = ConsAnnot(pInst, cts);
+	propSet.insert(ConsAnnotMap::value_type(predName, cat));
 }
 
 BaseProperty::~BaseProperty()
 {
-	NS_LOG_FUNCTION("Dectruct BaseProperty...");
+	NS_LOG_FUNCTION("Destruct BaseProperty...");
 	ConsAnnotMap::iterator itm;
 	for (itm = propSet.begin();itm != propSet.end();itm++)
 	{
@@ -448,11 +678,12 @@ Invariant::Invariant()
 
 
 	//Invariant of sdn-mac-learning.olg
+	//Begin invariant specification
 	NS_LOG_FUNCTION("Generate invariant...");
 	string predName = "packet";
 	int argNum = 4;
 	PredicateSchema* scheme = new PredicateSchema(predName, argNum);
-	vector<Term*> args;
+	vector<Term*> args = vector<Term*>();
 	for (int i = 0;i < argNum;i++)
 	{
 		Variable* newVar = new Variable(Variable::STRING, true);
@@ -463,8 +694,43 @@ Invariant::Invariant()
 	PredicateInstance* pInst = new PredicateInstance(scheme, args);
 	Annotation newAnnot = Annotation(pInst, form);
 	invs.insert(AnnotMap::value_type(predName, newAnnot));
+	//End invariant specification
 
+	//Begin invariant specification
+	NS_LOG_FUNCTION("Generate invariant...");
+	predName = "matchingPacket";
+	argNum = 5;
+	scheme = new PredicateSchema(predName, argNum);
+	args = vector<Term*>();
+	for (int i = 0;i < argNum;i++)
+	{
+		Variable* newVar = new Variable(Variable::STRING, true);
+		args.push_back(newVar);
+	}
+	//Use index to create formulas;
+	form = new True();
+	pInst = new PredicateInstance(scheme, args);
+	newAnnot = Annotation(pInst, form);
+	invs.insert(AnnotMap::value_type(predName, newAnnot));
+	//End invariant specification
 
+	//Begin invariant specification
+	NS_LOG_FUNCTION("Generate invariant...");
+	predName = "flowEntry";
+	argNum = 4;
+	scheme = new PredicateSchema(predName, argNum);
+	args = vector<Term*>();
+	for (int i = 0;i < argNum;i++)
+	{
+		Variable* newVar = new Variable(Variable::STRING, true);
+		args.push_back(newVar);
+	}
+	//Use index to create formulas;
+	form = new True();
+	pInst = new PredicateInstance(scheme, args);
+	newAnnot = Annotation(pInst, form);
+	invs.insert(AnnotMap::value_type(predName, newAnnot));
+	//End invariant specification
 
 //	NS_LOG_FUNCTION("Generate invariant...");
 //	string predName = "verifyPath";
