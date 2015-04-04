@@ -135,12 +135,13 @@ rs7 packet(@OutNei, Switch, SrcMac, DstMac) :-
 
 
 
+
+
 /* ********************* Load Balancer program ******************* */
 
 /* 
  * Load balancer has a packet on it
- * It hashes the mac valud of the source, to decide which of several switches to send it to 
- * 
+ * It hashes the mac value of the source, to decide which of several switches to send it to 
  */
 lb1 randomlyObtainedSwitch(@LoadBalancer, SwitchNum, Host, SrcMac, DstMac) :- 
 	packet(@LoadBalancer, Host, SrcMac, DstMac),
