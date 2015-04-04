@@ -13,7 +13,14 @@ materialize(maxPriority,infinity,1,keys(1)). /*Records the maximum priority, ini
 materialize(initPacket,infinity,infinity,keys(2,3:str,4:str)). /*Packet for simulation initialization*/
 materialize(recvPacket,infinity,infinity,keys(3:str,4:str)). /*Packet for simulation initialization*/
 
-/*Controller program*/
+
+
+
+
+
+
+/* *********************** Controller program ************************ */
+
 /*Install rules on switch*/
 rc1 flowMod(@Switch, SrcMac, InPort) :-
 	ofconn(@Controller, Switch),
@@ -24,8 +31,15 @@ rc2 broadcast(@Switch, InPort, SrcMac, DstMac) :-
 	ofconn(@Controller, Switch),
 	ofPacket(@Controller, Switch, InPort, SrcMac, DstMac).
 
+/* *********************** Controller program ************************ */
 
-/*Switch program*/
+
+
+
+
+
+/* *********************** Switch program ************************ */
+
 /*Query the controller when receiving unknown packets */
 rs1 matchingPacket(@Switch, SrcMac, DstMac, InPort, TopPriority) :-
 	packet(@Switch, Nei, SrcMac, DstMac),
@@ -72,8 +86,16 @@ rs7 packet(@OutNei, Switch, SrcMac, DstMac) :-
 	link(@Switch, OutNei, OutPort),
         OutPort != InPort.
 
+/* *********************** Switch program ************************ */
 
-/*Host program*/
+
+
+
+
+
+
+/* ************************ Host program ************************* */
+
 /*Packet initialization*/
 rh1 packet(@Switch, Host, SrcMac, DstMac) :-
 	initPacket(@Host, Switch, SrcMac, DstMac),
@@ -83,3 +105,7 @@ rh1 packet(@Switch, Host, SrcMac, DstMac) :-
 rh2 recvPacket(@Host, SrcMac, DstMac) :-
 	packet(@Host, Switch, SrcMac, DstMac),
 	link(@Host, Switch, InPort).
+
+/* ************************ Host program ************************* */
+
+
