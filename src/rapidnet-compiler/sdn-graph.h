@@ -62,9 +62,16 @@ public:
 
 	void PrintTuple() const;
 
+	void PrintTupleInst(VarMap&) const;
+
+	void PrintSimpTupleInst(VarMap&, SimpConstraints&) const;
+
 	void PrintInstance(const map<Variable*, int>&, bool printVar);
 
 	void PrintInstance(const map<Variable*, int>&, VarMap&, bool printVar) const;
+
+	void PrintSimpInstance(const map<Variable*, int>&, VarMap&,
+							SimpConstraints&, bool printVar) const;
 
 	~Tuple();
 

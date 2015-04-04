@@ -22,46 +22,43 @@ PropAssignment(SimpConstraints&, map<Variable*, int>);
 //Counter-example generation
 void
 GenCounterExp(map<Variable*, int>,
-			  list<pair<const DerivNode*, SimpConstraints&> >&,
-			  map<const DerivNode*, VarMap>&);
+			  list<pair<const DpoolNode*, SimpConstraints&> >&,
+			  map<const DpoolNode*, DpoolInstNode*>&);
 
 //TODO: documentation
 //assignment: counter-example instances
 //return value: [true: constraints sat|false: constraints unsat]
 bool
 CheckWholeProp(const Property&,
-			   list<TupleLineage>&,
+			   list<DpoolTupleInst>&,
 			   ConsList&,
-			   const FormList&,
+			   FormList&,
 			   map<Variable*, int>&,
-			   list<SimpConstraints*>&,
-			   map<const DerivNode*, VarMap>&);
+			   list<SimpConstraints*>&);
 
 //Return value: [true: an unsat element, meaning its negation is valid|
 //				 false: all sat, its negation invalid]
 bool
 CheckRecurExist(const Property&,
-				ExQuanTuple&,
-				map<string, list<const Tuple*> >::const_iterator,
-				list<TupleLineage>,
+				DpoolTupleMap&,
+				DpoolTupleMap::const_iterator,
+				list<DpoolTupleInst>,
 				ConsList&,
-				const FormList&,
+				FormList&,
 				map<Variable*, int>&,
 				list<SimpConstraints*>,
-				map<const DerivNode*, VarMap>& );
+				map<const DpoolNode*, DpoolInstNode*>&);
 
 void
 ConstructBaseObl(BaseRel&,
-				 list<TupleLineage>&,
-				 map<const DerivNode*, VarMap>&,
+				 list<DpoolTupleInst>&,
 				 FormList&);
 
 void
 CheckRecurBase(BaseRel&,
 			   list<PredicateInstance*>::iterator,
-			   list<TupleLineage>,
-			   ExQuanTuple&,
-			   map<const DerivNode*, VarMap>&,
+			   list<DpoolTupleInst>,
+			   DpoolTupleMap&,
 			   FormList&);
 
 //TODO: Separate the verification of universally
@@ -73,7 +70,7 @@ CheckExistProp(const Property&,
 
 //Return value: [true: property holds|false: property does not hold]
 bool
-CheckRecurUniv(const DerivMap&,
+CheckRecurUniv(const Dpool&,
 			   const Property&,
 			   const list<PredicateInstance*>&,
 			   list<PredicateInstance*>::const_iterator,

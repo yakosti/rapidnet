@@ -145,6 +145,42 @@ Tuple::PrintTuple() const
 }
 
 void
+Tuple::PrintTupleInst(VarMap& vmap) const
+{
+	cout << tpName << "(";
+	vector<Variable*>::const_iterator it;
+	for (it = args.begin(); it != args.end(); it++)
+	{
+		  if (it != args.begin())
+		  {
+			 cout << ",";
+		  }
+		  Variable* instVar = vmap.at(*it);
+		  instVar->PrintTerm();
+	}
+	cout << ")";
+}
+
+
+void
+Tuple::PrintSimpTupleInst(VarMap& vmap, SimpConstraints& simpCons) const
+{
+	cout << tpName << "(";
+	vector<Variable*>::const_iterator it;
+	for (it = args.begin(); it != args.end(); it++)
+	{
+		  if (it != args.begin())
+		  {
+			 cout << ",";
+		  }
+		  Variable* instVar = vmap.at(*it);
+		  Variable* simpVar = simpCons.FindRootVar(instVar);
+		  simpVar->PrintTerm();
+	}
+	cout << ")";
+}
+
+void
 Tuple::PrintInstance(const map<Variable*, int>& valueMap, bool printVar)
 {
 	cout << tpName << "(";
@@ -192,6 +228,40 @@ Tuple::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap, bool pri
 		  {
 			  cout << "(";
 			  instVar->PrintTerm();
+			  cout << ")";
+		  }
+		  cout << value;
+	}
+	cout << ")";
+}
+
+void
+Tuple::PrintSimpInstance(const map<Variable*, int>& valueMap, VarMap& vmap,
+					   SimpConstraints& simpCons, bool printVar) const
+{
+	cout << tpName << "(";
+	vector<Variable*>::const_iterator it;
+	for (it = args.begin(); it != args.end(); it++)
+	{
+		  if (it != args.begin())
+		  {
+			 cout << ",";
+		  }
+
+		  Variable* instVar = vmap.at(*it);
+     	  Variable* simpVar = simpCons.FindRootVar(instVar);
+		  map<Variable*, int>::const_iterator itm;
+		  itm = valueMap.find(simpVar);
+		  int value = 0;
+		  if (itm != valueMap.end())
+		  {
+			  value = itm->second;
+		  }
+
+		  if (printVar == true)
+		  {
+			  cout << "(";
+			  simpVar->PrintTerm();
 			  cout << ")";
 		  }
 		  cout << value;
@@ -366,7 +436,7 @@ MetaNode::GetSchema() const
 		}
 		else
 		{
-			NS_LOG_INFO("This MetaNode contains no TupleNode:" << predName);
+			cout << "This MetaNode contains no TupleNode:" << predName << endl;
 			return list<Variable::TypeCode>();
 		}
 	}
@@ -474,7 +544,7 @@ DPGraph::DPGraph(Ptr<OlContext> ctxt)
 	{
 		ProcessRule(*it);
 	}
-	NS_LOG_INFO("Dependency graph generated!");
+	cout << "Dependency graph generated!" << endl;
 }
 
 const TupleListC&
@@ -703,6 +773,8 @@ DPGraph::ProcessParseVar(ParseVar* pVar,
 						 map<string, Variable*>& unifier,
 						 RuleNode* rnode)
 {
+	//TODO: New variables can be created and folded into
+	//Lists. So that's not captured in the head tuple
 	Variable* newVar = new Variable(pVar, false);
 	pair<map<string,Variable*>::iterator, bool> ret;
 	ret = unifier.insert(pair<string,Variable*>(pVar->ToString(), newVar));
@@ -1114,7 +1186,7 @@ NewDPGraph::~NewDPGraph()
 
 MiniGraph::MiniGraph(Ptr<NewDPGraph> newGraph, const Invariant& invariant)
 {
-	NS_LOG_INFO("Constructing MiniGraph...");
+	cout << "Constructing MiniGraph..." << endl;
 	outEdgeRM = newGraph->outEdgeRM;
 	inEdgesRM = newGraph->inEdgesRM;
 
@@ -1150,7 +1222,7 @@ MiniGraph::MiniGraph(Ptr<NewDPGraph> newGraph, const Invariant& invariant)
 RuleListC
 MiniGraph::TopoSort(const Invariant& inv) const
 {
-	NS_LOG_INFO("Topological sorting...");
+	cout << "Topological sorting..." << endl;
 	const AnnotMap& invariants = inv.GetInv();
 	//Create a copy of the topology for processing
 	map<RuleNode*, NewMetaNode*> outEdgeRMCopy = outEdgeRM;
@@ -1238,7 +1310,7 @@ MiniGraph::TopoSort(const Invariant& inv) const
 		}
 	}
 
-	NS_LOG_INFO("Topological sorting completed!");
+	cout << "Topological sorting completed!" << endl;
 
 	return topoOrder;
 }

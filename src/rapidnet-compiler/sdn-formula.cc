@@ -67,6 +67,13 @@ Connective::ArgSwap()
 }
 
 void
+Connective::FindFreeVar(list<Variable*>& varList, VarMap& vmap)
+{
+	leftF->FindFreeVar(varList, vmap);
+	rightF->FindFreeVar(varList, vmap);
+}
+
+void
 Connective::NullifyMem()
 {
 	leftF = NULL;
@@ -103,6 +110,49 @@ Connective::Print() const
 	case Connective::NOT: cout << " neg ";break;
 	}
 	rightF->Print();
+}
+
+void
+Connective::PrintInst(VarMap& vmap)
+{
+	leftF->PrintInst(vmap);
+	switch (conntype)
+	{
+	case Connective::IMPLY: cout << " -> ";break;
+	case Connective::OR: cout << " \\/ ";break;
+	case Connective::AND: cout << " /\\ ";break;
+	case Connective::NOT: cout << " neg ";break;
+	}
+	rightF->PrintInst(vmap);
+}
+
+void
+Connective::PrintSimpInst(VarMap& vmap, SimpConstraints& simpCons)
+{
+	leftF->PrintSimpInst(vmap, simpCons);
+	switch (conntype)
+	{
+	case Connective::IMPLY: cout << " -> ";break;
+	case Connective::OR: cout << " \\/ ";break;
+	case Connective::AND: cout << " /\\ ";break;
+	case Connective::NOT: cout << " neg ";break;
+	}
+	rightF->PrintSimpInst(vmap, simpCons);
+}
+
+void
+Connective::PrintSimpInstance(const map<Variable*, int>& valueMap, VarMap& vmap,
+		   	   	   	   	   	  SimpConstraints& simpCons, bool printVar)
+{
+	leftF->PrintSimpInstance(valueMap, vmap, simpCons, printVar);
+	switch (conntype)
+	{
+	case Connective::IMPLY: cout << " -> ";break;
+	case Connective::OR: cout << " \\/ ";break;
+	case Connective::AND: cout << " /\\ ";break;
+	case Connective::NOT: cout << " neg ";break;
+	}
+	rightF->PrintSimpInstance(valueMap, vmap, simpCons, printVar);
 }
 
 Connective::~Connective()
@@ -190,6 +240,17 @@ Quantifier::VarReplace(SimpConstraints& simpCon)
 	fml->VarReplace(simpCon);
 }
 
+void
+Quantifier::FindFreeVar(list<Variable*>& varList, VarMap& vmap)
+{
+	vector<Variable*>::iterator itv;
+	for (itv = boundVarList.begin();itv != boundVarList.end();itv++)
+	{
+		Variable* newVar = new Variable(Variable::STRING, true);
+		vmap.insert(VarMap::value_type(*itv, newVar));
+	}
+}
+
 Quantifier*
 Quantifier::Clone()
 {
@@ -226,6 +287,72 @@ Quantifier::Print() const
 
 	cout << endl;
 	fml->Print();
+}
+
+void
+Quantifier::PrintInst(VarMap& vmap)
+{
+	switch(quantype)
+	{
+	case Quantifier::FORALL: cout << "forall "; break;
+	case Quantifier::EXISTS: cout << "exists "; break;
+	}
+
+	vector<Variable*>::const_iterator it;
+	for (it = boundVarList.begin();it != boundVarList.end();it++)
+	{
+		Variable* instVar = vmap.at(*it);
+		instVar->PrintTerm();
+		cout << ",";
+	}
+
+	cout << endl;
+	fml->PrintInst(vmap);
+}
+
+
+void
+Quantifier::PrintSimpInst(VarMap& vmap, SimpConstraints& simpCons)
+{
+	switch(quantype)
+	{
+	case Quantifier::FORALL: cout << "forall "; break;
+	case Quantifier::EXISTS: cout << "exists "; break;
+	}
+
+	vector<Variable*>::const_iterator it;
+	for (it = boundVarList.begin();it != boundVarList.end();it++)
+	{
+		Variable* instVar = vmap.at(*it);
+		Variable* simpVar = simpCons.FindRootVar(instVar);
+		simpVar->PrintTerm();
+		cout << ",";
+	}
+
+	cout << endl;
+	fml->PrintSimpInst(vmap, simpCons);
+}
+
+void
+Quantifier::PrintSimpInstance(const map<Variable*, int>& valueMap, VarMap& vmap,
+		   	   	   	      	  SimpConstraints& simpCons, bool printVar)
+{
+	switch(quantype)
+	{
+	case Quantifier::FORALL: cout << "forall "; break;
+	case Quantifier::EXISTS: cout << "exists "; break;
+	}
+
+	vector<Variable*>::const_iterator it;
+	for (it = boundVarList.begin();it != boundVarList.end();it++)
+	{
+		Variable* instVar = vmap.at(*it);
+		instVar->PrintTerm();
+		cout << ",";
+	}
+
+	cout << endl;
+	fml->PrintSimpInstance(valueMap, vmap, simpCons, printVar);
 }
 
 Quantifier::~Quantifier()
@@ -352,6 +479,81 @@ PredicateInstance::Print() const
 	cout << ")";
 }
 
+void
+PredicateInstance::PrintInst(VarMap& vmap)
+{
+	cout << schema->GetName();
+	cout << "(";
+	vector<Term*>::iterator it;
+	for (it = args.begin(); it != args.end(); it++)
+	{
+		if (it != args.begin())
+		{
+			cout << ",";
+		}
+		Variable* argVar = dynamic_cast<Variable*>(*it);
+		Variable* instVar = vmap.at(argVar);
+		instVar->PrintTerm();
+	}
+	cout << ")";
+}
+
+
+void
+PredicateInstance::PrintSimpInst(VarMap& vmap, SimpConstraints& simpCons)
+{
+	cout << schema->GetName();
+	cout << "(";
+	vector<Term*>::iterator it;
+	for (it = args.begin(); it != args.end(); it++)
+	{
+		if (it != args.begin())
+		{
+			cout << ",";
+		}
+		Variable* argVar = dynamic_cast<Variable*>(*it);
+		Variable* instVar = vmap.at(argVar);
+		Variable* simpVar = simpCons.FindRootVar(instVar);
+		simpVar->PrintTerm();
+	}
+	cout << ")";
+}
+
+void
+PredicateInstance::PrintSimpInstance(const map<Variable*, int>& valueMap, VarMap& vmap,
+						   	   	   	 SimpConstraints& simpCons, bool printVar)
+{
+	cout << schema->GetName();
+	cout << "(";
+	vector<Term*>::iterator it;
+	for (it = args.begin(); it != args.end(); it++)
+	{
+		if (it != args.begin())
+		{
+			cout << ",";
+		}
+		Variable* argVar = dynamic_cast<Variable*>(*it);
+		Variable* instVar = vmap.at(argVar);
+		Variable* simpVar = simpCons.FindRootVar(instVar);
+		if (printVar == true)
+		{
+			cout << "(";
+			simpVar->PrintTerm();
+			cout << ")";
+		}
+		map<Variable*, int>::const_iterator itm =  valueMap.find(simpVar);
+		if (itm != valueMap.end())
+		{
+			cout << itm->second;
+		}
+		else
+		{
+			simpVar->PrintTerm();
+		}
+	}
+	cout << ")";
+}
+
 PredicateInstance::~PredicateInstance()
 {
 	delete schema;
@@ -454,6 +656,68 @@ Constraint::Print() const
 }
 
 void
+Constraint::PrintInst(VarMap& vmap)
+{
+	Variable* var = NULL;
+	var = dynamic_cast<Variable*>(leftE);
+	if (var == NULL)
+	{
+		leftE->PrintInst(vmap);
+	}
+	else
+	{
+		Variable* instLeftVar = vmap.at(var);
+		instLeftVar->PrintTerm();
+	}
+
+	PrintOp();
+
+	var = dynamic_cast<Variable*>(rightE);
+	if (var == NULL)
+	{
+		rightE->PrintInst(vmap);
+	}
+	else
+	{
+		Variable* instRightVar = vmap.at(var);
+		instRightVar->PrintTerm();
+	}
+}
+
+
+void
+Constraint::PrintSimpInst(VarMap& vmap, SimpConstraints& simpCons)
+{
+	Variable* var = NULL;
+	var = dynamic_cast<Variable*>(leftE);
+	if (var == NULL)
+	{
+		leftE->PrintSimpInst(vmap, simpCons);
+	}
+	else
+	{
+		Variable* instLeftVar = vmap.at(var);
+		Variable* simpLeftVar = simpCons.FindRootVar(instLeftVar);
+		simpLeftVar->PrintTerm();
+	}
+
+	PrintOp();
+
+	var = dynamic_cast<Variable*>(rightE);
+	if (var == NULL)
+	{
+		rightE->PrintSimpInst(vmap, simpCons);
+	}
+	else
+	{
+		Variable* instRightVar = vmap.at(var);
+		Variable* simpRightVar = simpCons.FindRootVar(instRightVar);
+		simpRightVar->PrintTerm();
+	}
+}
+
+
+void
 Constraint::PrintInstance(const map<Variable*, int>& valueMap, bool printVar) const
 {
 	Variable* var = NULL;
@@ -465,8 +729,15 @@ Constraint::PrintInstance(const map<Variable*, int>& valueMap, bool printVar) co
 	}
 	else
 	{
-		value = valueMap.at(var);
-		cout << value;
+		map<Variable*, int>::const_iterator itm =  valueMap.find(var);
+		if (itm != valueMap.end())
+		{
+			cout << itm->second;
+		}
+		else
+		{
+			var->PrintTerm();
+		}
 	}
 
 	PrintOp();
@@ -478,8 +749,15 @@ Constraint::PrintInstance(const map<Variable*, int>& valueMap, bool printVar) co
 	}
 	else
 	{
-		value = valueMap.at(var);
-		cout << value;
+		map<Variable*, int>::const_iterator itm =  valueMap.find(var);
+		if (itm != valueMap.end())
+		{
+			cout << itm->second;
+		}
+		else
+		{
+			var->PrintTerm();
+		}
 	}
 }
 
@@ -669,6 +947,129 @@ Constraint::CreateVarInst(VarMap& vmap)
 		{
 			Variable* newVar = new Variable(Variable::STRING, false);
 			vmap.insert(VarMap::value_type(var, newVar));
+		}
+	}
+}
+
+void
+Constraint::FindFreeVar(list<Variable*>& varList, VarMap& vmap)
+{
+	list<Variable*>::iterator itlv;
+	Variable* var = dynamic_cast<Variable*>(leftE);
+	if (var != NULL)
+	{
+		bool leftFlag = false;
+		for (itlv = varList.begin();itlv != varList.end();itlv++)
+		{
+			if (*itlv == var)
+			{
+				leftFlag = true;
+				break;
+			}
+		}
+
+		if (leftFlag == false)
+		{
+			VarMap::iterator itvm = vmap.find(var);
+			if (itvm == vmap.end())
+			{
+				Variable* newVar = new Variable(Variable::STRING, false);
+				vmap.insert(VarMap::value_type(var, newVar));
+			}
+		}
+	}
+	else
+	{
+		leftE->FindReplaceFreeVar(varList, vmap);
+	}
+
+	var = dynamic_cast<Variable*>(rightE);
+	if (var != NULL)
+	{
+		bool rightFlag = false;
+		for (itlv = varList.begin();itlv != varList.end();itlv++)
+		{
+			if (*itlv == var)
+			{
+				rightFlag = true;
+				break;
+			}
+		}
+
+		if (rightFlag == false)
+		{
+			VarMap::iterator itvm = vmap.find(var);
+			if (itvm == vmap.end())
+			{
+				Variable* newVar = new Variable(Variable::STRING, false);
+				vmap.insert(VarMap::value_type(var, newVar));
+			}
+		}
+	}
+	else
+	{
+		rightE->FindReplaceFreeVar(varList, vmap);
+	}
+}
+
+void
+Constraint::PrintSimpInstance(const map<Variable*, int>& valueMap, VarMap& vmap,
+							  SimpConstraints& simpCons, bool printVar) const
+{
+	Variable* var = NULL;
+	var = dynamic_cast<Variable*>(leftE);
+	if (var == NULL)
+	{
+		leftE->PrintSimpInstance(valueMap, vmap, simpCons, printVar);
+	}
+	else
+	{
+		Variable* instLeftVar = vmap.at(var);
+		Variable* simpLeftVar = simpCons.FindRootVar(instLeftVar);
+		map<Variable*, int>::const_iterator itm =  valueMap.find(simpLeftVar);
+		if (itm != valueMap.end())
+		{
+			if (printVar == true)
+			{
+				cout << "(";
+				simpLeftVar->PrintTerm();
+				cout << ")";
+			}
+
+			cout << itm->second;
+		}
+		else
+		{
+			simpLeftVar->PrintTerm();
+		}
+	}
+
+	PrintOp();
+
+	var = dynamic_cast<Variable*>(rightE);
+	if (var == NULL)
+	{
+		rightE->PrintSimpInstance(valueMap, vmap, simpCons, printVar);
+	}
+	else
+	{
+		Variable* instRightVar = vmap.at(var);
+		Variable* simpRightVar = simpCons.FindRootVar(instRightVar);
+		map<Variable*, int>::const_iterator itm =  valueMap.find(simpRightVar);
+		if (itm != valueMap.end())
+		{
+			if (printVar == true)
+			{
+				cout << "(";
+				simpRightVar->PrintTerm();
+				cout << ")";
+			}
+
+			cout << itm->second;
+		}
+		else
+		{
+			simpRightVar->PrintTerm();
 		}
 	}
 }
@@ -936,6 +1337,79 @@ UserFunction::CreateVarInst(VarMap& vmap)
 	}
 }
 
+void
+UserFunction::FindReplaceFreeVar(list<Variable*>& varList, VarMap& vmap)
+{
+	vector<Term*>::iterator itv;
+	for (itv = args.begin();itv != args.end();itv++)
+	{
+		Variable* var = dynamic_cast<Variable*>(*itv);
+		if (var != NULL)
+		{
+			bool leftFlag = false;
+			list<Variable*>::iterator itlv;
+			for (itlv = varList.begin();itlv != varList.end();itlv++)
+			{
+				if (*itlv == var)
+				{
+					leftFlag = true;
+					break;
+				}
+			}
+
+			if (leftFlag == false)
+			{
+				VarMap::iterator itvm = vmap.find(var);
+				if (itvm == vmap.end())
+				{
+					Variable* newVar = new Variable(Variable::STRING, false);
+					vmap.insert(VarMap::value_type(var, newVar));
+				}
+			}
+		}
+	}
+}
+
+void
+UserFunction::PrintInst(VarMap& vmap)
+{
+	schema->PrintName();
+	cout << "(";
+	vector<Term*>::iterator it;
+	for (it = args.begin(); it != args.end(); it++)
+	{
+		if (it != args.begin())
+		{
+			cout << ",";
+		}
+		Variable* argVar = dynamic_cast<Variable*>(*it);
+		Variable* instVar = vmap.at(argVar);
+		instVar->PrintTerm();
+	}
+	cout << ")";
+}
+
+
+void
+UserFunction::PrintSimpInst(VarMap& vmap, SimpConstraints& simpCons)
+{
+	schema->PrintName();
+	cout << "(";
+	vector<Term*>::iterator it;
+	for (it = args.begin(); it != args.end(); it++)
+	{
+		if (it != args.begin())
+		{
+			cout << ",";
+		}
+		Variable* argVar = dynamic_cast<Variable*>(*it);
+		Variable* instVar = vmap.at(argVar);
+		Variable* simpVar = simpCons.FindRootVar(instVar);
+		simpVar->PrintTerm();
+	}
+	cout << ")";
+}
+
 vector<Term*>& UserFunction::GetArgs() {
   return args;
 }
@@ -1010,6 +1484,43 @@ UserFunction::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap, b
 		{
 			Variable* instVar = vmap.at(var);
 			int value = valueMap.at(instVar);
+			cout << value;
+		}
+	}
+	cout << ")";
+}
+
+void
+UserFunction::PrintSimpInstance(const map<Variable*, int>& valueMap, VarMap& vmap,
+		     	 	 	 	 	SimpConstraints& simpCons, bool printVar) const
+{
+	schema->PrintName();
+	cout << "(";
+	Variable* var = NULL;
+	vector<Term*>::const_iterator it;
+	for (it = args.begin(); it != args.end(); it++)
+	{
+		if (it != args.begin())
+		{
+		  cout << ",";
+		}
+		var = dynamic_cast<Variable*>(*it);
+		if (var == NULL)
+		{
+			(*it)->PrintInstance(valueMap, vmap, printVar);
+		}
+		else
+		{
+			Variable* argVar = dynamic_cast<Variable*>(*it);
+			Variable* instVar = vmap.at(argVar);
+			Variable* simpVar = simpCons.FindRootVar(instVar);
+			if (printVar == true)
+			{
+				cout << "(";
+				simpVar->PrintTerm();
+				cout << ")";
+			}
+			int value = valueMap.at(simpVar);
 			cout << value;
 		}
 	}
@@ -1320,10 +1831,134 @@ Arithmetic::GetVars(vector<Variable*>& vlist)
 	rightE->GetVars(vlist);
 }
 
+void
+Arithmetic::FindReplaceFreeVar(list<Variable*>& varList, VarMap& vmap)
+{
+	list<Variable*>::iterator itlv;
+	Variable* var = dynamic_cast<Variable*>(leftE);
+	if (var != NULL)
+	{
+		bool leftFlag = false;
+		for (itlv = varList.begin();itlv != varList.end();itlv++)
+		{
+			if (*itlv == var)
+			{
+				leftFlag = true;
+				break;
+			}
+		}
+
+		if (leftFlag == false)
+		{
+			VarMap::iterator itvm = vmap.find(var);
+			if (itvm == vmap.end())
+			{
+				Variable* newVar = new Variable(Variable::STRING, false);
+				vmap.insert(VarMap::value_type(var, newVar));
+			}
+		}
+	}
+	else
+	{
+		leftE->FindReplaceFreeVar(varList, vmap);
+	}
+
+	var = dynamic_cast<Variable*>(rightE);
+	if (var != NULL)
+	{
+		bool rightFlag = false;
+		for (itlv = varList.begin();itlv != varList.end();itlv++)
+		{
+			if (*itlv == var)
+			{
+				rightFlag = true;
+				break;
+			}
+		}
+
+		if (rightFlag == false)
+		{
+			VarMap::iterator itvm = vmap.find(var);
+			if (itvm == vmap.end())
+			{
+				Variable* newVar = new Variable(Variable::STRING, false);
+				vmap.insert(VarMap::value_type(var, newVar));
+			}
+		}
+	}
+	else
+	{
+		rightE->FindReplaceFreeVar(varList, vmap);
+	}
+}
+
 void Arithmetic::PrintTerm() {
   leftE->PrintTerm();
   PrintOp();
   rightE->PrintTerm();
+}
+
+void
+Arithmetic::PrintInst(VarMap& vmap)
+{
+	Variable* var = NULL;
+	var = dynamic_cast<Variable*>(leftE);
+	if (var == NULL)
+	{
+		leftE->PrintInst(vmap);
+	}
+	else
+	{
+		Variable* instLeftVar = vmap.at(var);
+		instLeftVar->PrintTerm();
+
+	}
+
+	PrintOp();
+
+	var = dynamic_cast<Variable*>(rightE);
+	if (var == NULL)
+	{
+		rightE->PrintInst(vmap);
+	}
+	else
+	{
+		Variable* instRightVar = vmap.at(var);
+		instRightVar->PrintTerm();
+	}
+}
+
+
+void
+Arithmetic::PrintSimpInst(VarMap& vmap, SimpConstraints& simpCons)
+{
+	Variable* var = NULL;
+	var = dynamic_cast<Variable*>(leftE);
+	if (var == NULL)
+	{
+		leftE->PrintSimpInst(vmap, simpCons);
+	}
+	else
+	{
+		Variable* instLeftVar = vmap.at(var);
+		Variable* simpLeftVar = simpCons.FindRootVar(instLeftVar);
+		simpLeftVar->PrintTerm();
+
+	}
+
+	PrintOp();
+
+	var = dynamic_cast<Variable*>(rightE);
+	if (var == NULL)
+	{
+		rightE->PrintSimpInst(vmap, simpCons);
+	}
+	else
+	{
+		Variable* instRightVar = vmap.at(var);
+		Variable* simpRightVar = simpCons.FindRootVar(instRightVar);
+		simpRightVar->PrintTerm();
+	}
 }
 
 void
@@ -1384,6 +2019,52 @@ Arithmetic::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap, boo
 	{
 		Variable* instVar = vmap.at(var);
 		value = valueMap.at(instVar);
+		cout << value;
+	}
+}
+
+void
+Arithmetic::PrintSimpInstance(const map<Variable*, int>& valueMap, VarMap& vmap,
+							  SimpConstraints& simpCons, bool printVar) const
+{
+	Variable* var = NULL;
+	var = dynamic_cast<Variable*>(leftE);
+	if (var == NULL)
+	{
+		leftE->PrintSimpInstance(valueMap, vmap, simpCons, printVar);
+	}
+	else
+	{
+		Variable* instLeftVar = vmap.at(var);
+		Variable* simpLeftVar = simpCons.FindRootVar(instLeftVar);
+		if (printVar == true)
+		{
+			cout << "(";
+			simpLeftVar->PrintTerm();
+			cout << ")";
+		}
+		int value = valueMap.at(simpLeftVar);
+		cout << value;
+	}
+
+	PrintOp();
+
+	var = dynamic_cast<Variable*>(rightE);
+	if (var == NULL)
+	{
+		rightE->PrintSimpInstance(valueMap, vmap, simpCons, printVar);
+	}
+	else
+	{
+		Variable* instRightVar = vmap.at(var);
+		Variable* simpRightVar = simpCons.FindRootVar(instRightVar);
+		if (printVar == true)
+		{
+			cout << "(";
+			simpRightVar->PrintTerm();
+			cout << ")";
+		}
+		int value = valueMap.at(simpRightVar);
 		cout << value;
 	}
 }
@@ -1525,6 +2206,16 @@ ConstraintsTemplate::CreateVarInst(VarMap& vmap)
 }
 
 void
+ConstraintsTemplate::FindFreeVar(list<Variable*>& varList, VarMap& vmap)
+{
+	ConstraintList::iterator itc;
+	for (itc = constraints.begin();itc != constraints.end();itc++)
+	{
+		(*itc)->FindFreeVar(varList, vmap);
+	}
+}
+
+void
 ConstraintsTemplate::PrintTemplate() const
 {
 	NS_LOG_FUNCTION("Printing template:");
@@ -1534,6 +2225,34 @@ ConstraintsTemplate::PrintTemplate() const
 	  cout << "\t";
 	  (*itc)->Print();
 	  cout << endl;
+	}
+}
+
+void
+ConstraintsTemplate::PrintTempInst(VarMap& vmap)
+{
+	ConstraintList::iterator itc;
+	for (itc = constraints.begin();itc != constraints.end();itc++)
+	{
+		cout << "\t";
+		(*itc)->PrintInst(vmap);
+		cout << endl;
+	}
+}
+
+void
+ConstraintsTemplate::PrintSimpTempInst(VarMap& vmap, SimpConstraints& simpCons)
+{
+	ConstraintList::iterator itc;
+	for (itc = constraints.begin();itc != constraints.end();itc++)
+	{
+		bool unifFlag = (*itc)->IsUnif();
+		if (unifFlag == false)
+		{
+			cout << "\t";
+			(*itc)->PrintSimpInst(vmap, simpCons);
+			cout << endl;
+		}
 	}
 }
 
@@ -1558,6 +2277,23 @@ ConstraintsTemplate::PrintInstance(const map<Variable*, int>& valueMap, VarMap& 
 	  cout << "\t";
 	  (*itc)->PrintInstance(valueMap, vmap, printVar);
 	  cout << endl;
+	}
+}
+
+void
+ConstraintsTemplate::PrintSimpInstance(const map<Variable*, int>& valueMap, VarMap& vmap,
+		   	   	   	   	   	   	   	   SimpConstraints& simpCons, bool printVar) const
+{
+	ConstraintList::const_iterator itc;
+	for (itc = constraints.begin();itc != constraints.end();itc++)
+	{
+		bool unifFlag = (*itc)->IsUnif();
+		if (unifFlag == false)
+		{
+			cout << "\t";
+			(*itc)->PrintSimpInstance(valueMap, vmap, simpCons, printVar);
+			cout << endl;
+		}
 	}
 }
 
@@ -1700,7 +2436,7 @@ SimpConstraints::FindRootVar(Variable* var)
 	}
 	else
 	{
-		return NULL;
+		return var;
 	}
 }
 

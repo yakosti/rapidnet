@@ -11,7 +11,9 @@ materialize(maxPriority,infinity,1,keys(1)). /*Records the maximum priority, ini
 
 /*Database for host*/
 materialize(initPacket,infinity,infinity,keys(2,3:str,4:str)). /*Packet for simulation initialization*/
-materialize(recvPacket,infinity,infinity,keys(3:str,4:str)). /*Packet for simulation initialization*/
+materialize(recvPacket,infinity,infinity,keys(2:str,3:str)). /*Packet for simulation initialization*/
+
+
 
 /*Controller program*/
 /*Install rules on switch*/
@@ -83,3 +85,4 @@ rh1 packet(@Switch, Host, SrcMac, DstMac) :-
 rh2 recvPacket(@Host, SrcMac, DstMac) :-
 	packet(@Host, Switch, SrcMac, DstMac),
 	link(@Host, Switch, InPort).
+

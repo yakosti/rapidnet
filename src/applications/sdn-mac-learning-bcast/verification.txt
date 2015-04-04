@@ -8,23 +8,33 @@ Result: True
 Time: 60ms
 
 2. 
-forall EndHost, Switch, SrcMac, DstMac, Outport, Mac, 
+forall EndHost, Switch, SrcMac, DstMac, InPort, Outport, Mac, Priority,
 	packet(EndHost, Switch, SrcMac, DstMac), 
-	flowEntry(Switch, Mac, Outport), DstMac != EndHost -> Mac != DstMac
+	link(EndHost, Switch, InPort),
+	flowEntry(Switch, Mac, Outport, Priority), DstMac != EndHost -> Mac != DstMac
 
 Base constraints:
-missEntry(v1, v2):
+initPacket(v1,v2,v3,v4)
 v1 != v2
+v1 == v3
+v1 != v4
+v2 != v4
 
-inPort(v3,v4,v5):
-v3 != v4
-v4 != v5
-v3 != v5
+maxPriority(v5,v6)
+v6 > 0
+v5 != v6
 
-outPort(v6,v7,v8):
-v6 != v7
+ofconn(v7,v8)
 v7 != v8
-v6 != v8
+
+link(v9,v10,v11):
+v9 != v10
+v10 != v11
+v9 != v11
+
+link(v12,v13,v14) /\ link(v15,v16,v17)
+(v12 == v15 /\ v13 == v16 => v14 == v17) /\
+(v12 == v15 /\ v14 == v17 => v13 == v16)
 
 Result: 
 Time: 20ms
