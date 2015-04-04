@@ -67,13 +67,13 @@ r2 trustedControllerMemory(@Controller, Switch, Dst) :-
 /* ************************************************* */
 
 /* (@Switch) Program
- * a packet from trusted hosts with a forwarding rule
+ * a packet from with a forwarding rule appears on the switch
+ * Forward according to the rule
+ * The packet may be from a trusted/untrusted source
  */
-r3 pktReceived(@Dst, PortDst, Src, Tport, Switch) :- 
- 	pktIn(@Switch, Src, Tport, Dst),
-	perFlowRule(@Switch, Src, Tport, Dst, PortDst),
-	Tport == TRUSTED_PORT.
-
+r3 pktReceived(@Dst, PortDst, Src, PortSrc, Switch) :- 
+ 	pktIn(@Switch, Src, PortSrc, Dst),
+	perFlowRule(@Switch, Src, PortSrc, Dst, PortDst).
 
 /* ************************************************* */
 
@@ -99,20 +99,6 @@ r5 perFlowRule(@Switch, Src, Uport, Dst, Tport) :-
 	Tport := TRUSTED_PORT.
 
 /* ************************************************* */
-
-/* (@Switch) Program
- * (previous) Switch now has perFlowRule from an untrusted host, 
- * so it forst the packet to the target trusted host
- * (current) A packet from untrusted hosts with a forwarding rule also falls into this category
- */
-r6 pktReceived(@Dst, Tport, Src, Uport, Switch) :-
-	perFlowRule(@Switch, Src, Uport, Dst, Tport),
- 	pktIn(@Switch, Src, Uport, Dst),
- 	Uport == UNTRUSTED_PORT,
-	Tport == TRUSTED_PORT.
-
-/* ************************************************* */
-
 
 
 

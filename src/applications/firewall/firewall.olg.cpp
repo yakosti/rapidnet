@@ -43,7 +43,7 @@ materialize(perFlowRule,infinity,infinity,keys(1,2,3:int32,4,5:int32)).
 
 /* ************************************************* */
 
-/*
+/* (@Switch) Program
  * a packet from a trusted host via TRUSTED_PORT appeared on switch without a forwarding rule
  * we know its from a trusted host since it came via TRUSTED_PORT
  * forward packet to untrusted hosts
@@ -53,7 +53,7 @@ r1 pktReceived(@Dst, Uport, Src, Tport, Switch)  :-
 	Uport := 2,
 	Tport == 1 .
 
-/* 
+/* (@Switch) Program
  * a packet from a trusted host appeared on switch without a forwarding rule
  * we know its from a trusted host since it came via TRUSTED_PORT
  * Insert the target of the packet into trusted controller memory
@@ -63,32 +63,21 @@ r2 trustedControllerMemory(@Controller, Switch, Dst) :-
 	openConnectionToController(@Switch, Controller),
 	Tport == 1 .
 
+
 /* ************************************************* */
 
-/* 
- * a packet from a trusted host appeared on switch without a forwarding rule
- * we know its from a trusted host since it came via TRUSTED_PORT
- * Insert a per-flow rule to forward future packets 
+/* (@Switch) Program
+ * a packet from with a forwarding rule appears on the switch
+ * Forward according to the rule
+ * The packet may be from a trusted/untrusted source
  */
-r3 trustedControllerMemory(@Controller, Switch, Dst) :-
-	pktIn(@Switch, Src, Tport, Dst),
-	openConnectionToController(@Switch, Controller),
-	Tport == 1 .
+r3 pktReceived(@Dst, PortDst, Src, PortSrc, Switch) :- 
+ 	pktIn(@Switch, Src, PortSrc, Dst),
+	perFlowRule(@Switch, Src, PortSrc, Dst, PortDst).
 
 /* ************************************************* */
 
-/* 
- * a packet from trusted hosts with a forwarding rule
- */
-r3 pktReceived(@Dst, PortDst, Src, Tport, Switch) :- 
- 	pktIn(@Switch, Src, Tport, Dst),
-	perFlowRule(@Switch, Src, Tport, Dst, PortDst),
-	Tport == 1 .
-
-
-/* ************************************************* */
-
-/*
+/* (@Switch) Program
  * Packet from unstrusted host appeared on switch
  * Send it to the controller to check if it is trused
  */
@@ -97,7 +86,7 @@ r4 pktFromSwitch(@Controller, Switch, Src, Uport, Dst) :-
 	controllerConnection(@Switch, Controller),
 	Uport == 2 .
 
-/*
+/* (@Controller) Program
  * Packet from untrusted host appeared on switch
  * the controller checked, and tells the switch the Src is trusted
  * Controller tells the switch it can forward the packet to the trusted hosts
@@ -110,20 +99,6 @@ r5 perFlowRule(@Switch, Src, Uport, Dst, Tport) :-
 	Tport := 1 .
 
 /* ************************************************* */
-
-/*
- * (previous) Switch now has perFlowRule from an untrusted host, 
- * so it forst the packet to the target trusted host
- * (current) A packet from untrusted hosts with a forwarding rule also falls into this category
- */
-r6 pktReceived(@Dst, Tport, Src, Uport, Switch) :-
-	perFlowRule(@Switch, Src, Uport, Dst, Tport),
- 	pktIn(@Switch, Src, Uport, Dst),
- 	Uport == 2,
-	Tport == 1 .
-
-/* ************************************************* */
-
 
 
 

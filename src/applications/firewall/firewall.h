@@ -82,10 +82,6 @@ protected:
 
   virtual void R5_eca (Ptr<Tuple> pktFromSwitch);
 
-  virtual void R6Eca0Ins (Ptr<Tuple> perFlowRule);
-
-  virtual void R6Eca1Ins (Ptr<Tuple> pktIn);
-
 };
 
 } // namespace firewall
