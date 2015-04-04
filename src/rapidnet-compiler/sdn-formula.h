@@ -64,7 +64,13 @@ public:
 
 	virtual void CreateVarInst(VarMap&){}
 
+	void FindReplaceFreeVar(list<Variable*>&, VarMap&){}
+
 	virtual void PrintTerm() =0;
+
+	virtual void PrintInst(VarMap&){}
+
+	virtual void PrintSimpInst(VarMap&, SimpConstraints&){}
 
 	virtual void PrintInstance(const map<Variable*, int>&, bool) const =0;
 
@@ -163,6 +169,12 @@ public:
 
 	virtual void CreateVarInst(VarMap&);
 
+	void FindReplaceFreeVar(list<Variable*>&, VarMap&);
+
+	void PrintInst(VarMap&);
+
+	void PrintSimpInst(VarMap&, SimpConstraints&);
+
 	void PrintTerm();
 
 	void PrintInstance(const map<Variable*, int>&, bool) const;
@@ -193,6 +205,10 @@ public:
 
     void PrintTerm(){}
 
+    void PrintInst(VarMap&){}
+
+    void PrintSimpInst(VarMap&, SimpConstraints&){}
+
     virtual void PrintInstance(const map<Variable*, int>&, bool) const{}
 
     virtual void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const{}
@@ -214,6 +230,10 @@ public:
 	IntVal* Clone();
 
 	void PrintTerm();
+
+	void PrintInst(VarMap&){cout << value;}
+
+	void PrintSimpInst(VarMap&, SimpConstraints&){cout << value;}
 
 	void PrintInstance(const map<Variable*, int>&, bool) const;
 
@@ -241,6 +261,10 @@ public:
 
 	void PrintTerm();	
 
+	void PrintInst(VarMap&){cout << value;}
+
+	void PrintSimpInst(VarMap&, SimpConstraints&){cout << value;}
+
 	void PrintInstance(const map<Variable*, int>&, bool) const;
 
 	void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const;
@@ -265,6 +289,10 @@ public:
 
 	void PrintTerm();	
 
+	void PrintInst(VarMap&){cout << value;}
+
+	void PrintSimpInst(VarMap&, SimpConstraints&){cout << value;}
+
 	void PrintInstance(const map<Variable*, int>&, bool) const;
 
 	void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const;
@@ -288,6 +316,10 @@ public:
 	BoolVal* Clone();
 
 	void PrintTerm();
+
+	void PrintInst(VarMap&){cout << value;}
+
+	void PrintSimpInst(VarMap&, SimpConstraints&){cout << value;}
 
 	void PrintInstance(const map<Variable*, int>&, bool) const;
 
@@ -332,9 +364,15 @@ public:
 
 	virtual void CreateVarInst(VarMap&);
 
+	void FindReplaceFreeVar(list<Variable*>&, VarMap&);
+
 	void GetVars(vector<Variable*>&);
 
 	void PrintTerm();
+
+	void PrintInst(VarMap&);
+
+	void PrintSimpInst(VarMap&, SimpConstraints&);
 
 	void PrintInstance(const map<Variable*, int>&, bool) const;
 
@@ -383,10 +421,16 @@ public:
 
 	virtual void Print() const{}
 
+	void PrintInst(VarMap&){}
+
+	void PrintSimpInst(VarMap&, SimpConstraints&){}
+
 	virtual void VarReplace(const VarMap&){}
 
 	virtual void VarReplace(SimpConstraints& simp)
 		{cout << "Default variable replacement.";}
+
+	virtual void FindFreeVar(list<Variable*>&, VarMap&){}
 
 	//TODO: This function is not good practice
 	virtual void ArgSwap(){}
@@ -407,6 +451,10 @@ public:
 	True* Clone();
 
 	void Print() const{cout << "True";}
+
+	void PrintInst(VarMap& vmap){cout << "True";}
+
+	void PrintSimpInst(VarMap& vmap, SimpConstraints& simpCons){cout << "True";}
 };
 
 class False: public Formula{};
@@ -436,6 +484,8 @@ public:
 
 	void ArgSwap();
 
+	void FindFreeVar(list<Variable*>&, VarMap&);
+
 	//ERROR: Aweful function
 	void NullifyMem();
 
@@ -448,6 +498,10 @@ public:
 	Formula* GetRightF();
 
 	void Print() const;
+
+	void PrintInst(VarMap&);
+
+	void PrintSimpInst(VarMap&, SimpConstraints&);
 
 	~Connective();
 
@@ -476,6 +530,8 @@ public:
 
 	void VarReplace(SimpConstraints&);
 
+	void FindFreeVar(list<Variable*>&, VarMap&);
+
 	Quantifier* Clone();
 
 	vector<Variable*>& GetBoundVariables();
@@ -485,6 +541,10 @@ public:
 	Formula* GetQuantifierFormula();
 
 	void Print() const;
+
+	void PrintInst(VarMap&);
+
+	void PrintSimpInst(VarMap&, SimpConstraints&);
 
 	~Quantifier();
 
@@ -537,6 +597,10 @@ public:
 	const vector<Term*>& GetArgs() const;
 
 	void Print() const;
+
+	void PrintInst(VarMap&);
+
+	void PrintSimpInst(VarMap&, SimpConstraints&);
 
 	~PredicateInstance();
 
@@ -598,7 +662,13 @@ public:
 
 	virtual void CreateVarInst(VarMap&);
 
+	void FindFreeVar(list<Variable*>&, VarMap&);
+
 	void Print() const;
+
+	void PrintInst(VarMap&);
+
+	void PrintSimpInst(VarMap&, SimpConstraints&);
 
 	void PrintInstance(const map<Variable*, int>&, bool) const;
 
@@ -640,7 +710,13 @@ public:
 
 	void CreateVarInst(VarMap&);
 
+	void FindFreeVar(list<Variable*>&, VarMap&);
+
 	void PrintTemplate() const;
+
+	void PrintTempInst(VarMap&);
+
+	void PrintSimpTempInst(VarMap&, SimpConstraints&);
 
 	void PrintInstance(const map<Variable*, int>&, bool) const;
 

@@ -48,7 +48,7 @@ PropAssignment(SimpConstraints& simpCons, map<Variable*, int> assignment)
 //Counter-example generation
 void GenCounterExp(map<Variable*, int> assignment,
 				   list<pair<const DerivNode*, SimpConstraints&> >& dlist,
-				   map<const DerivNode*, VarMap>& instMap)
+				   map<const DerivNode*, DpoolInstNode*>& instMap)
 {
 	NS_LOG_FUNCTION("Generate counter example...");
 	cout << endl;
@@ -71,7 +71,18 @@ void GenCounterExp(map<Variable*, int> assignment,
 //		}
 
 		map<Variable*, int> valueMap = PropAssignment(simpCons, assignment);
-		map<const DerivNode*, VarMap>::iterator itInst = instMap.find((*itd).first);
+
+//		cout << endl;
+//		map<Variable*, int>::iterator itmv;
+//		for (itmv = valueMap.begin();itmv != valueMap.end();itmv++)
+//		{
+//			itmv->first->PrintTerm();
+//			cout << ":" << itmv->second;
+//			cout << endl;
+//		}
+//		cout << endl;
+
+		map<const DerivNode*, DpoolInstNode*>::iterator itInst = instMap.find(dnode);
 		if (itInst == instMap.end())
 		{
 			NS_LOG_ERROR("Variable mapping not found!");
@@ -80,7 +91,8 @@ void GenCounterExp(map<Variable*, int> assignment,
 		cout << "************* Execution Trace of " << headName;
 		bool printVar = false;
 		cout << " *************" << endl;
-		dnode->PrintExecInst(valueMap, itInst->second, false);
+		DpoolInstNode* instNode = itInst->second;
+		dnode->PrintExecInst(valueMap, instNode, true);
 		cout << "*******************************" << endl;
 	}
 
@@ -91,34 +103,33 @@ void GenCounterExp(map<Variable*, int> assignment,
 //assignment: counter-example instances
 //return value: [true: constraints sat|false: constraints unsat]
 bool CheckWholeProp(const Property& prop,
-					list<TupleLineage>& tplist,
+					list<DpoolTupleInst>& tplist,
 				    ConsList& clist,
 					FormList& flist,
 					map<Variable*, int>& assignment,
-					list<SimpConstraints*>& slist,
-					map<const DerivNode*, VarMap>& dvmap)
+					list<SimpConstraints*>& slist)
 {
 	NS_LOG_FUNCTION("Check combined predicates...");
 	VarMap headMap;
 
 	//Create variable mapping for existentially quantified predicates
 	const list<PredicateInstance*>& plist = prop.GetExistPred();
-	list<TupleLineage>::const_iterator itt;
+	list<DpoolTupleInst>::const_iterator itt;
 	list<PredicateInstance*>::const_iterator itp;
 	for (itt = tplist.begin();itt != tplist.end();itt++)
 	{
-		const Tuple* exTuple = (*itt).first;
-		const DerivNode* desigHead = (*itt).second;
-		string tpName = exTuple->GetName();
+		const DpoolNode* dnode = (*itt).first;
+		const Tuple* headTp = dnode->GetHead();
+		string tpName = headTp->GetName();
 		for (itp = plist.begin();itp != plist.end();itp++)
 		{
 			string pName = (*itp)->GetName();
 			if (tpName == pName)
 			{
-				VarMap& instMap = dvmap.at(desigHead);
+				DpoolInstNode* instNode = (*itt).second;
+				VarMap& instMap = instNode->headMap;
 				const vector<Term*> predArgs = (*itp)->GetArgs();
-
-				const vector<Variable*> args = exTuple->GetArgs();
+				const vector<Variable*> args = headTp->GetArgs();
 				vector<Variable*>::const_iterator itvv;
 				vector<Term*>::const_iterator itp = predArgs.begin();
 				for (itvv = args.begin();itvv != args.end();itvv++, itp++)
@@ -185,24 +196,24 @@ bool CheckWholeProp(const Property& prop,
 //Return value: [true: an unsat element, meaning its negation is valid|
 //				 false: all sat, its negation invalid]
 bool CheckRecurExist(const Property& prop,
-					 ExQuanTuple& tlist,
-					 ExQuanTuple::const_iterator itm,
-					 list<TupleLineage> tplist,
+					 DpoolTupleMap& tlist,
+					 DpoolTupleMap::const_iterator itm,
+					 list<DpoolTupleInst> tplist,
 					 ConsList& clist,
 					 FormList& flist,
 					 map<Variable*, int>& assignment,
 					 list<SimpConstraints*> slist,
-					 map<const DerivNode*, VarMap>& dvmap)
+					 map<const DerivNode*, DpoolInstNode*>& dvmap)
 {
 	NS_LOG_FUNCTION("Check existentially quantified predicates...");
 	if (itm == tlist.end())
 	{
-		return CheckWholeProp(prop, tplist, clist, flist, assignment, slist, dvmap);
+		return CheckWholeProp(prop, tplist, clist, flist, assignment, slist);
 	}
 
-	const list<TupleLineage>& headList = itm->second;
+	const list<DpoolTupleInst>& headList = itm->second;
 	itm++;
-	list<TupleLineage>::const_iterator itp;
+	list<DpoolTupleInst>::const_iterator itp;
 	for (itp = headList.begin();itp != headList.end();itp++)
 	{
 		tplist.push_back(*itp);
@@ -221,8 +232,7 @@ bool CheckRecurExist(const Property& prop,
 
 void
 ConstructBaseObl(BaseRel& bsr,
-				 list<TupleLineage>& tplist,
-				 map<const DerivNode*, VarMap>& instMap,
+				 list<DpoolTupleInst>& tplist,
 				 FormList& flist)
 {
 	NS_LOG_FUNCTION("Process a base relational property.");
@@ -235,18 +245,20 @@ ConstructBaseObl(BaseRel& bsr,
 	{
 		NS_LOG_DEBUG("Process a predicate");
 		string predName = (*itlp)->GetName();
-		list<TupleLineage>::iterator itlt;
+		list<DpoolTupleInst>::iterator itlt;
 		for (itlt = tplist.begin();itlt != tplist.end();itlt++)
 		{
-			const Tuple* tp = (*itlt).first;
-			string tpName = tp->GetName();
+			const DpoolNode* dnode = (*itlt).first;
+			const Tuple* head = dnode->GetHead();
+			string tpName = head->GetName();
 			if (tpName == predName)
 			{
 				//Create variable unification for the predicate
-				const DerivNode* dnode = (*itlt).second;
-				VarMap& dVarMap = instMap.at(dnode);
+				DpoolInstNode* dInst = (*itlt).second;
+				VarMap& dVarMap = dInst->headMap;
+
 				const vector<Term*>& predArgs = (*itlp)->GetArgs();
-				const vector<Variable*> tupleArgs = tp->GetArgs();
+				const vector<Variable*> tupleArgs = head->GetArgs();
 				vector<Term*>::const_iterator itvt = predArgs.begin();
 				vector<Variable*>::const_iterator itvv = tupleArgs.begin();
 				for (;itvv != tupleArgs.end();itvv++, itvt++)
@@ -267,34 +279,33 @@ ConstructBaseObl(BaseRel& bsr,
 void
 CheckRecurBase(BaseRel& bsr,
 			   list<PredicateInstance*>::iterator itbt,
-			   list<TupleLineage> tplist,
-			   ExQuanTuple& baseTupleList,
-			   map<const DerivNode*, VarMap>& instMap,
+			   list<DpoolTupleInst> tplist,
+			   DpoolTupleMap& baseTupleList,
 			   FormList& flist)
 {
 	if (itbt == bsr.basePreds.end())
 	{
-		ConstructBaseObl(bsr, tplist, instMap, flist);
+		ConstructBaseObl(bsr, tplist, flist);
 		return;
 	}
 
 	string predName = (*itbt)->GetName();
 	itbt++;
-	ExQuanTuple::iterator iteq = baseTupleList.find(predName);
+	DpoolTupleMap::iterator iteq = baseTupleList.find(predName);
 	if (iteq == baseTupleList.end())
 	{
-		CheckRecurBase(bsr, itbt, tplist, baseTupleList, instMap, flist);
+		//No instance of this base predicate;
+		//No proof obligation is generated.
+		return;
 	}
 	else
 	{
-		list<TupleLineage>& lineageList = iteq->second;
-		list<TupleLineage>::iterator ittl;
+		list<DpoolTupleInst>& lineageList = iteq->second;
+		list<DpoolTupleInst>::iterator ittl;
 		for (ittl = lineageList.begin();ittl != lineageList.end();ittl++)
 		{
 			tplist.push_back(*ittl);
-			NS_LOG_DEBUG("Pop in?");
-			CheckRecurBase(bsr, itbt, tplist, baseTupleList, instMap, flist);
-			NS_LOG_DEBUG("Pop back?");
+			CheckRecurBase(bsr, itbt, tplist, baseTupleList, flist);
 			tplist.pop_back();
 		}
 	}
@@ -316,39 +327,24 @@ bool CheckExistProp(const Property& prop,
 	map<Variable*, int> assignment = map<Variable*, int>();
 	bool veriResult = false;
 
-	map<const DerivNode*, VarMap> dInstMap = map<const DerivNode*, VarMap>();
+	map<const DerivNode*, DpoolInstNode*> dInstMap;
 
 	DerivNodeList::const_iterator itd;
 	for (itd = dlist.begin();itd != dlist.end();itd++)
 	{
 		//Create derivation instances
-		NS_LOG_DEBUG("Dnode:");
-		(*itd)->PrintDerivation();
+		//NS_LOG_DEBUG("Dnode:");
+		//(*itd)->PrintDerivation();
 		VarMap instMap = VarMap();
-		(*itd)->CreateDerivInst(instMap);
-		dInstMap.insert(map<const DerivNode*, VarMap>::value_type(*itd, instMap));
-
-		NS_LOG_DEBUG("Print instantiated variables:");
-		VarMap::iterator ittest;
-		for (ittest = instMap.begin();ittest != instMap.end();ittest++)
-		{
-			ittest->first->PrintTerm();
-			cout << ":";
-			ittest->second->PrintTerm();
-			cout << endl;
-		}
+		DpoolInstNode* instNode = (*itd)->CreateDerivInst();
+//		cout << "****************** Check Derivation Instance ******************" << endl;
+//		(*itd)->PrintDerivInst(instNode);
+//		cout << "******************************************************" << endl;
+		dInstMap.insert(map<const DerivNode*, DpoolInstNode*>::value_type(*itd, instNode));
 
 		//Create constraint instances
-		const ConsList& clist = (*itd)->GetCumuConsts();
 		ConsList copyclist = ConsList();
-		ConsList::const_iterator itcp;
-		for (itcp = clist.begin();itcp != clist.end();itcp++)
-		{
-			ConstraintsTemplate* copyTemp = new ConstraintsTemplate(**itcp);
-			//Create instance constraints of the execution
-			copyTemp->ReplaceVar(instMap);
-			copyclist.push_back(copyTemp);
-		}
+		(*itd)->CollectConsInst(instNode, copyclist, flist);
 
 		//Record simplified constraint instances
 		SimpConstraints* newSimp = new SimpConstraints(copyclist);
@@ -356,21 +352,14 @@ bool CheckExistProp(const Property& prop,
 
 		//Collect simplified constraint instances
 		const ConstraintsTemplate& newCtemp = newSimp->GetConstraints();
+//		cout << "@@@@@@@@@@@@@@@  Simplified Constraints Instances @@@@@@@@@@@@@@" << endl;
+//		newCtemp.PrintTemplate();
+//		cout << "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@" << endl;
 		//newCtemp.PrintTemplate();
 		cslist.push_back(&newCtemp);
 
-		//Collect invariants
-		const FormList& tupleFlist = (*itd)->GetInvariants();
-		FormList::const_iterator itfl;
-		for (itfl = tupleFlist.begin();itfl != tupleFlist.end();itfl++)
-		{
-			Formula* newForm = (*itfl)->Clone();
-			newForm->VarReplace(instMap);
-			flist.push_back(newForm);
-		}
-
-		NS_LOG_DEBUG("Delete here?");
 		//Deallocate memory of copyclist
+		ConsList::iterator itcp;
 		for (itcp = copyclist.begin();itcp != copyclist.end();itcp++)
 		{
 			delete (*itcp);
@@ -379,13 +368,15 @@ bool CheckExistProp(const Property& prop,
 	}
 
 	//Add special base tuple requirements
-	ExQuanTuple baseTupleList;
+	DpoolTupleMap baseCollection;
 	DerivNodeList::const_iterator itdc;
 	for (itdc = dlist.begin();itdc != dlist.end();itdc++)
 	{
 		string tpName = (*itdc)->GetHead()->GetName();
 		NS_LOG_DEBUG("Search base predicates in: " << tpName);
-		(*itdc)->FindBaseTuple(baseTupleList, *itdc);
+		const DerivNode* dnode = *itdc;
+		DpoolInstNode* instNode = dInstMap.at(dnode);
+		(*itdc)->FindBaseTuple(instNode, baseCollection);
 	}
 
 	NS_LOG_DEBUG("Base tuples of derivations collected.");
@@ -397,24 +388,25 @@ bool CheckExistProp(const Property& prop,
 	{
 		list<PredicateInstance*>& basePreds = (*itb)->basePreds;
 		list<PredicateInstance*>::iterator itpd = basePreds.begin();
-		list<TupleLineage> lineageList = list<TupleLineage>();
-		CheckRecurBase(**itb, itpd, lineageList, baseTupleList, dInstMap, flist);
+		list<DpoolTupleInst> lineageList = list<DpoolTupleInst>();
+		CheckRecurBase(**itb, itpd, lineageList, baseCollection, flist);
 	}
 
 	NS_LOG_DEBUG("Base relational properties processing finished.");
 
+	//Create variable unification for universally quantified predicates
 	const list<PredicateInstance*>& plist = prop.GetUniPred();
 	list<PredicateInstance*>::const_iterator itp = plist.begin();
 	for (itd = dlist.begin();itd != dlist.end();itd++, itp++)
 	{
 		//(*itd)->PrintDerivNode();
 
-		map<const DerivNode*, VarMap>::iterator itmd = dInstMap.find(*itd);
+		map<const DerivNode*, DpoolInstNode*>::iterator itmd = dInstMap.find(*itd);
 		if (itmd == dInstMap.end())
 		{
 			NS_LOG_ERROR("Variable mapping not found!");
 		}
-		VarMap& derivInstMap = itmd->second;
+		VarMap& derivInstMap = itmd->second->headMap;
 
 		//Create variable mapping between predicate and the head tuple instance
 		const Tuple* head = (*itd)->GetHead();
@@ -428,27 +420,16 @@ bool CheckExistProp(const Property& prop,
 			Variable* predVar = dynamic_cast<Variable*>(*itpa);
 			if (predVar == NULL)
 			{
-				NS_LOG_ERROR("An non-varaible argument in the predicate.");
+				NS_LOG_ERROR("An non-variable argument in the predicate.");
 			}
 			headMap.insert(VarMap::value_type(predVar, instVar));
 		}
 	}
 
-//	NS_LOG_DEBUG("Print mapping from predicate variables to variable instances:");
-//	VarMap::iterator itvh;
-//	for (itvh = headMap.begin();itvh != headMap.end();itvh++)
-//	{
-//		itvh->first->PrintTerm();
-//		cout << ":";
-//		itvh->second->PrintTerm();
-//		cout << endl;
-//	}
-
 	//Collect universally quantified constraints
 	const ConstraintsTemplate* cTemp = prop.GetUniCons();
 	ConstraintsTemplate* uniCons = new ConstraintsTemplate(*cTemp);
 	uniCons->ReplaceVar(headMap);
-
 
 	//Replace variables with representative ones of the equivalent class
 	list<SimpConstraints*>::iterator its;
@@ -466,7 +447,7 @@ bool CheckExistProp(const Property& prop,
 //	}
 
 	//Check satisfiability of cslist + flist.
-	NS_LOG_INFO("Check satisfiability of the assumption:");
+	cout << "Check satisfiability of the assumption:" << endl;
 
 	//Check if there is at least one Constraint or Formula
 	ConsList::iterator itcp;
@@ -492,8 +473,19 @@ bool CheckExistProp(const Property& prop,
 		if (assumpValue.size() == 0)
 		{
 			//Assumption is not satisfiable
-			NS_LOG_INFO("Assumption of the property is unsatisfiable "
-					"for this derivation branch.");
+			cout << "Assumption of the property is unsatisfiable "
+					"for this derivation branch." << endl;
+
+			//Print the derivation that is being checked
+//			DerivNodeList::const_iterator itpr = dlist.begin();
+//			list<SimpConstraints*>::iterator its = slist.begin();
+//			for (;itpr != dlist.end();itpr++, its++)
+//			{
+//				cout << "Print an instance of simplified derivation:";
+//				DpoolInstNode* instNode = dInstMap.at(*itpr);
+//				(*itpr)->PrintSimpDerivInst(instNode, **its);
+//				cout << endl;
+//			}
 
 			//Release memory allocated to slist;
 			list<SimpConstraints*>::iterator itl;
@@ -512,15 +504,10 @@ bool CheckExistProp(const Property& prop,
 
 			//TODO: See how interleaved design leads to chaos
 			//Deallocate memory of free variables
-			map<const DerivNode*, VarMap>::iterator itm;
+			map<const DerivNode*, DpoolInstNode*>::iterator itm;
 			for (itm = dInstMap.begin();itm != dInstMap.end();itm++)
 			{
-				VarMap& instMap = itm->second;
-				VarMap::iterator itvm;
-				for (itvm = instMap.begin();itvm != instMap.end();itvm++)
-				{
-					delete itvm->second;
-				}
+				delete itm->second;
 			}
 
 			return true;
@@ -537,7 +524,7 @@ bool CheckExistProp(const Property& prop,
 	//existentially quantified predicates does not exist
 	if (existPlist.size() == 0)
 	{
-		NS_LOG_INFO("No existentially quantified predicates.");
+		cout << "No existentially quantified predicates." << endl;
 		//Proof the case where there is no
 		//existentially quantified predicate
 		const ConstraintsTemplate* csTemp = prop.GetExistCons();
@@ -588,15 +575,15 @@ bool CheckExistProp(const Property& prop,
 	}
 	else
 	{
-		NS_LOG_INFO("Process existential quantified tuples.");
+		cout << "Process existential quantified tuples." << endl;
 		//Initialization for collection of existentially quantified predicates
-		ExQuanTuple exTupleList;
-		list<TupleLineage> emptyList;
+		DpoolTupleMap exTupleList;
+		list<DpoolTupleInst> emptyList;
 		for (itp = existPlist.begin();itp != existPlist.end();itp++)
 		{
 			//initialization
 			string pName = (*itp)->GetName();
-			exTupleList.insert(ExQuanTuple::value_type(pName, emptyList));
+			exTupleList.insert(DpoolTupleMap::value_type(pName, emptyList));
 		}
 
 		//Collect existentially quantified predicates from all derivations
@@ -605,17 +592,19 @@ bool CheckExistProp(const Property& prop,
 		{
 			string tpName = (*itdc)->GetHead()->GetName();
 			NS_LOG_DEBUG("Search existentially quantified predicates in: " << tpName);
-			(*itdc)->FindSubTuple(existPlist, exTupleList, *itdc);
+			const DerivNode* dnode = (*itdc);
+			DpoolInstNode* instNode = dInstMap.at(dnode);
+			(*itdc)->FindSubTuple(existPlist, exTupleList, instNode);
 		}
 
-		ExQuanTuple::iterator itmp;
+		DpoolTupleMap::iterator itmp;
 		for (itmp = exTupleList.begin();itmp != exTupleList.end();itmp++)
 		{
-			list<TupleLineage>& tplist = itmp->second;
+			list<DpoolTupleInst>& tplist = itmp->second;
 			if (tplist.size() == 0)
 			{
-				NS_LOG_INFO("No matching for existentially "
-						    "quantified predicate: " << itmp->first);
+				cout << "No matching for existentially "
+						    "quantified predicate: " << itmp->first << endl;
 				//Generate counter examples for universally quantified predicates
 				//TODO: The following copy of code can be used as a function
 				list<pair<const DerivNode*, SimpConstraints&> > pairList;
@@ -627,14 +616,14 @@ bool CheckExistProp(const Property& prop,
 					pairList.push_back(newPair);
 				}
 
-				GenCounterExp(assumpValue, pairList,  dInstMap);
+				GenCounterExp(assumpValue, pairList, dInstMap);
 				return false;
 			}
 		}
 
 		//Check all possible combinations
-		ExQuanTuple::const_iterator itmc = exTupleList.begin();
-		list<TupleLineage> tplist;
+		DpoolTupleMap::const_iterator itmc = exTupleList.begin();
+		list<DpoolTupleInst> tplist;
 		bool res = CheckRecurExist(prop, exTupleList, itmc, tplist,
 								   cslist, flist, assignment, slist, dInstMap);
 		if (res == false)
@@ -668,8 +657,6 @@ bool CheckExistProp(const Property& prop,
 		delete (*itl);
 	}
 
-	NS_LOG_DEBUG("Reach here?");
-
 	FormList::iterator itfl;
 	for (itfl = flist.begin();itfl != flist.end();itfl++)
 	{
@@ -678,22 +665,14 @@ bool CheckExistProp(const Property& prop,
 
 	delete uniCons;
 
-	NS_LOG_DEBUG("Reach here??");
-
 	//TODO: See how interleaved design leads to chaos
 	//Deallocate memory of free variables
-	map<const DerivNode*, VarMap>::iterator itm;
+	map<const DerivNode*, DpoolInstNode*>::iterator itm;
 	for (itm = dInstMap.begin();itm != dInstMap.end();itm++)
 	{
-		VarMap& instMap = itm->second;
-		VarMap::iterator itvm;
-		for (itvm = instMap.begin();itvm != instMap.end();itvm++)
-		{
-			delete itvm->second;
-		}
+		delete itm->second;
 	}
 
-	NS_LOG_DEBUG("Reach here???");
 	return veriResult;
 }
 
@@ -709,7 +688,6 @@ bool CheckRecurUniv(const DerivMap& dmap,
 	if (itc == plist.end())
 	{
 		bool res = CheckExistProp(prop, dlist, brp);
-		NS_LOG_DEBUG("Reach here???");
 		return res;
 	}
 
@@ -745,6 +723,7 @@ bool CheckProperty(const Dpool& dpool,
 	list<PredicateInstance*>::const_iterator itc = plist.begin();
 	DerivNodeList dlist = DerivNodeList();
 	const DerivMap& dmap = dpool.GetDerivation();
-	return CheckRecurUniv(dmap, prop, plist, itc, dlist, brp);
+	bool res = CheckRecurUniv(dmap, prop, plist, itc, dlist, brp);
+	return res;
 }
 

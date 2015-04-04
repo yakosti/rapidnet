@@ -28,7 +28,7 @@ Property::Property()
 	ProcessUniPred("packet(a,b,c,d)", varMap);
 	ProcessUniPred("flowEntry(e,f,g,h)", varMap);
 
-	//ProcessUniCons(varMap);
+	ProcessUniCons(varMap);
 
 	//ProcessExistPred("packet(a,b,c,d)", varMap);
 	//ProcessExistPred("link(m,n,c)", varMap);
@@ -156,38 +156,38 @@ Property::ProcessExistCons(const map<string, Variable*>& varMap)
 //	existConsList->AddConstraint(newCons);
 
 	//sdn-mac-learning.olg
-	string var1 = "a";
-	Variable* varPtr1 = varMap.find(var1)->second;
-	string var2 = "e";
-	Variable* varPtr2 = varMap.find(var2)->second;
-
-
-	Constraint* newCons = new Constraint(Constraint::EQ,
-										 varPtr1,
-										 varPtr2);
-
-	existConsList->AddConstraint(newCons);
-
-	string var3 = "c";
-	Variable* varPtr3 = varMap.find(var3)->second;
-	string var4 = "f";
-	Variable* varPtr4 = varMap.find(var4)->second;
-
-	newCons = new Constraint(Constraint::EQ,
-										 varPtr3,
-										 varPtr4);
-
-	existConsList->AddConstraint(newCons);
-
-//	string var1 = "f";
+//	string var1 = "a";
 //	Variable* varPtr1 = varMap.find(var1)->second;
-//	string var2 = "d";
+//	string var2 = "e";
 //	Variable* varPtr2 = varMap.find(var2)->second;
 //
-//	Constraint* newCons = new Constraint(Constraint::NEQ,
+//
+//	Constraint* newCons = new Constraint(Constraint::EQ,
 //										 varPtr1,
 //										 varPtr2);
+//
 //	existConsList->AddConstraint(newCons);
+//
+//	string var3 = "c";
+//	Variable* varPtr3 = varMap.find(var3)->second;
+//	string var4 = "f";
+//	Variable* varPtr4 = varMap.find(var4)->second;
+//
+//	newCons = new Constraint(Constraint::EQ,
+//										 varPtr3,
+//										 varPtr4);
+//
+//	existConsList->AddConstraint(newCons);
+
+	string var1 = "f";
+	Variable* varPtr1 = varMap.find(var1)->second;
+	string var2 = "d";
+	Variable* varPtr2 = varMap.find(var2)->second;
+
+	Constraint* newCons = new Constraint(Constraint::NEQ,
+										 varPtr1,
+										 varPtr2);
+	existConsList->AddConstraint(newCons);
 }
 
 
@@ -420,9 +420,9 @@ BaseRelProperty::BaseRelProperty()
 	//Start constructing a BaseRel
 	BaseRel* barl = new BaseRel();
 
-	string pred = "inPort(v1,v2,v3)";
+	string pred = "link(v1,v2,v3)";
 	barl->InsertPred(pred);
-	pred = "outPort(v4,v5,v6)";
+	pred = "link(v4,v5,v6)";
 	barl->InsertPred(pred);
 
 	map<string, Variable*>& vmap = barl->varMap;
@@ -441,7 +441,7 @@ BaseRelProperty::BaseRelProperty()
 	string var4 = "v5";
 	Variable* varPtr4 = vmap.find(var4)->second;
 
-	Constraint* newCons2 = new Constraint(Constraint::NEQ,
+	Constraint* newCons2 = new Constraint(Constraint::EQ,
 										 varPtr3,
 										 varPtr4);
 
@@ -450,12 +450,44 @@ BaseRelProperty::BaseRelProperty()
 	string var6 = "v6";
 	Variable* varPtr6 = vmap.find(var6)->second;
 
-	Constraint* newCons3 = new Constraint(Constraint::NEQ,
+	Constraint* newCons3 = new Constraint(Constraint::EQ,
 										 varPtr5,
 										 varPtr6);
 
-	Formula* newConn = new Connective(Connective::AND, newCons2, newCons3);
-	Formula* form = new Connective(Connective::IMPLY, newCons1, newConn);
+	Formula* newConn = new Connective(Connective::AND, newCons1, newCons2);
+	Formula* leftForm = new Connective(Connective::IMPLY, newConn, newCons3);
+
+	string var7 = "v1";
+	Variable* varPtr7 = vmap.find(var7)->second;
+	string var8 = "v4";
+	Variable* varPtr8 = vmap.find(var8)->second;
+
+	Constraint* newCons4 = new Constraint(Constraint::EQ,
+										 varPtr7,
+										 varPtr8);
+
+	string var9 = "v2";
+	Variable* varPtr9 = vmap.find(var9)->second;
+	string var10 = "v5";
+	Variable* varPtr10 = vmap.find(var10)->second;
+
+	Constraint* newCons5 = new Constraint(Constraint::EQ,
+										 varPtr9,
+										 varPtr10);
+
+	string var11 = "v3";
+	Variable* varPtr11 = vmap.find(var11)->second;
+	string var12 = "v6";
+	Variable* varPtr12 = vmap.find(var12)->second;
+
+	Constraint* newCons6 = new Constraint(Constraint::EQ,
+										 varPtr11,
+										 varPtr12);
+
+	Formula* newConn1 = new Connective(Connective::AND, newCons4, newCons6);
+	Formula* rightForm = new Connective(Connective::IMPLY, newConn1, newCons5);
+
+	Formula* form = new Connective(Connective::AND, leftForm, rightForm);
 
 	barl->UpdateFormula(form);
 	propSet.push_back(barl);
@@ -532,8 +564,8 @@ BaseProperty::BaseProperty()
 //	propSet.insert(ConsAnnotMap::value_type(predName, cat));
 
 	//sdn-mac-learning.olg
-	string predName = "missEntry";
-	int argNum = 2;
+	string predName = "initPacket";
+	int argNum = 4;
 	PredicateSchema* scheme = new PredicateSchema(predName, argNum);
 	vector<Term*> args = vector<Term*>();
 	for (int i = 0;i < argNum;i++)
@@ -544,6 +576,9 @@ BaseProperty::BaseProperty()
 	//Use index to create formulas;
 	PredicateInstance* pInst = new PredicateInstance(scheme, args);
 	Constraint* ct = new Constraint(Constraint::NEQ, args[0], args[1]);
+	Constraint* ct1 = new Constraint(Constraint::EQ, args[0], args[2]);
+	Constraint* ct2 = new Constraint(Constraint::NEQ, args[0], args[3]);
+	Constraint* ct3 = new Constraint(Constraint::NEQ, args[1], args[3]);
 	ConstraintsTemplate* cts = new ConstraintsTemplate();
 	cts->AddConstraint(ct);
 
@@ -551,8 +586,8 @@ BaseProperty::BaseProperty()
 	propSet.insert(ConsAnnotMap::value_type(predName, cat));
 
 	//Constraint set on a base predicate
-	predName = "inPort";
-	argNum = 3;
+	predName = "maxPriority";
+	argNum = 2;
 	scheme = new PredicateSchema(predName, argNum);
 	args = vector<Term*>();
 	for (int i = 0;i < argNum;i++)
@@ -562,20 +597,19 @@ BaseProperty::BaseProperty()
 	}
 	//Use index to create formulas;
 	pInst = new PredicateInstance(scheme, args);
-	Constraint* ct1 = new Constraint(Constraint::NEQ, args[0], args[1]);
-	Constraint* ct2 = new Constraint(Constraint::NEQ, args[1], args[2]);
-	Constraint* ct3 = new Constraint(Constraint::NEQ, args[0], args[2]);
+	IntVal* value = new IntVal(0);
+	ct1 = new Constraint(Constraint::GT, args[0], value);
+	ct2 = new Constraint(Constraint::NEQ, args[0], args[1]);
 	cts = new ConstraintsTemplate();
 	cts->AddConstraint(ct1);
 	cts->AddConstraint(ct2);
-	cts->AddConstraint(ct3);
 
 	cat = ConsAnnot(pInst, cts);
 	propSet.insert(ConsAnnotMap::value_type(predName, cat));
 	//End of Constraint set on a base predicate
 
-	predName = "outPort";
-	argNum = 3;
+	predName = "ofconn";
+	argNum = 2;
 	scheme = new PredicateSchema(predName, argNum);
 	args = vector<Term*>();
 	for (int i = 0;i < argNum;i++)
@@ -586,18 +620,14 @@ BaseProperty::BaseProperty()
 	//Use index to create formulas;
 	pInst = new PredicateInstance(scheme, args);
 	ct1 = new Constraint(Constraint::NEQ, args[0], args[1]);
-	ct2 = new Constraint(Constraint::NEQ, args[1], args[2]);
-	ct3 = new Constraint(Constraint::NEQ, args[0], args[2]);
 	cts = new ConstraintsTemplate();
 	cts->AddConstraint(ct1);
-	cts->AddConstraint(ct2);
-	cts->AddConstraint(ct3);
 
 	cat = ConsAnnot(pInst, cts);
 	propSet.insert(ConsAnnotMap::value_type(predName, cat));
 
-	predName = "initPacket";
-	argNum = 4;
+	predName = "link";
+	argNum = 3;
 	scheme = new PredicateSchema(predName, argNum);
 	args = vector<Term*>();
 	for (int i = 0;i < argNum;i++)
