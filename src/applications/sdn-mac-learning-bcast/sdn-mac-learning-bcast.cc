@@ -100,8 +100,8 @@ SdnMacLearningBcast::InitDatabase ()
     attrdef ("ofconn_attr2", IPV4)));
 
   AddRelationWithKeys (RECVPACKET, attrdeflist (
-    attrdef ("recvPacket_attr3", STR),
-    attrdef ("recvPacket_attr4", STR)));
+    attrdef ("recvPacket_attr2", STR),
+    attrdef ("recvPacket_attr3", STR)));
 
 }
 

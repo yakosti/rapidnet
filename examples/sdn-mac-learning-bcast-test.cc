@@ -135,7 +135,23 @@
  * ******************************************************************* *
  */
 
-#define nodeNum 4
+#define nodeNum 6
+
+#define CONTROLLER 1
+
+#define SWITCH2 2
+#define SWITCH3 3
+#define SWITCH4 4
+
+#define SWITCH2_TopPriority 2
+#define SWITCH3_TopPriority 1
+#define SWITCH4_TopPriority 4
+
+#define HOST5 5
+#define HOST6 6
+
+#define HOST5_MacAddress "00:19:B9:F9:2D:0C"
+#define HOST6_MacAddress "00:19:B9:F9:2D:0F"
 
 using namespace std;
 using namespace ns3;
@@ -146,36 +162,76 @@ ApplicationContainer apps;
 
 void InitPriority()
 {
-  insert_priority(2,0);
+  insert_priority(SWITCH2, SWITCH2_TopPriority);
+  insert_priority(SWITCH3, SWITCH3_TopPriority);
+  insert_priority(SWITCH4, SWITCH4_TopPriority);
 }
 
-
+/*
+ * All switches are connected to all hosts via some sort of port 
+ * Note the naming pattern for ports
+ */
 void InitPort()
 {
-  insert_link(2,3,1);
-  insert_link(2,4,2);
+  // switch2
+  insert_link(SWITCH3, HOST5, 25);
+  insert_link(HOST5, SWITCH2, 25);
+  insert_link(SWITCH3, HOST6, 26);
+  insert_link(HOST6, SWITCH2, 26);
+
+  // switch3
+  insert_link(SWITCH3, HOST5, 35);
+  insert_link(HOST5, SWITCH3, 35);
+  insert_link(SWITCH3, HOST6, 36);
+  insert_link(HOST6, SWITCH3, 36);
+
+  // switch4
+  insert_link(SWITCH2, HOST5, 45);
+  insert_link(SWITCH2, HOST6, 46);
 }
 
+/* Switch 2 is connected to HOST5 initially 
+ * flowEntry(@Switch, MacAdd, OutPort, Priority)
+ */
 void InitFlowTable()
 {
-  insert_flowentry(2,"default",0,1);
-  insert_flowentry(2,"00:19:B9:F9:2D:0F",1,0);
+  //insert_flowentry(SWITCH2,"default",0,1);
+  insert_flowentry(SWITCH2, HOST5_MacAddress, 25, SWITCH2_TopPriority);
+  insert_flowentry(SWITCH2, HOST6_MacAddress, 26, SWITCH2_TopPriority);
+
+  insert_flowentry(SWITCH3, HOST6_MacAddress, 36, SWITCH3_TopPriority);
 }
 
+/*
+ * All switches connected to controller and vice versa
+ */
 void InitOpenflowConn()
 {
-  insert_ofconn(1,2);
-  insert_ofconn(2,1);
+  insert_ofconn(CONTROLLER, SWITCH2);
+  insert_ofconn(SWITCH2, CONTROLLER);
+
+  insert_ofconn(CONTROLLER, SWITCH3);
+  insert_ofconn(SWITCH3, CONTROLLER);
+
+  insert_ofconn(CONTROLLER, SWITCH4);
+  insert_ofconn(SWITCH4, CONTROLLER);
 }
 
+/*
+ * Host 5 sends a packet to Host 6 via switch 2
+ * has flow entry match 
+ */
 void PacketInsertion1()
 {
-  insert_packet(2,3,"00:19:B9:F9:2D:0F", "00:19:B9:F9:2D:0C");
+  insert_packet(HOST5, SWITCH2, HOST5_MacAddress, HOST6_MacAddress);
 }
 
+/*
+ * No flow entry, must query controller
+ */
 void PacketInsertion2()
 {
-  insert_packet(2,4,"00:19:B9:F9:2D:0C", "00:19:B9:F9:2D:0F");  
+  insert_packet(HOST6, SWITCH3, HOST5_MacAddress, HOST6_MacAddress);  
 }
 
 void PrintRelation()
@@ -200,7 +256,6 @@ int main(int argc, char *argv[])
   schedule (0.015, InitOpenflowConn);
   schedule (0.020, PacketInsertion1);  
   schedule (1.200, PacketInsertion2);    
-  schedule (20.0, PrintRelation);
 
   Simulator::Run();
   Simulator::Destroy();
