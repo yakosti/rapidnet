@@ -75,6 +75,9 @@ public:
 	virtual void PrintInstance(const map<Variable*, int>&, bool) const =0;
 
 	virtual void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const{}
+
+	virtual void PrintSimpInstance(const map<Variable*, int>&, VarMap&,
+			                       SimpConstraints&, bool) const{}
 };
 
 
@@ -181,6 +184,9 @@ public:
 
 	void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const;
 
+	void PrintSimpInstance(const map<Variable*, int>&, VarMap&,
+				           SimpConstraints&, bool) const;
+
 	~UserFunction();
 
 private:
@@ -212,6 +218,9 @@ public:
     virtual void PrintInstance(const map<Variable*, int>&, bool) const{}
 
     virtual void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const{}
+
+    virtual void PrintSimpInstance(const map<Variable*, int>&, VarMap&,
+    				           	   SimpConstraints&, bool) const{}
 };
 
 
@@ -238,6 +247,9 @@ public:
 	void PrintInstance(const map<Variable*, int>&, bool) const;
 
 	void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const;
+
+	void PrintSimpInstance(const map<Variable*, int>&, VarMap&,
+					           SimpConstraints&, bool) const{cout << value;}
 
 private:
 	int value;
@@ -269,6 +281,9 @@ public:
 
 	void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const;
 
+	void PrintSimpInstance(const map<Variable*, int>&, VarMap&,
+						   SimpConstraints&, bool) const{cout << value;}
+
 private:
 	double value;
 };
@@ -296,6 +311,9 @@ public:
 	void PrintInstance(const map<Variable*, int>&, bool) const;
 
 	void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const;
+
+	void PrintSimpInstance(const map<Variable*, int>&, VarMap&,
+						   SimpConstraints&, bool) const{cout << value;}
 
 private:
 	string value;
@@ -325,11 +343,12 @@ public:
 
 	void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const;
 
+	void PrintSimpInstance(const map<Variable*, int>&, VarMap&,
+						   SimpConstraints&, bool) const{cout << value;}
+
 private:
 	bool value;
 };
-
-
 
 
 
@@ -378,6 +397,9 @@ public:
 
 	void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const;
 
+	void PrintSimpInstance(const map<Variable*, int>&, VarMap&,
+						   SimpConstraints&, bool) const;
+
 	void PrintOp() const;
 
 	~Arithmetic();
@@ -423,7 +445,10 @@ public:
 
 	void PrintInst(VarMap&){}
 
-	void PrintSimpInst(VarMap&, SimpConstraints&){}
+	virtual void PrintSimpInst(VarMap&, SimpConstraints&){}
+
+	virtual void PrintSimpInstance(const map<Variable*, int>&, VarMap&,
+						   	   	   SimpConstraints&, bool) const{}
 
 	virtual void VarReplace(const VarMap&){}
 
@@ -455,6 +480,9 @@ public:
 	void PrintInst(VarMap& vmap){cout << "True";}
 
 	void PrintSimpInst(VarMap& vmap, SimpConstraints& simpCons){cout << "True";}
+
+	void PrintSimpInstance(const map<Variable*, int>&, VarMap&,
+						   SimpConstraints&, bool) const{cout << "True";}
 };
 
 class False: public Formula{};
@@ -503,6 +531,9 @@ public:
 
 	void PrintSimpInst(VarMap&, SimpConstraints&);
 
+	void PrintSimpInstance(const map<Variable*, int>&, VarMap&,
+						   SimpConstraints&, bool);
+
 	~Connective();
 
 private:
@@ -545,6 +576,9 @@ public:
 	void PrintInst(VarMap&);
 
 	void PrintSimpInst(VarMap&, SimpConstraints&);
+
+	void PrintSimpInstance(const map<Variable*, int>&, VarMap&,
+						   SimpConstraints&, bool);
 
 	~Quantifier();
 
@@ -601,6 +635,9 @@ public:
 	void PrintInst(VarMap&);
 
 	void PrintSimpInst(VarMap&, SimpConstraints&);
+
+	void PrintSimpInstance(const map<Variable*, int>&, VarMap&,
+						   SimpConstraints&, bool);
 
 	~PredicateInstance();
 
@@ -674,6 +711,9 @@ public:
 
 	void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const;
 
+	void PrintSimpInstance(const map<Variable*, int>&, VarMap&,
+						   SimpConstraints&, bool) const;
+
 	void PrintOp() const;
 
 private:
@@ -721,6 +761,9 @@ public:
 	void PrintInstance(const map<Variable*, int>&, bool) const;
 
 	void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const;
+
+	void PrintSimpInstance(const map<Variable*, int>&, VarMap&,
+						   SimpConstraints&, bool) const;
 
 	~ConstraintsTemplate();
 

@@ -102,6 +102,13 @@ DpoolNode::PrintHeadInst(const map<Variable*, int>& valueMap, VarMap& vmap, bool
 }
 
 void
+DpoolNode::PrintSimpHeadInst(const map<Variable*, int>& valueMap, VarMap& vmap,
+						     SimpConstraints& simpCons, bool printVar) const
+{
+	head->PrintSimpInstance(valueMap, vmap, simpCons, printVar);
+}
+
+void
 DerivNode::AddRuleName(string rName)
 {
 	ruleName = rName;
@@ -536,6 +543,45 @@ DerivNode::PrintInstance(const map<Variable*, int>& valueMap,
 }
 
 void
+DerivNode::PrintSimpInstance(const map<Variable*, int>& valueMap, DpoolInstNode* instNode,
+						   	 SimpConstraints& simpCons, bool printVar) const
+{
+	cout << endl;
+	cout << "%%%%%%%%%%%%%% Simplified Derivation Instance %%%%%%%%%%%%%" << endl;
+	cout << "Head:";
+	VarMap headMap = instNode->headMap;
+	head->PrintSimpInstance(valueMap, headMap, simpCons, printVar);
+	cout << endl;
+	cout << "Rule name:" << ruleName << endl;
+	cout << "Rule constraints:" << endl;
+	VarMap ruleMap = instNode->ruleMap;
+	VarMap completeMap = headMap;
+	completeMap.insert(ruleMap.begin(), ruleMap.end());
+
+	cout << "Body tuples:" << endl;
+	DpoolNodeList::const_iterator itd;
+	list<DpoolInstNode*>::iterator itld = instNode->bodyList.begin();
+	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++, itld++)
+	{
+		const DpoolNode* bodyNode = (*itd);
+		VarMap& bodyHeadMap = (*itld)->headMap;
+		completeMap.insert(bodyHeadMap.begin(), bodyHeadMap.end());
+		(*itd)->PrintSimpHeadInst(valueMap, bodyHeadMap, simpCons, printVar);
+		cout << endl;
+	}
+
+	if (ruleConstraints != NULL)
+	{
+		cout << "Constraints:" << endl;
+		ruleConstraints->PrintSimpInstance(valueMap, completeMap, simpCons, printVar);
+		cout << endl;
+	}
+	cout << endl;
+
+	cout << "%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
+}
+
+void
 DerivNode::PrintDerivation() const
 {
 	PrintDerivNode();
@@ -723,6 +769,33 @@ DerivNode::PrintExecInst(map<Variable*, int>& valueMap,
 			if (bodyNode == (*itld)->dnode)
 			{
 				(*itd)->PrintExecInst(valueMap, *itld, printVar);
+				break;
+			}
+		}
+
+		cout << endl;
+	}
+	cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+}
+
+void
+DerivNode::PrintSimpExecInst(map<Variable*, int>& valueMap, DpoolInstNode* instNode,
+						     SimpConstraints& simpCons, bool printVar) const
+{
+	cout << endl;
+	cout << "~~~~~~~~~~~~~~~ Execution Trace ~~~~~~~~~~~~~~" << endl;
+	PrintSimpInstance(valueMap, instNode, simpCons, printVar);
+
+	DpoolNodeList::const_iterator itd;
+	for (itd = bodyDerivs.begin();itd != bodyDerivs.end();itd++)
+	{
+		const DpoolNode* bodyNode = (*itd);
+		list<DpoolInstNode*>::iterator itld;
+		for (itld = instNode->bodyList.begin();itld != instNode->bodyList.end();itld++)
+		{
+			if (bodyNode == (*itld)->dnode)
+			{
+				(*itd)->PrintSimpExecInst(valueMap, *itld, simpCons, printVar);
 				break;
 			}
 		}
@@ -1038,6 +1111,25 @@ BaseNode::PrintInstance(const map<Variable*, int>& valueMap,
 	cout << "@@@@@@@@@@@@@@@@@@@@@" << endl;
 }
 
+void
+BaseNode::PrintSimpInstance(const map<Variable*, int>& valueMap, DpoolInstNode* instNode,
+						    SimpConstraints& simpCons, bool printVar) const
+{
+	cout << endl;
+	cout << "@@@@@@@@@@ Base Instance @@@@@@@@@" << endl;
+	cout << "Head instance: " << endl;
+	VarMap& headMap = instNode->headMap;
+	head->PrintSimpInstance(valueMap, headMap, simpCons, printVar);
+	VarMap& ruleMap = instNode->ruleMap;
+	VarMap completeMap = headMap;
+	completeMap.insert(ruleMap.begin(),ruleMap.end());
+	cout << endl;
+	if (cts != NULL)
+	{
+		cts->PrintSimpInstance(valueMap, completeMap, simpCons, printVar);
+	}
+	cout << "@@@@@@@@@@@@@@@@@@@@@" << endl;
+}
 
 void
 BaseNode::PrintDerivation() const
@@ -1065,6 +1157,12 @@ BaseNode::PrintExecInst(map<Variable*, int>& valueMap,
 	PrintInstance(valueMap, instNode, printVar);
 }
 
+void
+BaseNode::PrintSimpExecInst(map<Variable*, int>& valueMap, DpoolInstNode* instNode,
+							   SimpConstraints& simpCons, bool printVar) const
+{
+	PrintSimpInstance(valueMap, instNode, simpCons, printVar);
+}
 
 BaseNode::~BaseNode()
 {
@@ -1325,6 +1423,29 @@ PropNode::PrintInstance(const map<Variable*, int>& valueMap,
 }
 
 void
+PropNode::PrintSimpInstance(const map<Variable*, int>& valueMap, DpoolInstNode* instNode,
+					   	    SimpConstraints& simpCons, bool printVar) const
+{
+	cout << endl;
+	cout << "++++++++++++ Recursive Instance +++++++++++" << endl;
+	cout << "Head:";
+	VarMap& headMap = instNode->headMap;
+	head->PrintSimpInstance(valueMap, headMap, simpCons, printVar);
+	cout << endl;
+
+	cout << "User-annotated formula:" << endl;
+	VarMap& ruleMap = instNode->ruleMap;
+	VarMap completeMap = headMap;
+	completeMap.insert(ruleMap.begin(),ruleMap.end());
+	Formula* newForm = prop->Clone();
+	newForm->VarReplace(completeMap);
+	newForm->Print();
+	cout << "+++++++++++++++++++++++";
+	cout << endl;
+	delete newForm;
+}
+
+void
 PropNode::PrintDerivation() const
 {
 	PrintDerivNode();
@@ -1348,6 +1469,13 @@ PropNode::PrintExecInst(map<Variable*, int>& valueMap,
 						bool printVar) const
 {
 	PrintInstance(valueMap, instNode, printVar);
+}
+
+void
+PropNode::PrintSimpExecInst(map<Variable*, int>& valueMap, DpoolInstNode* instNode,
+						   SimpConstraints& simpCons, bool printVar) const
+{
+	PrintSimpInstance(valueMap, instNode, simpCons, printVar);
 }
 
 PropNode::~PropNode()

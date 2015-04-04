@@ -8,8 +8,9 @@ Result: True
 Time: 60ms
 
 2. 
-forall EndHost, Switch, SrcMac, DstMac, Outport, Mac, Priority,
+forall EndHost, Switch, SrcMac, DstMac, InPort, Outport, Mac, Priority,
 	packet(EndHost, Switch, SrcMac, DstMac), 
+	link(EndHost, Switch, InPort),
 	flowEntry(Switch, Mac, Outport, Priority), DstMac != EndHost -> Mac != DstMac
 
 Base constraints:

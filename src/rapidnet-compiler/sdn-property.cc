@@ -27,6 +27,7 @@ Property::Property()
 	//ProcessUniPred("flowEntry(s,m,o)", varMap);
 	ProcessUniPred("packet(a,b,c,d)", varMap);
 	ProcessUniPred("flowEntry(e,f,g,h)", varMap);
+	ProcessUniPred("link(i,j,k)", varMap);
 
 	ProcessUniCons(varMap);
 
@@ -78,6 +79,23 @@ Property::ProcessUniCons(const map<string, Variable*>& varMap)
 										 varPtr3,
 										 varPtr4);
 	univConsList->AddConstraint(newCons);
+
+	string var5 = "i";
+	Variable* varPtr5 = varMap.find(var5)->second;
+
+	newCons = new Constraint(Constraint::EQ,
+										 varPtr5,
+										 varPtr4);
+	univConsList->AddConstraint(newCons);
+
+	string var6 = "j";
+	Variable* varPtr6 = varMap.find(var6)->second;
+
+	newCons = new Constraint(Constraint::EQ,
+										 varPtr6,
+										 varPtr1);
+	univConsList->AddConstraint(newCons);
+
 }
 
 void

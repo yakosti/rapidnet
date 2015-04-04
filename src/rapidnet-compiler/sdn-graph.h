@@ -70,6 +70,9 @@ public:
 
 	void PrintInstance(const map<Variable*, int>&, VarMap&, bool printVar) const;
 
+	void PrintSimpInstance(const map<Variable*, int>&, VarMap&,
+							SimpConstraints&, bool printVar) const;
+
 	~Tuple();
 
 private:
