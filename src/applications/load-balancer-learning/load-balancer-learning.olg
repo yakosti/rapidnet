@@ -38,6 +38,8 @@ rc2 broadcast(@Switch, InPort, SrcMac, DstMac) :-
 
 
 
+
+
 /* *********************** Switch program ************************ */
 
 /*Query the controller when receiving unknown packets */
