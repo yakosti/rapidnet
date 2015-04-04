@@ -45,6 +45,7 @@ all_modules = (
     'applications/load-balancing',
     'applications/firewall',
     'applications/sdn-mac-learning',
+    'applications/sdn-mac-learning-bcast',
     'applications/pingpong',
     'applications/reachable',
     'applications/pathvector',

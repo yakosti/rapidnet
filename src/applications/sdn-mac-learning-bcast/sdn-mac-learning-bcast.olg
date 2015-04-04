@@ -13,6 +13,8 @@ materialize(maxPriority,infinity,1,keys(1)). /*Records the maximum priority, ini
 materialize(initPacket,infinity,infinity,keys(2,3:str,4:str)). /*Packet for simulation initialization*/
 materialize(recvPacket,infinity,infinity,keys(3:str,4:str)). /*Packet for simulation initialization*/
 
+
+
 /*Controller program*/
 /*Install rules on switch*/
 rc1 flowMod(@Switch, SrcMac, InPort) :-
@@ -83,3 +85,5 @@ rh1 packet(@Switch, Host, SrcMac, DstMac) :-
 rh2 recvPacket(@Host, SrcMac, DstMac) :-
 	packet(@Host, Switch, SrcMac, DstMac),
 	link(@Host, Switch, InPort).
+
+	

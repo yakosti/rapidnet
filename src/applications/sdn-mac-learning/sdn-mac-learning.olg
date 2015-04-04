@@ -10,12 +10,14 @@ materialize(macPort,infinity,infinity,keys(2,3:int32)). //Mac-port dictionary
 /*To account for non-matching scenario,*/
 /*we assume there is always a flow entry corresponding to "default" action*/
 materialize(packet,infinity,infinity,keys(2,3:str,4:str)). //Packets to be sent
-materialize(initPacket,infinity,infinity,keys(3:str)). //Packets from sources
 materialize(ofconn,infinity,infinity,keys(2)). //Openflow connection to controller
 materialize(missEntry,infinity,infinity,keys(2:str)). //For packets that match no rule
 materialize(flowEntry,infinity,infinity,keys(2:str)). //Flow table at switch
 materialize(inPort,infinity,infinity,keys(3:int32)). //Inport table
 materialize(outPort,infinity,infinity,keys(3:int32)). //Outport table
+
+/* Database for Host */
+materialize(initPacket,infinity,infinity,keys(3:str)). //Packets from sources
 
 
 /*Controller program*/
