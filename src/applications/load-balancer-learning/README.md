@@ -2,21 +2,14 @@
 
 [Understanding Mac Learning](http://www.globalknowledge.ae/about-us/Knowledge-Center/Article/How-do-Switches-Work/)
 
-## Property 1
+## Flow Affinity
 
 ### English
 
-### Logic
-
-## Property 2
-
-### English
+all packets of a single TCP connection -> sent to the same switch
 
 ### Logic
 
-## Property 3
 
-### English
 
-### Logic
 

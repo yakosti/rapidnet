@@ -33,6 +33,7 @@ public:
   static const string FLOWENTRY;
   static const string FLOWMOD;
   static const string INITPACKET;
+  static const string LBPACKET;
   static const string LINK;
   static const string MATCHINGPACKET;
   static const string MAXPRIORITY;
@@ -81,7 +82,7 @@ protected:
 
   virtual void Rs7_eca (Ptr<Tuple> broadcast);
 
-  virtual void Lb1_eca (Ptr<Tuple> packet);
+  virtual void Lb1_eca (Ptr<Tuple> lbPacket);
 
   virtual void Lb2_eca (Ptr<Tuple> randomlyObtainedSwitch);
 

@@ -1,24 +1,43 @@
 /*
+ * ************************************************************************** *
+ * 
+ *                           --------------- ----------------------
+ *                          | Controller(1) |----------------      |
+ *                           ---------------                 |     |
+ *                                 |                         |     |
+ *                                 |                         |     |
+ *                     -------------------------             |     |
+ *                    | port25 | sw(1) | port26 |            |     |
+ *                     -------------------------             |     |
+ *                   /                                       |     |
+ *   -------------- /       -------------------------        |     |
+ *  | LoadBalancer |----- | port35 | sw(3) | port36 | -------|     |
+ *   -------------- \      -------------------------               |
+ *                   \                                             |
+ *                     -------------------------                   |
+ *                    | port45 | sw(4) | port46 |------------------
+ *                     -------------------------
  *
- *                       ---------------
- *                      | Controller(6) |
- *                       ---------------
- *                              |
- *                              |
- *               --------- -----------  --------
- *     sw(3) ---| port(1) | Switch(2) | port(2) | -- sw(4)
- *               --------- -----------  --------
- *                 
- *                  |             
- *                  |
- *               -----------------
- *              | LoadBalancer(5) |
- *               -----------------
+ *                                           -------
+ *                                          | Host4 |
+ *                                           -------
+ * 
+ *                                           -------
+ *                                          | Host5 |
+ *                                           -------
+ *
+ *                                           -------
+ *                                          | Host6 |
+ *                                           -------
+ * 
+ * Port XY meast switch X is connected to Host Y
+ * 
  *                
  * 
  * Packets always end up on the load balancer
  * The load balancer decides which switch of the several possible ones the packet gets routed to
  * The switch the packet ends up on, does what sdn-mac-learning-bcast is to do
+ * ************************************************************************** *
  */
 
 
@@ -70,8 +89,8 @@
   tuple(LoadBalancerLearning::FLOWENTRY,\
 	attr("flowEntry_attr1", Ipv4Value, sw),\
 	attr("flowEntry_attr2", StrValue, mac),\
-	attr("flowEntry_attr4", Int32Value, outport),	\
-	attr("flowEntry_attr3", Int32Value, priority))
+	attr("flowEntry_attr3", Int32Value, outport),	\
+	attr("flowEntry_attr4", Int32Value, priority))
 
 #define insert_flowentry(sw, mac, outport, priority)				\
   app(sw) -> Insert(flowentry(addr(sw), mac, outport, priority))
@@ -158,9 +177,9 @@
 #define SWITCH2 2
 #define SWITCH3 3
 
-#define SWITCH1_TopPriority 5
-#define SWITCH2_TopPriority 6
-#define SWITCH3_TopPriority 7
+#define SWITCH1_TopPriority 1
+#define SWITCH2_TopPriority 2
+#define SWITCH3_TopPriority 3
 
 #define HOST4 4
 #define HOST5 5
@@ -189,29 +208,45 @@ void InitPriority()
   insert_priority(SWITCH3, SWITCH3_TopPriority);
 }
 
-/* all switches are connected to all hosts */
+/* all switches are connected to all hosts 
+ */
 void InitPort()
 {
   /* SWITCH 1 */
   insert_link(SWITCH1, HOST4, 14);
+  insert_link(HOST4, SWITCH1, 14);
   insert_link(SWITCH1, HOST5, 15);
-  insert_link(SWITCH1, HOST5, 16);
+  insert_link(HOST5, SWITCH1, 15);
+  insert_link(SWITCH1, HOST6, 16);
+  insert_link(HOST6, SWITCH1, 16);
 
   /* SWITCH 2 */
   insert_link(SWITCH2, HOST4, 24);
+  insert_link(HOST4, SWITCH2, 24);
   insert_link(SWITCH2, HOST5, 25);
-  insert_link(SWITCH2, HOST5, 26);
+  insert_link(HOST5, SWITCH2, 24);
+  insert_link(SWITCH2, HOST6, 26);
+  insert_link(HOST6, SWITCH2, 26);
 
   /* SWITCH 3 */
   insert_link(SWITCH3, HOST4, 34);
+  insert_link(HOST4, SWITCH3, 34);
   insert_link(SWITCH3, HOST5, 35);
-  insert_link(SWITCH3, HOST5, 36);
+  insert_link(HOST5, SWITCH3, 35);
+  insert_link(SWITCH3, HOST6, 36);
+  insert_link(HOST6, SWITCH3, 36);
 }
 
 /* flowEntry(@Switch, MacAdd, OutPort, Priority) */
 void InitFlowTable()
 {
+  insert_flowentry(SWITCH1, HOST6_MacAddress, 14, SWITCH1_TopPriority);
+
   insert_flowentry(SWITCH2, "default", 24, SWITCH2_TopPriority);
+
+  insert_flowentry(SWITCH3, "default", 34, 1);
+  insert_flowentry(SWITCH3, "default", 35, 0);
+  insert_flowentry(SWITCH3, "default", 36, 0);
 }
 
 /* Controller is connected to all switches
@@ -219,10 +254,15 @@ void InitFlowTable()
  */
 void InitOpenflowConn()
 {
+  // Switch 1
   insert_ofconn(CONTROLLER,SWITCH1);
   insert_ofconn(SWITCH1,CONTROLLER);
+
+  // Switch 2
   insert_ofconn(CONTROLLER,SWITCH2);
   insert_ofconn(SWITCH2,CONTROLLER);
+
+  // Switch 3
   insert_ofconn(CONTROLLER,SWITCH3);
   insert_ofconn(SWITCH3,CONTROLLER);
 }

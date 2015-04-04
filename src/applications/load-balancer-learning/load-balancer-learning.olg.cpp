@@ -48,7 +48,7 @@ materialize(maxPriority,infinity,1,keys(1)). /*Records the maximum priority, ini
 
 /*Database for host*/
 materialize(initPacket,infinity,infinity,keys(2,3:str,4:str)). /*Packet for simulation initialization*/
-//materialize(recvPacket,infinity,infinity,keys(3:str)). /*Packet for simulation initialization*/
+materialize(recvPacket,infinity,infinity,keys(2:str,3:str)). /*Packet for simulation initialization*/
 
 /* ***************************** Database **************************** */
 
@@ -144,7 +144,7 @@ rs7 packet(@OutNei, Switch, SrcMac, DstMac) :-
  * It hashes the mac value of the source, to decide which of several switches to send it to 
  */
 lb1 randomlyObtainedSwitch(@LoadBalancer, SwitchNum, Host, SrcMac, DstMac) :- 
-	packet(@LoadBalancer, Host, SrcMac, DstMac),
+	lbPacket(@LoadBalancer, Host, SrcMac, DstMac),
 	Value := f_hashIp(Host),
 	SwitchNum := 1+f_modulo(Value, 3).
 
@@ -171,13 +171,13 @@ lb2 packet(@Switch, Host, SrcMac, DstMac) :-
  * To do so, it must send the packet to LoadBalancer first, 
  * which chooses which switch to route the packet to
  */
-rh1 packet(@LoadBalancer, Host, SrcMac, DstMac) :-
+rh1 lbPacket(@LoadBalancer, Host, SrcMac, DstMac) :-
 	initPacket(@Host, LoadBalancer, SrcMac, DstMac).
 
 /*Receive a packet*/
 rh2 recvPacket(@Host, SrcMac, DstMac) :-
-	packet(@Switch, Host, SrcMac, DstMac),
-	link(@Switch, Host, InPort).
+	packet(@Host, Switch, SrcMac, DstMac),
+	link(@Host, Switch, InPort).
 
 /* ************************ Host program ************************* */
 

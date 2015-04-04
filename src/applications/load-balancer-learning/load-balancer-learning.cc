@@ -20,6 +20,7 @@ const string LoadBalancerLearning::BROADCAST = "broadcast";
 const string LoadBalancerLearning::FLOWENTRY = "flowEntry";
 const string LoadBalancerLearning::FLOWMOD = "flowMod";
 const string LoadBalancerLearning::INITPACKET = "initPacket";
+const string LoadBalancerLearning::LBPACKET = "lbPacket";
 const string LoadBalancerLearning::LINK = "link";
 const string LoadBalancerLearning::MATCHINGPACKET = "matchingPacket";
 const string LoadBalancerLearning::MAXPRIORITY = "maxPriority";
@@ -101,6 +102,10 @@ LoadBalancerLearning::InitDatabase ()
   AddRelationWithKeys (OFCONN, attrdeflist (
     attrdef ("ofconn_attr2", IPV4)));
 
+  AddRelationWithKeys (RECVPACKET, attrdeflist (
+    attrdef ("recvPacket_attr2", STR),
+    attrdef ("recvPacket_attr3", STR)));
+
   AddRelationWithKeys (SWITCHMAPPING, attrdeflist (
     attrdef ("switchMapping_attr2", IPV4),
     attrdef ("switchMapping_attr3", INT32)));
@@ -152,7 +157,7 @@ LoadBalancerLearning::DemuxRecv (Ptr<Tuple> tuple)
     {
       Rs7_eca (tuple);
     }
-  if (IsRecvEvent (tuple, PACKET))
+  if (IsRecvEvent (tuple, LBPACKET))
     {
       Lb1_eca (tuple);
     }
@@ -482,15 +487,15 @@ LoadBalancerLearning::Rs7_eca (Ptr<Tuple> broadcast)
 }
 
 void
-LoadBalancerLearning::Lb1_eca (Ptr<Tuple> packet)
+LoadBalancerLearning::Lb1_eca (Ptr<Tuple> lbPacket)
 {
   RAPIDNET_LOG_INFO ("Lb1_eca triggered");
 
-  Ptr<Tuple> result = packet;
+  Ptr<Tuple> result = lbPacket;
 
   result->Assign (Assignor::New ("Value",
     FHashIP::New (
-      VarExpr::New ("packet_attr2"))));
+      VarExpr::New ("lbPacket_attr2"))));
 
   result->Assign (Assignor::New ("SwitchNum",
     Operation::New (RN_PLUS,
@@ -501,11 +506,11 @@ LoadBalancerLearning::Lb1_eca (Ptr<Tuple> packet)
 
   result = result->Project (
     RANDOMLYOBTAINEDSWITCH,
-    strlist ("packet_attr1",
+    strlist ("lbPacket_attr1",
       "SwitchNum",
-      "packet_attr2",
-      "packet_attr3",
-      "packet_attr4"),
+      "lbPacket_attr2",
+      "lbPacket_attr3",
+      "lbPacket_attr4"),
     strlist ("randomlyObtainedSwitch_attr1",
       "randomlyObtainedSwitch_attr2",
       "randomlyObtainedSwitch_attr3",
@@ -551,16 +556,16 @@ LoadBalancerLearning::Rh1Eca0Ins (Ptr<Tuple> initPacket)
   Ptr<Tuple> result = initPacket;
 
   result = result->Project (
-    PACKET,
+    LBPACKET,
     strlist ("initPacket_attr2",
       "initPacket_attr1",
       "initPacket_attr3",
       "initPacket_attr4",
       "initPacket_attr2"),
-    strlist ("packet_attr1",
-      "packet_attr2",
-      "packet_attr3",
-      "packet_attr4",
+    strlist ("lbPacket_attr1",
+      "lbPacket_attr2",
+      "lbPacket_attr3",
+      "lbPacket_attr4",
       RN_DEST));
 
   Send (result);
@@ -575,20 +580,18 @@ LoadBalancerLearning::Rh2_eca (Ptr<Tuple> packet)
 
   result = GetRelation (LINK)->Join (
     packet,
-    strlist ("link_attr2", "link_attr1"),
-    strlist ("packet_attr2", "packet_attr1"));
+    strlist ("link_attr1", "link_attr2"),
+    strlist ("packet_attr1", "packet_attr2"));
 
   result = result->Project (
     RECVPACKET,
-    strlist ("packet_attr2",
+    strlist ("packet_attr1",
       "packet_attr3",
-      "packet_attr4",
-      "packet_attr2"),
+      "packet_attr4"),
     strlist ("recvPacket_attr1",
       "recvPacket_attr2",
-      "recvPacket_attr3",
-      RN_DEST));
+      "recvPacket_attr3"));
 
-  Send (result);
+  Insert (result);
 }
 
