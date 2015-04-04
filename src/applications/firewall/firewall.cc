@@ -156,14 +156,6 @@ Firewall::DemuxRecv (Ptr<Tuple> tuple)
     {
       R5_eca (tuple);
     }
-  if (IsInsertEvent (tuple, PERFLOWRULE))
-    {
-      R6Eca0Ins (tuple);
-    }
-  if (IsInsertEvent (tuple, PKTIN))
-    {
-      R6Eca1Ins (tuple);
-    }
 }
 
 void
@@ -370,13 +362,8 @@ Firewall::R3Eca0Ins (Ptr<Tuple> pktIn)
 
   result = GetRelation (PERFLOWRULE)->Join (
     pktIn,
-    strlist ("perFlowRule_attr4", "perFlowRule_attr2", "perFlowRule_attr1", "perFlowRule_attr3"),
-    strlist ("pktIn_attr4", "pktIn_attr2", "pktIn_attr1", "pktIn_attr3"));
-
-  result = result->Select (Selector::New (
-    Operation::New (RN_EQ,
-      VarExpr::New ("pktIn_attr3"),
-      ValueExpr::New (Int32Value::New (1)))));
+    strlist ("perFlowRule_attr4", "perFlowRule_attr3", "perFlowRule_attr2", "perFlowRule_attr1"),
+    strlist ("pktIn_attr4", "pktIn_attr3", "pktIn_attr2", "pktIn_attr1"));
 
   result = result->Project (
     PKTRECEIVED,
@@ -405,13 +392,8 @@ Firewall::R3Eca1Ins (Ptr<Tuple> perFlowRule)
 
   result = GetRelation (PKTIN)->Join (
     perFlowRule,
-    strlist ("pktIn_attr4", "pktIn_attr2", "pktIn_attr1", "pktIn_attr3"),
-    strlist ("perFlowRule_attr4", "perFlowRule_attr2", "perFlowRule_attr1", "perFlowRule_attr3"));
-
-  result = result->Select (Selector::New (
-    Operation::New (RN_EQ,
-      VarExpr::New ("perFlowRule_attr3"),
-      ValueExpr::New (Int32Value::New (1)))));
+    strlist ("pktIn_attr4", "pktIn_attr3", "pktIn_attr2", "pktIn_attr1"),
+    strlist ("perFlowRule_attr4", "perFlowRule_attr3", "perFlowRule_attr2", "perFlowRule_attr1"));
 
   result = result->Project (
     PKTRECEIVED,
@@ -522,86 +504,6 @@ Firewall::R5_eca (Ptr<Tuple> pktFromSwitch)
       "r5perFlowRulesend_attr3",
       "r5perFlowRulesend_attr4",
       "r5perFlowRulesend_attr5",
-      RN_DEST));
-
-  Send (result);
-}
-
-void
-Firewall::R6Eca0Ins (Ptr<Tuple> perFlowRule)
-{
-  RAPIDNET_LOG_INFO ("R6Eca0Ins triggered");
-
-  Ptr<RelationBase> result;
-
-  result = GetRelation (PKTIN)->Join (
-    perFlowRule,
-    strlist ("pktIn_attr4", "pktIn_attr2", "pktIn_attr1", "pktIn_attr3"),
-    strlist ("perFlowRule_attr4", "perFlowRule_attr2", "perFlowRule_attr1", "perFlowRule_attr3"));
-
-  result = result->Select (Selector::New (
-    Operation::New (RN_EQ,
-      VarExpr::New ("perFlowRule_attr3"),
-      ValueExpr::New (Int32Value::New (2)))));
-
-  result = result->Select (Selector::New (
-    Operation::New (RN_EQ,
-      VarExpr::New ("perFlowRule_attr5"),
-      ValueExpr::New (Int32Value::New (1)))));
-
-  result = result->Project (
-    PKTRECEIVED,
-    strlist ("perFlowRule_attr4",
-      "perFlowRule_attr5",
-      "perFlowRule_attr2",
-      "perFlowRule_attr3",
-      "perFlowRule_attr1",
-      "perFlowRule_attr4"),
-    strlist ("pktReceived_attr1",
-      "pktReceived_attr2",
-      "pktReceived_attr3",
-      "pktReceived_attr4",
-      "pktReceived_attr5",
-      RN_DEST));
-
-  Send (result);
-}
-
-void
-Firewall::R6Eca1Ins (Ptr<Tuple> pktIn)
-{
-  RAPIDNET_LOG_INFO ("R6Eca1Ins triggered");
-
-  Ptr<RelationBase> result;
-
-  result = GetRelation (PERFLOWRULE)->Join (
-    pktIn,
-    strlist ("perFlowRule_attr4", "perFlowRule_attr2", "perFlowRule_attr1", "perFlowRule_attr3"),
-    strlist ("pktIn_attr4", "pktIn_attr2", "pktIn_attr1", "pktIn_attr3"));
-
-  result = result->Select (Selector::New (
-    Operation::New (RN_EQ,
-      VarExpr::New ("pktIn_attr3"),
-      ValueExpr::New (Int32Value::New (2)))));
-
-  result = result->Select (Selector::New (
-    Operation::New (RN_EQ,
-      VarExpr::New ("perFlowRule_attr5"),
-      ValueExpr::New (Int32Value::New (1)))));
-
-  result = result->Project (
-    PKTRECEIVED,
-    strlist ("pktIn_attr4",
-      "perFlowRule_attr5",
-      "pktIn_attr2",
-      "pktIn_attr3",
-      "pktIn_attr1",
-      "pktIn_attr4"),
-    strlist ("pktReceived_attr1",
-      "pktReceived_attr2",
-      "pktReceived_attr3",
-      "pktReceived_attr4",
-      "pktReceived_attr5",
       RN_DEST));
 
   Send (result);
