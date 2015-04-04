@@ -235,6 +235,40 @@ Tuple::PrintInstance(const map<Variable*, int>& valueMap, VarMap& vmap, bool pri
 	cout << ")";
 }
 
+void
+Tuple::PrintSimpInstance(const map<Variable*, int>& valueMap, VarMap& vmap,
+					   SimpConstraints& simpCons, bool printVar) const
+{
+	cout << tpName << "(";
+	vector<Variable*>::const_iterator it;
+	for (it = args.begin(); it != args.end(); it++)
+	{
+		  if (it != args.begin())
+		  {
+			 cout << ",";
+		  }
+
+		  Variable* instVar = vmap.at(*it);
+     	  Variable* simpVar = simpCons.FindRootVar(instVar);
+		  map<Variable*, int>::const_iterator itm;
+		  itm = valueMap.find(simpVar);
+		  int value = 0;
+		  if (itm != valueMap.end())
+		  {
+			  value = itm->second;
+		  }
+
+		  if (printVar == true)
+		  {
+			  cout << "(";
+			  simpVar->PrintTerm();
+			  cout << ")";
+		  }
+		  cout << value;
+	}
+	cout << ")";
+}
+
 Tuple::~Tuple()
 {
 	vector<Variable*>::iterator it;

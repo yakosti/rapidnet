@@ -22,8 +22,8 @@ PropAssignment(SimpConstraints&, map<Variable*, int>);
 //Counter-example generation
 void
 GenCounterExp(map<Variable*, int>,
-			  list<pair<const DerivNode*, SimpConstraints&> >&,
-			  map<const DerivNode*, DpoolInstNode*>&);
+			  list<pair<const DpoolNode*, SimpConstraints&> >&,
+			  map<const DpoolNode*, DpoolInstNode*>&);
 
 //TODO: documentation
 //assignment: counter-example instances
@@ -47,7 +47,7 @@ CheckRecurExist(const Property&,
 				FormList&,
 				map<Variable*, int>&,
 				list<SimpConstraints*>,
-				map<const DerivNode*, DpoolInstNode*>&);
+				map<const DpoolNode*, DpoolInstNode*>&);
 
 void
 ConstructBaseObl(BaseRel&,
@@ -70,7 +70,7 @@ CheckExistProp(const Property&,
 
 //Return value: [true: property holds|false: property does not hold]
 bool
-CheckRecurUniv(const DerivMap&,
+CheckRecurUniv(const Dpool&,
 			   const Property&,
 			   const list<PredicateInstance*>&,
 			   list<PredicateInstance*>::const_iterator,

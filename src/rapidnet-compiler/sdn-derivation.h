@@ -101,6 +101,9 @@ public:
 
 	void PrintHeadInst(const map<Variable*, int>&, VarMap&, bool printVar) const;
 
+	void PrintSimpHeadInst(const map<Variable*, int>&, VarMap&,
+						   SimpConstraints&, bool printVar) const;
+
 	virtual void PrintCumuCons() const{}
 
 	//Just print the current DerivNode
@@ -111,6 +114,9 @@ public:
 	virtual void PrintInstance(const map<Variable*, int>&, VarMap&, bool) const{}
 
 	virtual void PrintInstance(const map<Variable*, int>&, DpoolInstNode*, bool) const{}
+
+	virtual void PrintSimpInstance(const map<Variable*, int>&, DpoolInstNode*,
+							   	   SimpConstraints&, bool) const{}
 
 	//Print the whole derivation represented by the DerivNode
 	virtual void PrintDerivation() const{}
@@ -125,6 +131,9 @@ public:
 	virtual void PrintExecInst(map<Variable*, int>&, VarMap&, bool) const{}
 
 	virtual void PrintExecInst(map<Variable*, int>&, DpoolInstNode*, bool) const{}
+
+	virtual void PrintSimpExecInst(map<Variable*, int>&, DpoolInstNode*,
+								   SimpConstraints&, bool) const{}
 
 	virtual ~DpoolNode(){}
 
@@ -199,6 +208,9 @@ public:
 
 	void PrintInstance(const map<Variable*, int>&, DpoolInstNode*, bool) const;
 
+	void PrintSimpInstance(const map<Variable*, int>&, DpoolInstNode*,
+						   SimpConstraints&, bool) const;
+
 	//Print the whole derivation represented by the DerivNode
 	void PrintDerivation() const;
 
@@ -214,6 +226,9 @@ public:
 	void PrintExecInst(map<Variable*, int>&, VarMap&, bool) const;
 
 	void PrintExecInst(map<Variable*, int>&, DpoolInstNode*, bool) const;
+
+	void PrintSimpExecInst(map<Variable*, int>&, DpoolInstNode*,
+						   SimpConstraints&, bool) const;
 
 	virtual ~DerivNode();
 
@@ -271,6 +286,9 @@ public:
 
 	void PrintInstance(const map<Variable*, int>&, DpoolInstNode*, bool) const;
 
+	void PrintSimpInstance(const map<Variable*, int>&, DpoolInstNode*,
+							   SimpConstraints&, bool) const;
+
 	void PrintDerivation() const;
 
 	void PrintExecution(map<Variable*, int>&, bool printVar) const;
@@ -278,6 +296,9 @@ public:
 	void PrintExecInst(map<Variable*, int>&, VarMap&, bool) const;
 
 	void PrintExecInst(map<Variable*, int>&, DpoolInstNode*, bool) const;
+
+	void PrintSimpExecInst(map<Variable*, int>&, DpoolInstNode*,
+							   SimpConstraints&, bool) const;
 
 	~BaseNode();
 private:
@@ -325,6 +346,9 @@ public:
 
 	void PrintInstance(const map<Variable*, int>&, DpoolInstNode*, bool) const;
 
+	void PrintSimpInstance(const map<Variable*, int>&, DpoolInstNode*,
+								   SimpConstraints&, bool) const;
+
 	void PrintDerivation() const;
 
 	void PrintExecution(map<Variable*, int>&, bool printVar) const;
@@ -332,6 +356,9 @@ public:
 	void PrintExecInst(map<Variable*, int>&, VarMap&, bool) const;
 
 	void PrintExecInst(map<Variable*, int>&, DpoolInstNode*, bool) const;
+
+	void PrintSimpExecInst(map<Variable*, int>&, DpoolInstNode*,
+						   SimpConstraints&, bool) const;
 
 	~PropNode();
 private:
@@ -365,6 +392,8 @@ public:
 	void VerifyInvariants(const Invariant&) const;
 
 	const DerivMap& GetDerivation() const{return derivations;}
+
+	const BaseMap& GetBases() const{return baseMap;}
 
 	const DerivNodeList& GetDerivList(string tpName) const;
 

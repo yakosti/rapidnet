@@ -47,17 +47,17 @@ PropAssignment(SimpConstraints& simpCons, map<Variable*, int> assignment)
 
 //Counter-example generation
 void GenCounterExp(map<Variable*, int> assignment,
-				   list<pair<const DerivNode*, SimpConstraints&> >& dlist,
-				   map<const DerivNode*, DpoolInstNode*>& instMap)
+				   list<pair<const DpoolNode*, SimpConstraints&> >& dlist,
+				   map<const DpoolNode*, DpoolInstNode*>& instMap)
 {
 	NS_LOG_FUNCTION("Generate counter example...");
 	cout << endl;
 	cout << "==================== Generate Counter Example ==================" << endl;
 	//Print execution of all DerivNodes
-	list<pair<const DerivNode*, SimpConstraints&> >::iterator itd;
+	list<pair<const DpoolNode*, SimpConstraints&> >::iterator itd;
 	for (itd = dlist.begin();itd != dlist.end();itd++)
 	{
-		const DerivNode* dnode = (*itd).first;
+		const DpoolNode* dnode = (*itd).first;
 		string headName = dnode->GetHead()->GetName();
 		SimpConstraints& simpCons = (*itd).second;
 //		NS_LOG_DEBUG("SimpCons: ");
@@ -82,7 +82,7 @@ void GenCounterExp(map<Variable*, int> assignment,
 //		}
 //		cout << endl;
 
-		map<const DerivNode*, DpoolInstNode*>::iterator itInst = instMap.find(dnode);
+		map<const DpoolNode*, DpoolInstNode*>::iterator itInst = instMap.find(dnode);
 		if (itInst == instMap.end())
 		{
 			NS_LOG_ERROR("Variable mapping not found!");
@@ -92,7 +92,8 @@ void GenCounterExp(map<Variable*, int> assignment,
 		bool printVar = false;
 		cout << " *************" << endl;
 		DpoolInstNode* instNode = itInst->second;
-		dnode->PrintExecInst(valueMap, instNode, true);
+		//dnode->PrintExecInst(valueMap, instNode, true);
+		dnode->PrintSimpExecInst(valueMap, instNode, simpCons, true);
 		cout << "*******************************" << endl;
 	}
 
@@ -203,7 +204,7 @@ bool CheckRecurExist(const Property& prop,
 					 FormList& flist,
 					 map<Variable*, int>& assignment,
 					 list<SimpConstraints*> slist,
-					 map<const DerivNode*, DpoolInstNode*>& dvmap)
+					 map<const DpoolNode*, DpoolInstNode*>& dvmap)
 {
 	NS_LOG_FUNCTION("Check existentially quantified predicates...");
 	if (itm == tlist.end())
@@ -315,7 +316,7 @@ CheckRecurBase(BaseRel& bsr,
 //TODO: Separate the verification of universally
 //quantified constraints from CheckExistProp
 bool CheckExistProp(const Property& prop,
-					const DerivNodeList& dlist,
+					const DpoolNodeList& dlist,
 					BaseRelProperty& brp)
 {
 	NS_LOG_FUNCTION("Check universally quantified properties...");
@@ -327,9 +328,9 @@ bool CheckExistProp(const Property& prop,
 	map<Variable*, int> assignment = map<Variable*, int>();
 	bool veriResult = false;
 
-	map<const DerivNode*, DpoolInstNode*> dInstMap;
+	map<const DpoolNode*, DpoolInstNode*> dInstMap;
 
-	DerivNodeList::const_iterator itd;
+	DpoolNodeList::const_iterator itd;
 	for (itd = dlist.begin();itd != dlist.end();itd++)
 	{
 		//Create derivation instances
@@ -340,7 +341,7 @@ bool CheckExistProp(const Property& prop,
 //		cout << "****************** Check Derivation Instance ******************" << endl;
 //		(*itd)->PrintDerivInst(instNode);
 //		cout << "******************************************************" << endl;
-		dInstMap.insert(map<const DerivNode*, DpoolInstNode*>::value_type(*itd, instNode));
+		dInstMap.insert(map<const DpoolNode*, DpoolInstNode*>::value_type(*itd, instNode));
 
 		//Create constraint instances
 		ConsList copyclist = ConsList();
@@ -369,12 +370,12 @@ bool CheckExistProp(const Property& prop,
 
 	//Add special base tuple requirements
 	DpoolTupleMap baseCollection;
-	DerivNodeList::const_iterator itdc;
+	DpoolNodeList::const_iterator itdc;
 	for (itdc = dlist.begin();itdc != dlist.end();itdc++)
 	{
 		string tpName = (*itdc)->GetHead()->GetName();
 		NS_LOG_DEBUG("Search base predicates in: " << tpName);
-		const DerivNode* dnode = *itdc;
+		const DpoolNode* dnode = *itdc;
 		DpoolInstNode* instNode = dInstMap.at(dnode);
 		(*itdc)->FindBaseTuple(instNode, baseCollection);
 	}
@@ -401,7 +402,7 @@ bool CheckExistProp(const Property& prop,
 	{
 		//(*itd)->PrintDerivNode();
 
-		map<const DerivNode*, DpoolInstNode*>::iterator itmd = dInstMap.find(*itd);
+		map<const DpoolNode*, DpoolInstNode*>::iterator itmd = dInstMap.find(*itd);
 		if (itmd == dInstMap.end())
 		{
 			NS_LOG_ERROR("Variable mapping not found!");
@@ -504,7 +505,7 @@ bool CheckExistProp(const Property& prop,
 
 			//TODO: See how interleaved design leads to chaos
 			//Deallocate memory of free variables
-			map<const DerivNode*, DpoolInstNode*>::iterator itm;
+			map<const DpoolNode*, DpoolInstNode*>::iterator itm;
 			for (itm = dInstMap.begin();itm != dInstMap.end();itm++)
 			{
 				delete itm->second;
@@ -557,12 +558,12 @@ bool CheckExistProp(const Property& prop,
 		if (assignment.size() > 0)
 		{
 			//Generate counter-example
-			list<pair<const DerivNode*, SimpConstraints&> > pairList;
+			list<pair<const DpoolNode*, SimpConstraints&> > pairList;
 			list<SimpConstraints*>::iterator itsl = slist.begin();
-			DerivNodeList::const_iterator itd = dlist.begin();
+			DpoolNodeList::const_iterator itd = dlist.begin();
 			for (;itd != dlist.end();itd++, itsl++)
 			{
-				pair<const DerivNode*, SimpConstraints&> newPair(*itd, **itsl);
+				pair<const DpoolNode*, SimpConstraints&> newPair(*itd, **itsl);
 				pairList.push_back(newPair);
 			}
 			GenCounterExp(assignment, pairList, dInstMap);
@@ -587,12 +588,12 @@ bool CheckExistProp(const Property& prop,
 		}
 
 		//Collect existentially quantified predicates from all derivations
-		DerivNodeList::const_iterator itdc;
+		DpoolNodeList::const_iterator itdc;
 		for (itdc = dlist.begin();itdc != dlist.end();itdc++)
 		{
 			string tpName = (*itdc)->GetHead()->GetName();
 			NS_LOG_DEBUG("Search existentially quantified predicates in: " << tpName);
-			const DerivNode* dnode = (*itdc);
+			const DpoolNode* dnode = (*itdc);
 			DpoolInstNode* instNode = dInstMap.at(dnode);
 			(*itdc)->FindSubTuple(existPlist, exTupleList, instNode);
 		}
@@ -607,12 +608,12 @@ bool CheckExistProp(const Property& prop,
 						    "quantified predicate: " << itmp->first << endl;
 				//Generate counter examples for universally quantified predicates
 				//TODO: The following copy of code can be used as a function
-				list<pair<const DerivNode*, SimpConstraints&> > pairList;
+				list<pair<const DpoolNode*, SimpConstraints&> > pairList;
 				list<SimpConstraints*>::iterator itsl = slist.begin();
-				DerivNodeList::const_iterator itd = dlist.begin();
+				DpoolNodeList::const_iterator itd = dlist.begin();
 				for (;itd != dlist.end();itd++, itsl++)
 				{
-					pair<const DerivNode*, SimpConstraints&> newPair(*itd, **itsl);
+					pair<const DpoolNode*, SimpConstraints&> newPair(*itd, **itsl);
 					pairList.push_back(newPair);
 				}
 
@@ -630,12 +631,12 @@ bool CheckExistProp(const Property& prop,
 		{
 			//Generate counter examples for universally quantified predicates
 			//TODO: The following copy of code can be used as a function
-			list<pair<const DerivNode*, SimpConstraints&> > pairList;
+			list<pair<const DpoolNode*, SimpConstraints&> > pairList;
 			list<SimpConstraints*>::iterator itsl = slist.begin();
-			DerivNodeList::const_iterator itd = dlist.begin();
+			DpoolNodeList::const_iterator itd = dlist.begin();
 			for (;itd != dlist.end();itd++, itsl++)
 			{
-				pair<const DerivNode*, SimpConstraints&> newPair(*itd, **itsl);
+				pair<const DpoolNode*, SimpConstraints&> newPair(*itd, **itsl);
 				pairList.push_back(newPair);
 			}
 
@@ -667,7 +668,7 @@ bool CheckExistProp(const Property& prop,
 
 	//TODO: See how interleaved design leads to chaos
 	//Deallocate memory of free variables
-	map<const DerivNode*, DpoolInstNode*>::iterator itm;
+	map<const DpoolNode*, DpoolInstNode*>::iterator itm;
 	for (itm = dInstMap.begin();itm != dInstMap.end();itm++)
 	{
 		delete itm->second;
@@ -677,11 +678,11 @@ bool CheckExistProp(const Property& prop,
 }
 
 //Return value: [true: property holds|false: property does not hold]
-bool CheckRecurUniv(const DerivMap& dmap,
+bool CheckRecurUniv(const Dpool& dpool,
 					const Property& prop,
 					const list<PredicateInstance*>& plist,
 					list<PredicateInstance*>::const_iterator itc,
-					DerivNodeList dlist,
+					DpoolNodeList dlist,
 					BaseRelProperty& brp)
 {
 	NS_LOG_FUNCTION("Enumerate universally quantified predicates...");
@@ -691,24 +692,51 @@ bool CheckRecurUniv(const DerivMap& dmap,
 		return res;
 	}
 
+	bool resFlag = true;
 	string predName = (*itc)->GetName();
-	NS_LOG_DEBUG("Pred name:" << predName);
-	const DerivNodeList& headList = dmap.at(predName);
 	itc++;
-	DerivNodeList::const_iterator itd;
-	for (itd = headList.begin();itd != headList.end();itd++)
+	NS_LOG_DEBUG("Pred name:" << predName);
+	const DerivMap& dmap = dpool.GetDerivation();
+	DerivMap::const_iterator itdm = dmap.find(predName);
+	if (itdm == dmap.end())
 	{
-		dlist.push_back(*itd);
-		bool result = CheckRecurUniv(dmap, prop, plist, itc, dlist, brp);
-		//One false branch makes the whole checking false
-		if (result == false)
+		//A base tuple
+		const BaseMap& bmap = dpool.GetBases();
+		const BaseNodeList& blist = bmap.at(predName);
+		BaseNodeList::const_iterator itb;
+		for (itb = blist.begin();itb != blist.end();itb++)
 		{
-			return false;
+			string baseName = (*itb)->GetHead()->GetName();
+			if (baseName == predName)
+			{
+				dlist.push_back(*itb);
+				bool result = CheckRecurUniv(dpool, prop, plist, itc, dlist, brp);
+				if (result == false)
+				{
+					resFlag = false;
+				}
+				break;
+			}
 		}
-		dlist.pop_back();
+	}
+	else
+	{
+		const DerivNodeList& headList = itdm->second;
+		DerivNodeList::const_iterator itd;
+		for (itd = headList.begin();itd != headList.end();itd++)
+		{
+			dlist.push_back(*itd);
+			bool result = CheckRecurUniv(dpool, prop, plist, itc, dlist, brp);
+			//One false branch makes the whole checking false
+			if (result == false)
+			{
+				resFlag = false;
+			}
+			dlist.pop_back();
+		}
 	}
 
-	return true;
+	return resFlag;
 }
 
 //TODO: Add property checking for base tuples
@@ -721,9 +749,8 @@ bool CheckProperty(const Dpool& dpool,
 	//Process universally quantified predicates
 	const list<PredicateInstance*>& plist = prop.GetUniPred();
 	list<PredicateInstance*>::const_iterator itc = plist.begin();
-	DerivNodeList dlist = DerivNodeList();
-	const DerivMap& dmap = dpool.GetDerivation();
-	bool res = CheckRecurUniv(dmap, prop, plist, itc, dlist, brp);
+	DpoolNodeList dlist = DpoolNodeList();
+	bool res = CheckRecurUniv(dpool, prop, plist, itc, dlist, brp);
 	return res;
 }
 
