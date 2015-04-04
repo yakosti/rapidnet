@@ -8,8 +8,7 @@ ECA Rule rs5_eca ACTION_ADD<flowEntry(@Switch, DstMac, OutPort, Priority)> :- EV
 ECA Rule rs6Eca0Ins ACTION_ADD<maxPriority(@Switch, Priority)> :- EVENT_INSERT<flowEntry(@Switch, DstMac, OutPort, Priority)>.
 ECA Rule rs6Eca0Del ACTION_DELETE<maxPriority(@Switch, Priority)> :- EVENT_DELETE<flowEntry(@Switch, DstMac, OutPort, Priority)>.
 ECA Rule rs7_eca ACTION_REMOTE_SEND<packet(@OutNei, Switch, SrcMac, DstMac)> :- EVENT_RECV<broadcast(@Switch, InPort, SrcMac, DstMac)>, link(@Switch, OutNei, OutPort), OutPort != InPort.
-ECA Rule lb1_eca ACTION_LOCAL_SEND<randomlyObtainedSwitch(@LoadBalancer, SwitchNum, Host, SrcMac, DstMac)> :- EVENT_RECV<packet(@LoadBalancer, Host, SrcMac, DstMac)>, Value := f_hashIp(SrcMac), SwitchNum := 1+ f_modulo(Value, 3).
-ECA Rule lb2_eca ACTION_REMOTE_SEND<packet(@Switch, Host, SrcMac, DstMac)> :- EVENT_RECV<randomlyObtainedSwitch(@LoadBalancer, SwitchNum, Host, SrcMac, DstMac)>, serverMapping(@LoadBalancer, Switch, SwitchNum).
-ECA Rule rh1Eca0Ins ACTION_REMOTE_SEND<packet(@LoadBalancer, Host, SrcMac, DstMac)> :- EVENT_INSERT<initPacket(@Host, LoadBalancer, SrcMac, DstMac)>, link(@Host, Switch, OutPort).
-ECA Rule rh1Eca1Ins ACTION_REMOTE_SEND<packet(@LoadBalancer, Host, SrcMac, DstMac)> :- EVENT_INSERT<link(@Host, Switch, OutPort)>, initPacket(@Host, LoadBalancer, SrcMac, DstMac).
-ECA Rule rh2_eca ACTION_ADD<recvPacket(@Host, SrcMac, DstMac)> :- EVENT_RECV<packet(@Host, Switch, SrcMac, DstMac)>, link(@Host, Switch, InPort).
+ECA Rule lb1_eca ACTION_LOCAL_SEND<randomlyObtainedSwitch(@LoadBalancer, SwitchNum, Host, SrcMac, DstMac)> :- EVENT_RECV<packet(@LoadBalancer, Host, SrcMac, DstMac)>, Value := f_hashIp(Host), SwitchNum := 1+ f_modulo(Value, 3).
+ECA Rule lb2_eca ACTION_REMOTE_SEND<packet(@Switch, Host, SrcMac, DstMac)> :- EVENT_RECV<randomlyObtainedSwitch(@LoadBalancer, SwitchNum, Host, SrcMac, DstMac)>, switchMapping(@LoadBalancer, Switch, SwitchNum).
+ECA Rule rh1Eca0Ins ACTION_REMOTE_SEND<packet(@LoadBalancer, Host, SrcMac, DstMac)> :- EVENT_INSERT<initPacket(@Host, LoadBalancer, SrcMac, DstMac)>.
+ECA Rule rh2_eca ACTION_REMOTE_SEND<recvPacket(@Host, SrcMac, DstMac)> :- EVENT_RECV<packet(@Switch, Host, SrcMac, DstMac)>, link(@Switch, Host, InPort).

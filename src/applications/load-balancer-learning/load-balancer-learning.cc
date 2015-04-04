@@ -28,7 +28,7 @@ const string LoadBalancerLearning::OFCONN = "ofconn";
 const string LoadBalancerLearning::PACKET = "packet";
 const string LoadBalancerLearning::RANDOMLYOBTAINEDSWITCH = "randomlyObtainedSwitch";
 const string LoadBalancerLearning::RECVPACKET = "recvPacket";
-const string LoadBalancerLearning::SERVERMAPPING = "serverMapping";
+const string LoadBalancerLearning::SWITCHMAPPING = "switchMapping";
 
 NS_LOG_COMPONENT_DEFINE ("LoadBalancerLearning");
 NS_OBJECT_ENSURE_REGISTERED (LoadBalancerLearning);
@@ -101,13 +101,9 @@ LoadBalancerLearning::InitDatabase ()
   AddRelationWithKeys (OFCONN, attrdeflist (
     attrdef ("ofconn_attr2", IPV4)));
 
-  AddRelationWithKeys (RECVPACKET, attrdeflist (
-    attrdef ("recvPacket_attr3", STR),
-    attrdef ("recvPacket_attr4", STR)));
-
-  AddRelationWithKeys (SERVERMAPPING, attrdeflist (
-    attrdef ("serverMapping_attr1", INT32),
-    attrdef ("serverMapping_attr2", IPV4)));
+  AddRelationWithKeys (SWITCHMAPPING, attrdeflist (
+    attrdef ("switchMapping_attr2", IPV4),
+    attrdef ("switchMapping_attr3", INT32)));
 
 }
 
@@ -167,10 +163,6 @@ LoadBalancerLearning::DemuxRecv (Ptr<Tuple> tuple)
   if (IsInsertEvent (tuple, INITPACKET))
     {
       Rh1Eca0Ins (tuple);
-    }
-  if (IsInsertEvent (tuple, LINK))
-    {
-      Rh1Eca1Ins (tuple);
     }
   if (IsRecvEvent (tuple, PACKET))
     {
@@ -498,7 +490,7 @@ LoadBalancerLearning::Lb1_eca (Ptr<Tuple> packet)
 
   result->Assign (Assignor::New ("Value",
     FHashIP::New (
-      VarExpr::New ("packet_attr3"))));
+      VarExpr::New ("packet_attr2"))));
 
   result->Assign (Assignor::New ("SwitchNum",
     Operation::New (RN_PLUS,
@@ -530,18 +522,18 @@ LoadBalancerLearning::Lb2_eca (Ptr<Tuple> randomlyObtainedSwitch)
 
   Ptr<RelationBase> result;
 
-  result = GetRelation (SERVERMAPPING)->Join (
+  result = GetRelation (SWITCHMAPPING)->Join (
     randomlyObtainedSwitch,
-    strlist ("serverMapping_attr1", "serverMapping_attr3"),
+    strlist ("switchMapping_attr1", "switchMapping_attr3"),
     strlist ("randomlyObtainedSwitch_attr1", "randomlyObtainedSwitch_attr2"));
 
   result = result->Project (
     PACKET,
-    strlist ("serverMapping_attr2",
+    strlist ("switchMapping_attr2",
       "randomlyObtainedSwitch_attr3",
       "randomlyObtainedSwitch_attr4",
       "randomlyObtainedSwitch_attr5",
-      "serverMapping_attr2"),
+      "switchMapping_attr2"),
     strlist ("packet_attr1",
       "packet_attr2",
       "packet_attr3",
@@ -556,45 +548,12 @@ LoadBalancerLearning::Rh1Eca0Ins (Ptr<Tuple> initPacket)
 {
   RAPIDNET_LOG_INFO ("Rh1Eca0Ins triggered");
 
-  Ptr<RelationBase> result;
-
-  result = GetRelation (LINK)->Join (
-    initPacket,
-    strlist ("link_attr1"),
-    strlist ("initPacket_attr1"));
+  Ptr<Tuple> result = initPacket;
 
   result = result->Project (
     PACKET,
     strlist ("initPacket_attr2",
       "initPacket_attr1",
-      "initPacket_attr3",
-      "initPacket_attr4",
-      "initPacket_attr2"),
-    strlist ("packet_attr1",
-      "packet_attr2",
-      "packet_attr3",
-      "packet_attr4",
-      RN_DEST));
-
-  Send (result);
-}
-
-void
-LoadBalancerLearning::Rh1Eca1Ins (Ptr<Tuple> link)
-{
-  RAPIDNET_LOG_INFO ("Rh1Eca1Ins triggered");
-
-  Ptr<RelationBase> result;
-
-  result = GetRelation (INITPACKET)->Join (
-    link,
-    strlist ("initPacket_attr1"),
-    strlist ("link_attr1"));
-
-  result = result->Project (
-    PACKET,
-    strlist ("initPacket_attr2",
-      "link_attr1",
       "initPacket_attr3",
       "initPacket_attr4",
       "initPacket_attr2"),
@@ -616,18 +575,20 @@ LoadBalancerLearning::Rh2_eca (Ptr<Tuple> packet)
 
   result = GetRelation (LINK)->Join (
     packet,
-    strlist ("link_attr1", "link_attr2"),
-    strlist ("packet_attr1", "packet_attr2"));
+    strlist ("link_attr2", "link_attr1"),
+    strlist ("packet_attr2", "packet_attr1"));
 
   result = result->Project (
     RECVPACKET,
-    strlist ("packet_attr1",
+    strlist ("packet_attr2",
       "packet_attr3",
-      "packet_attr4"),
+      "packet_attr4",
+      "packet_attr2"),
     strlist ("recvPacket_attr1",
       "recvPacket_attr2",
-      "recvPacket_attr3"));
+      "recvPacket_attr3",
+      RN_DEST));
 
-  Insert (result);
+  Send (result);
 }
 

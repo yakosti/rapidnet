@@ -35,7 +35,7 @@
 /* ***************************** Database **************************** */
 
 /* Database for LoadBalancer */
-materialize(serverMapping, infinity, infinity, keys(1:int32,2)).
+materialize(switchMapping, infinity, infinity, keys(2,3:int32)).
 
 /*Database for controller*/
 materialize(ofconn,infinity,infinity,keys(2)). /*Openflow connection to switch*/
@@ -48,7 +48,7 @@ materialize(maxPriority,infinity,1,keys(1)). /*Records the maximum priority, ini
 
 /*Database for host*/
 materialize(initPacket,infinity,infinity,keys(2,3:str,4:str)). /*Packet for simulation initialization*/
-materialize(recvPacket,infinity,infinity,keys(3:str,4:str)). /*Packet for simulation initialization*/
+//materialize(recvPacket,infinity,infinity,keys(3:str)). /*Packet for simulation initialization*/
 
 /* ***************************** Database **************************** */
 
@@ -145,14 +145,15 @@ rs7 packet(@OutNei, Switch, SrcMac, DstMac) :-
  */
 lb1 randomlyObtainedSwitch(@LoadBalancer, SwitchNum, Host, SrcMac, DstMac) :- 
 	packet(@LoadBalancer, Host, SrcMac, DstMac),
-	Value := f_hashIp(SrcMac),
+	Value := f_hashIp(Host),
 	SwitchNum := 1+f_modulo(Value, 3).
 
 /* Get the mapping of SwitchNum to actual Switch
+ * switchMapping mapst the load balancer to a switch (several of them)
  */
 lb2 packet(@Switch, Host, SrcMac, DstMac) :-
 	randomlyObtainedSwitch(@LoadBalancer, SwitchNum, Host, SrcMac, DstMac),
-	serverMapping(@LoadBalancer, Switch, SwitchNum).
+	switchMapping(@LoadBalancer, Switch, SwitchNum).
 
 /* ********************* Load Balancer program ******************* */
 
@@ -171,13 +172,12 @@ lb2 packet(@Switch, Host, SrcMac, DstMac) :-
  * which chooses which switch to route the packet to
  */
 rh1 packet(@LoadBalancer, Host, SrcMac, DstMac) :-
-	initPacket(@Host, LoadBalancer, SrcMac, DstMac),
-	link(@Host, Switch, OutPort).
+	initPacket(@Host, LoadBalancer, SrcMac, DstMac).
 
 /*Receive a packet*/
 rh2 recvPacket(@Host, SrcMac, DstMac) :-
-	packet(@Host, Switch, SrcMac, DstMac),
-	link(@Host, Switch, InPort).
+	packet(@Switch, Host, SrcMac, DstMac),
+	link(@Switch, Host, InPort).
 
 /* ************************ Host program ************************* */
 

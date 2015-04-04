@@ -41,7 +41,7 @@ public:
   static const string PACKET;
   static const string RANDOMLYOBTAINEDSWITCH;
   static const string RECVPACKET;
-  static const string SERVERMAPPING;
+  static const string SWITCHMAPPING;
 
   static TypeId GetTypeId (void);
 
@@ -86,8 +86,6 @@ protected:
   virtual void Lb2_eca (Ptr<Tuple> randomlyObtainedSwitch);
 
   virtual void Rh1Eca0Ins (Ptr<Tuple> initPacket);
-
-  virtual void Rh1Eca1Ins (Ptr<Tuple> link);
 
   virtual void Rh2_eca (Ptr<Tuple> packet);
 
