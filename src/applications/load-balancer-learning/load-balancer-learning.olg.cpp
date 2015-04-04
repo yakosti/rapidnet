@@ -27,7 +27,7 @@
  */
 
 
-#define NUM_SWITCHES 3
+
 
 
 
@@ -145,7 +145,7 @@ rs7 packet(@OutNei, Switch, SrcMac, DstMac) :-
 lb1 randomlyObtainedSwitch(@LoadBalancer, SwitchNum, Host, SrcMac, DstMac) :- 
 	packet(@LoadBalancer, Host, SrcMac, DstMac),
 	Value := f_hashIp(SrcMac),
-	SwitchNum := 1+f_modulo(Value, NUM_SWITCHES).
+	SwitchNum := 1+f_modulo(Value, 3).
 
 /* Get the mapping of SwitchNum to actual Switch
  */
@@ -179,6 +179,7 @@ rh2 recvPacket(@Host, SrcMac, DstMac) :-
 	link(@Host, Switch, InPort).
 
 /* ************************ Host program ************************* */
+
 
 
 
