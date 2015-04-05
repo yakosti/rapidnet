@@ -16,8 +16,7 @@ using namespace ns3;
 using namespace ns3::rapidnet;
 using namespace ns3::rapidnet::firewall;
 
-const string Firewall::CONTROLLERCONNECTION = "controllerConnection";
-const string Firewall::OPENCONNECTIONTOCONTROLLER = "openConnectionToController";
+const string Firewall::CONNECTION = "connection";
 const string Firewall::PERFLOWRULE = "perFlowRule";
 const string Firewall::PKTFROMSWITCH = "pktFromSwitch";
 const string Firewall::PKTIN = "pktIn";
@@ -81,8 +80,8 @@ Firewall::InitDatabase ()
 {
   //RapidNetApplicationBase::InitDatabase ();
 
-  AddRelationWithKeys (OPENCONNECTIONTOCONTROLLER, attrdeflist (
-    attrdef ("openConnectionToController_attr1", IPV4)));
+  AddRelationWithKeys (CONNECTION, attrdeflist (
+    attrdef ("connection_attr1", IPV4)));
 
   AddRelationWithKeys (PERFLOWRULE, attrdeflist (
     attrdef ("perFlowRule_attr1", IPV4),
@@ -128,11 +127,11 @@ Firewall::DemuxRecv (Ptr<Tuple> tuple)
     {
       R2Eca0Del (tuple);
     }
-  if (IsInsertEvent (tuple, OPENCONNECTIONTOCONTROLLER))
+  if (IsInsertEvent (tuple, CONNECTION))
     {
       R2Eca1Ins (tuple);
     }
-  if (IsDeleteEvent (tuple, OPENCONNECTIONTOCONTROLLER))
+  if (IsDeleteEvent (tuple, CONNECTION))
     {
       R2Eca1Del (tuple);
     }
@@ -144,9 +143,13 @@ Firewall::DemuxRecv (Ptr<Tuple> tuple)
     {
       R3Eca1Ins (tuple);
     }
-  if (IsRecvEvent (tuple, CONTROLLERCONNECTION))
+  if (IsInsertEvent (tuple, PKTIN))
     {
-      R4_eca (tuple);
+      R4Eca0Ins (tuple);
+    }
+  if (IsInsertEvent (tuple, CONNECTION))
+    {
+      R4Eca1Ins (tuple);
     }
   if (IsRecvEvent (tuple, R5PERFLOWRULESEND))
     {
@@ -236,9 +239,9 @@ Firewall::R2Eca0Ins (Ptr<Tuple> pktIn)
 
   Ptr<RelationBase> result;
 
-  result = GetRelation (OPENCONNECTIONTOCONTROLLER)->Join (
+  result = GetRelation (CONNECTION)->Join (
     pktIn,
-    strlist ("openConnectionToController_attr1"),
+    strlist ("connection_attr1"),
     strlist ("pktIn_attr1"));
 
   result = result->Select (Selector::New (
@@ -248,10 +251,10 @@ Firewall::R2Eca0Ins (Ptr<Tuple> pktIn)
 
   result = result->Project (
     R2TRUSTEDCONTROLLERMEMORYSEND,
-    strlist ("openConnectionToController_attr2",
+    strlist ("connection_attr2",
       "pktIn_attr1",
       "pktIn_attr4",
-      "openConnectionToController_attr2"),
+      "connection_attr2"),
     strlist ("r2trustedControllerMemorysend_attr1",
       "r2trustedControllerMemorysend_attr2",
       "r2trustedControllerMemorysend_attr3",
@@ -267,9 +270,9 @@ Firewall::R2Eca0Del (Ptr<Tuple> pktIn)
 
   Ptr<RelationBase> result;
 
-  result = GetRelation (OPENCONNECTIONTOCONTROLLER)->Join (
+  result = GetRelation (CONNECTION)->Join (
     pktIn,
-    strlist ("openConnectionToController_attr1"),
+    strlist ("connection_attr1"),
     strlist ("pktIn_attr1"));
 
   result = result->Select (Selector::New (
@@ -279,10 +282,10 @@ Firewall::R2Eca0Del (Ptr<Tuple> pktIn)
 
   result = result->Project (
     TRUSTEDCONTROLLERMEMORYDELETE,
-    strlist ("openConnectionToController_attr2",
+    strlist ("connection_attr2",
       "pktIn_attr1",
       "pktIn_attr4",
-      "openConnectionToController_attr2"),
+      "connection_attr2"),
     strlist ("trustedControllerMemoryDelete_attr1",
       "trustedControllerMemoryDelete_attr2",
       "trustedControllerMemoryDelete_attr3",
@@ -292,16 +295,16 @@ Firewall::R2Eca0Del (Ptr<Tuple> pktIn)
 }
 
 void
-Firewall::R2Eca1Ins (Ptr<Tuple> openConnectionToController)
+Firewall::R2Eca1Ins (Ptr<Tuple> connection)
 {
   RAPIDNET_LOG_INFO ("R2Eca1Ins triggered");
 
   Ptr<RelationBase> result;
 
   result = GetRelation (PKTIN)->Join (
-    openConnectionToController,
+    connection,
     strlist ("pktIn_attr1"),
-    strlist ("openConnectionToController_attr1"));
+    strlist ("connection_attr1"));
 
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
@@ -310,10 +313,10 @@ Firewall::R2Eca1Ins (Ptr<Tuple> openConnectionToController)
 
   result = result->Project (
     R2TRUSTEDCONTROLLERMEMORYSEND,
-    strlist ("openConnectionToController_attr2",
-      "openConnectionToController_attr1",
+    strlist ("connection_attr2",
+      "connection_attr1",
       "pktIn_attr4",
-      "openConnectionToController_attr2"),
+      "connection_attr2"),
     strlist ("r2trustedControllerMemorysend_attr1",
       "r2trustedControllerMemorysend_attr2",
       "r2trustedControllerMemorysend_attr3",
@@ -323,16 +326,16 @@ Firewall::R2Eca1Ins (Ptr<Tuple> openConnectionToController)
 }
 
 void
-Firewall::R2Eca1Del (Ptr<Tuple> openConnectionToController)
+Firewall::R2Eca1Del (Ptr<Tuple> connection)
 {
   RAPIDNET_LOG_INFO ("R2Eca1Del triggered");
 
   Ptr<RelationBase> result;
 
   result = GetRelation (PKTIN)->Join (
-    openConnectionToController,
+    connection,
     strlist ("pktIn_attr1"),
-    strlist ("openConnectionToController_attr1"));
+    strlist ("connection_attr1"));
 
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
@@ -341,10 +344,10 @@ Firewall::R2Eca1Del (Ptr<Tuple> openConnectionToController)
 
   result = result->Project (
     TRUSTEDCONTROLLERMEMORYDELETE,
-    strlist ("openConnectionToController_attr2",
-      "openConnectionToController_attr1",
+    strlist ("connection_attr2",
+      "connection_attr1",
       "pktIn_attr4",
-      "openConnectionToController_attr2"),
+      "connection_attr2"),
     strlist ("trustedControllerMemoryDelete_attr1",
       "trustedControllerMemoryDelete_attr2",
       "trustedControllerMemoryDelete_attr3",
@@ -414,16 +417,16 @@ Firewall::R3Eca1Ins (Ptr<Tuple> perFlowRule)
 }
 
 void
-Firewall::R4_eca (Ptr<Tuple> controllerConnection)
+Firewall::R4Eca0Ins (Ptr<Tuple> pktIn)
 {
-  RAPIDNET_LOG_INFO ("R4_eca triggered");
+  RAPIDNET_LOG_INFO ("R4Eca0Ins triggered");
 
   Ptr<RelationBase> result;
 
-  result = GetRelation (PKTIN)->Join (
-    controllerConnection,
-    strlist ("pktIn_attr1"),
-    strlist ("controllerConnection_attr1"));
+  result = GetRelation (CONNECTION)->Join (
+    pktIn,
+    strlist ("connection_attr1"),
+    strlist ("pktIn_attr1"));
 
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
@@ -432,12 +435,47 @@ Firewall::R4_eca (Ptr<Tuple> controllerConnection)
 
   result = result->Project (
     PKTFROMSWITCH,
-    strlist ("controllerConnection_attr2",
-      "controllerConnection_attr1",
+    strlist ("connection_attr2",
+      "pktIn_attr1",
       "pktIn_attr2",
       "pktIn_attr3",
       "pktIn_attr4",
-      "controllerConnection_attr2"),
+      "connection_attr2"),
+    strlist ("pktFromSwitch_attr1",
+      "pktFromSwitch_attr2",
+      "pktFromSwitch_attr3",
+      "pktFromSwitch_attr4",
+      "pktFromSwitch_attr5",
+      RN_DEST));
+
+  Send (result);
+}
+
+void
+Firewall::R4Eca1Ins (Ptr<Tuple> connection)
+{
+  RAPIDNET_LOG_INFO ("R4Eca1Ins triggered");
+
+  Ptr<RelationBase> result;
+
+  result = GetRelation (PKTIN)->Join (
+    connection,
+    strlist ("pktIn_attr1"),
+    strlist ("connection_attr1"));
+
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("pktIn_attr3"),
+      ValueExpr::New (Int32Value::New (2)))));
+
+  result = result->Project (
+    PKTFROMSWITCH,
+    strlist ("connection_attr2",
+      "connection_attr1",
+      "pktIn_attr2",
+      "pktIn_attr3",
+      "pktIn_attr4",
+      "connection_attr2"),
     strlist ("pktFromSwitch_attr1",
       "pktFromSwitch_attr2",
       "pktFromSwitch_attr3",

@@ -15,7 +15,7 @@
  * trustedControllerMemory(@Controller, Switch, Host):
  *     Controller stores in its memory table, that Switch trusts Host
  *
- * openConnectionToController(@Switch, Controller):
+ * connection(@Switch, Controller):
  *     Allows switch to open a connection to controller to communicate with it
  *
  * perFlowRule(@Switch, Src, SrcPort, Dst, DstPort):
@@ -36,7 +36,7 @@
 #define UNTRUSTED_PORT 2
 
 materialize(trustedControllerMemory,infinity,infinity,keys(2,3)). 
-materialize(openConnectionToController,infinity,infinity,keys(1)).
+materialize(connection,infinity,infinity,keys(1)).
 materialize(pktIn,infinity,infinity,keys(1,2,3:int32,4)).
 materialize(perFlowRule,infinity,infinity,keys(1,2,3:int32,4,5:int32)).
 
@@ -60,7 +60,7 @@ r1 pktReceived(@Dst, Uport, Src, Tport, Switch)  :-
  */
 r2 trustedControllerMemory(@Controller, Switch, Dst) :-
 	pktIn(@Switch, Src, Tport, Dst),
-	openConnectionToController(@Switch, Controller),
+	connection(@Switch, Controller),
 	Tport == TRUSTED_PORT.
 
 
@@ -83,7 +83,7 @@ r3 pktReceived(@Dst, PortDst, Src, PortSrc, Switch) :-
  */
 r4 pktFromSwitch(@Controller, Switch, Src, Uport, Dst) :- 
 	pktIn(@Switch, Src, Uport, Dst),
-	controllerConnection(@Switch, Controller),
+	connection(@Switch, Controller),
 	Uport == UNTRUSTED_PORT.
 
 /* (@Controller) Program

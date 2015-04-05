@@ -87,14 +87,14 @@
 
 /* openConnectionToController */
 
-#define openConnectionToController(Switch, Controller)\
-  tuple (Firewall::OPENCONNECTIONTOCONTROLLER, \
-    attr("openConnectionToController_attr1", Ipv4Value, Switch), \
-    attr("openConnectionToController_attr2", Ipv4Value, Controller) \
+#define connection(Switch, Controller)\
+  tuple (Firewall::CONNECTION, \
+    attr("connection_attr1", Ipv4Value, Switch), \
+    attr("connection_attr2", Ipv4Value, Controller) \
   )
 
-#define insert_openConnectionToController(Switch, Controller) \
-  app(Switch) -> Insert(openConnectionToController(addr(Switch), addr(Controller)));
+#define insert_connection(Switch, Controller) \
+  app(Switch) -> Insert(connection(addr(Switch), addr(Controller)));
 
 
 /* perFlowRule */
@@ -137,6 +137,14 @@
 
 #define nodeNum 5
 
+#define CONTROLLER 1
+#define SWITCH 2
+#define HOST3 3
+#define HOST4 4 
+
+#define TRUSTED_PORT 1
+#define UNTRUSTED_PORT 2
+
 using namespace std;
 using namespace ns3;
 using namespace ns3::rapidnet;
@@ -145,19 +153,19 @@ using namespace ns3::rapidnet::firewall;
 ApplicationContainer apps;
 
 /*
- * Switch 1 receives a packet sent by Host Src 1 ( Trusted port 1)
- * to Host Dst 2 (untrusted port 2)
+ * pktIn(Switch, Src, SrcPort, Dst)
  * 
+ * SWITCH receives a packet sent by HOST3 ( TRUSTED_PORT) to HOST4 (UNTRUSTED_PORT)
  * send to untrusted host
  */
 void
 SimulatePktIn1 ()
 {
-  insert_pktIn(1,1,1,2);
+  insert_pktIn(SWITCH, HOST3, TRUSTED_PORT, HOST4);
 }
 
 /*
- * Switch 1 receives a packet sent by Host Src 1 ( Trusted port 1)
+ * Switch receives a packet sent by HOST3 (TRUSTED_PORT)
  * to Host Dst 4 (untrusted port 2)
  * 
  * This is sent, since InitControllerMemory remembers this
@@ -194,9 +202,9 @@ InitControllerMemory()
  * Switch 1 can talk to the controller 
  */
 void 
-InitOpenConnectionToController() 
+InitConnection() 
 {
-  insert_openConnectionToController(1,1);
+  insert_connection(1,1);
 }
 
 /*
@@ -224,7 +232,7 @@ main (int argc, char *argv[])
   apps.Start (Seconds (0.0));
   apps.Stop (Seconds (10.0));
 
-  schedule (0.0002, InitOpenConnectionToController);
+  schedule (0.0002, InitConnection);
   schedule (0.0005, InitPerFlowRule);
   schedule(0.0005, InitControllerMemory); 
 
