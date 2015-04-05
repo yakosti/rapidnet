@@ -636,6 +636,13 @@ bool CheckRecurUniv(const Dpool& dpool,
 	{
 		//A base tuple
 		const BaseMap& bmap = dpool.GetBases();
+
+		BaseMap::const_iterator itbm;
+		for (itbm = bmap.begin();itbm != bmap.end();itbm++)
+		{
+			cout << itbm->first << endl;
+		}
+
 		const BaseNodeList& blist = bmap.at(predName);
 		BaseNodeList::const_iterator itb;
 		for (itb = blist.begin();itb != blist.end();itb++)

@@ -17,6 +17,9 @@ forall Switch, Src, SrcPort, Dst,
       AND OriginatorPort = TRUSTED_PORT 
 ```
 
+Result: True
+Time: 40ms
+
 ## Safety Invariant 2
 
 ### English
@@ -36,6 +39,9 @@ forall Switch, Src, SrcPort, Dst, DstPort,
     HostPort = TRUSTED_PORT
 ```
 
+Result: True
+Time: 10ms
+
 ## Safety Invariant 3
 
 ### English
@@ -52,6 +58,9 @@ forall Controller, Switch, Host
     pktReceived(Host, HostPort, Src, SrcPort, Switch)
     AND SrcPort = TRUSTED_PORT
 ```
+Result: True
+Time: 10ms
+
 # Base Tuple Constraints
 
 ## pktIn
