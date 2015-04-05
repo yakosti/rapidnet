@@ -2,15 +2,14 @@
 
 ## Safety Invariant 1
 
-For every packet switch sent from an untrusted host to a trusted host, in the past some untrusted host has received a packet from switch, send from some trusted host. (VeriCon generates counterexamples)
+For every packet switch sent from an untrusted host to a trusted host, in the past the controller has received a packet from the switch from that same untrusted host to a trusted host 
 
 ```
 forall Switch, Src, SrcPort, Dst,
   pktIn(Switch, Src, SrcPort, Dst) AND SrcPort = UNTRUSTED_PORT 
     ->
-    exists Originator, OriginatorPort,
-      pktReceived(Src, SrcPort, Originator, OriginatorPort, Switch)
-      AND OriginatorPort = TRUSTED_PORT 
+    exists Controller
+      pktFromSwitch(@Controller, Switch, Src, SrcPort, Dst)
 ```
 
 ## Safety Invariant 2
