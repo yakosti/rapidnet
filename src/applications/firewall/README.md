@@ -52,3 +52,16 @@ forall Controller, Switch, Host
     pktReceived(Host, HostPort, Src, SrcPort, Switch)
     AND SrcPort = TRUSTED_PORT
 ```
+# Base Tuple Constraints
+
+## pktIn
+
+```
+pktIn(a,b,c,d) => a!=b /\ a!=c /\ a!=d /\ b!=c /\ b!=d /\ c!=d
+
+pktIn(a,b,c,d) /\ pktIn(e,f,g,h) /\ a=e /\ b=f /\ d=h => c=g
+```
+
+## openConnectionToController
+
+`openConnectionToController(a,b) => a != b`
