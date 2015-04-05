@@ -49,18 +49,6 @@ CheckRecurExist(const Property&,
 				list<SimpConstraints*>,
 				map<const DpoolNode*, DpoolInstNode*>&);
 
-void
-ConstructBaseObl(BaseRel&,
-				 list<DpoolTupleInst>&,
-				 FormList&);
-
-void
-CheckRecurBase(BaseRel&,
-			   list<PredicateInstance*>::iterator,
-			   list<DpoolTupleInst>,
-			   DpoolTupleMap&,
-			   FormList&);
-
 //TODO: Separate the verification of universally
 //quantified constraints from CheckExistProp
 bool

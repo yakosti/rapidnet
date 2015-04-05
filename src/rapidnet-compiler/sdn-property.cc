@@ -25,15 +25,17 @@ Property::Property()
 	//ProcessUniPred("ePingPongFinish(s)", varMap);
 	//ProcessUniPred("path(x,y,z)", varMap);
 	//ProcessUniPred("flowEntry(s,m,o)", varMap);
-	ProcessUniPred("packet(a,b,c,d)", varMap);
+	//ProcessUniPred("packet(a,b,c,d)", varMap);
 	ProcessUniPred("flowEntry(e,f,g,h)", varMap);
-	ProcessUniPred("link(i,j,k)", varMap);
+	//ProcessUniPred("swToHst(i,j,k)", varMap);
 
-	ProcessUniCons(varMap);
+	//ProcessUniCons(varMap);
 
 	//ProcessExistPred("packet(a,b,c,d)", varMap);
 	//ProcessExistPred("link(m,n,c)", varMap);
 	//ProcessExistPred("tLink(r,s)", varMap);
+	//ProcessExistPred("flowEntry(fev1,fev2,fev3,fev4)", varMap);
+	ProcessExistPred("matchingPacket(mev1,mev2,mev3,mev4,mev5)", varMap);
 	ProcessExistCons(varMap);
 }
 
@@ -60,22 +62,52 @@ Property::ProcessUniCons(const map<string, Variable*>& varMap)
 //	univConsList->AddConstraint(newCons);
 
 	//sdn-mac-learning.olg
+	//Property 2 in verification.txt
+//	string var1 = "b";
+//	Variable* varPtr1 = varMap.find(var1)->second;
+//	string var2 = "e";
+//	Variable* varPtr2 = varMap.find(var2)->second;
+//
+//	Constraint* newCons = new Constraint(Constraint::EQ,
+//										 varPtr1,
+//										 varPtr2);
+//	univConsList->AddConstraint(newCons);
+//
+//	string var3 = "d";
+//	Variable* varPtr3 = varMap.find(var3)->second;
+//	string var4 = "a";
+//	Variable* varPtr4 = varMap.find(var4)->second;
+//
+//	newCons = new Constraint(Constraint::NEQ,
+//										 varPtr3,
+//										 varPtr4);
+//	univConsList->AddConstraint(newCons);
+//
+//	string var5 = "i";
+//	Variable* varPtr5 = varMap.find(var5)->second;
+//
+//	newCons = new Constraint(Constraint::EQ,
+//										 varPtr5,
+//										 varPtr1);
+//	univConsList->AddConstraint(newCons);
+//
+//	string var6 = "j";
+//	Variable* varPtr6 = varMap.find(var6)->second;
+//
+//	newCons = new Constraint(Constraint::EQ,
+//										 varPtr6,
+//										 varPtr4);
+//	univConsList->AddConstraint(newCons);
+
+	//Property 4 in verification.txt
 	string var1 = "b";
 	Variable* varPtr1 = varMap.find(var1)->second;
-	string var2 = "e";
-	Variable* varPtr2 = varMap.find(var2)->second;
-
-	Constraint* newCons = new Constraint(Constraint::EQ,
-										 varPtr1,
-										 varPtr2);
-	univConsList->AddConstraint(newCons);
-
 	string var3 = "d";
 	Variable* varPtr3 = varMap.find(var3)->second;
 	string var4 = "a";
 	Variable* varPtr4 = varMap.find(var4)->second;
 
-	newCons = new Constraint(Constraint::NEQ,
+	Constraint* newCons = new Constraint(Constraint::EQ,
 										 varPtr3,
 										 varPtr4);
 	univConsList->AddConstraint(newCons);
@@ -85,7 +117,7 @@ Property::ProcessUniCons(const map<string, Variable*>& varMap)
 
 	newCons = new Constraint(Constraint::EQ,
 										 varPtr5,
-										 varPtr4);
+										 varPtr1);
 	univConsList->AddConstraint(newCons);
 
 	string var6 = "j";
@@ -93,9 +125,8 @@ Property::ProcessUniCons(const map<string, Variable*>& varMap)
 
 	newCons = new Constraint(Constraint::EQ,
 										 varPtr6,
-										 varPtr1);
+										 varPtr4);
 	univConsList->AddConstraint(newCons);
-
 }
 
 void
@@ -197,14 +228,75 @@ Property::ProcessExistCons(const map<string, Variable*>& varMap)
 //
 //	existConsList->AddConstraint(newCons);
 
-	string var1 = "f";
+//	string var1 = "f";
+//	Variable* varPtr1 = varMap.find(var1)->second;
+//	string var2 = "d";
+//	Variable* varPtr2 = varMap.find(var2)->second;
+//
+//	Constraint* newCons = new Constraint(Constraint::NEQ,
+//										 varPtr1,
+//										 varPtr2);
+//	existConsList->AddConstraint(newCons);
+
+	//Property 4 in verification.txt
+//	string var1 = "fev1";
+//	Variable* varPtr1 = varMap.find(var1)->second;
+//	string var2 = "b";
+//	Variable* varPtr2 = varMap.find(var2)->second;
+//
+//	Constraint* newCons = new Constraint(Constraint::EQ,
+//										 varPtr1,
+//										 varPtr2);
+//	existConsList->AddConstraint(newCons);
+//
+//	string var3 = "fev2";
+//	Variable* varPtr3 = varMap.find(var3)->second;
+//	string var4 = "d";
+//	Variable* varPtr4 = varMap.find(var4)->second;
+//
+//	newCons = new Constraint(Constraint::EQ,
+//										 varPtr3,
+//										 varPtr4);
+//	existConsList->AddConstraint(newCons);
+
+	//Property 5 in verification.txt
+	string var1 = "mev1";
 	Variable* varPtr1 = varMap.find(var1)->second;
-	string var2 = "d";
+	string var2 = "e";
 	Variable* varPtr2 = varMap.find(var2)->second;
 
-	Constraint* newCons = new Constraint(Constraint::NEQ,
+	Constraint* newCons = new Constraint(Constraint::EQ,
 										 varPtr1,
 										 varPtr2);
+	existConsList->AddConstraint(newCons);
+
+	string var3 = "mev2";
+	Variable* varPtr3 = varMap.find(var3)->second;
+	string var4 = "f";
+	Variable* varPtr4 = varMap.find(var4)->second;
+
+	newCons = new Constraint(Constraint::EQ,
+										 varPtr3,
+										 varPtr4);
+	existConsList->AddConstraint(newCons);
+
+	string var5 = "mev4";
+	Variable* varPtr5 = varMap.find(var5)->second;
+	string var6 = "g";
+	Variable* varPtr6 = varMap.find(var6)->second;
+
+	newCons = new Constraint(Constraint::EQ,
+										 varPtr5,
+										 varPtr6);
+	existConsList->AddConstraint(newCons);
+
+	string var7 = "mev5";
+	Variable* varPtr7 = varMap.find(var7)->second;
+	IntVal* value = new IntVal(0);
+
+	newCons = new Constraint(Constraint::EQ,
+										 varPtr7,
+										 value);
 	existConsList->AddConstraint(newCons);
 }
 
@@ -438,9 +530,9 @@ BaseRelProperty::BaseRelProperty()
 	//Start constructing a BaseRel
 	BaseRel* barl = new BaseRel();
 
-	string pred = "link(v1,v2,v3)";
+	string pred = "swToHst(v1,v2,v3)";
 	barl->InsertPred(pred);
-	pred = "link(v4,v5,v6)";
+	pred = "swToHst(v4,v5,v6)";
 	barl->InsertPred(pred);
 
 	map<string, Variable*>& vmap = barl->varMap;
@@ -537,6 +629,7 @@ BaseRelProperty::~BaseRelProperty()
 	}
 }
 
+//TODO: We might need type information to differentiate arguments
 BaseProperty::BaseProperty()
 {
 	propSet = ConsAnnotMap();
@@ -644,7 +737,7 @@ BaseProperty::BaseProperty()
 	cat = ConsAnnot(pInst, cts);
 	propSet.insert(ConsAnnotMap::value_type(predName, cat));
 
-	predName = "link";
+	predName = "swToHst";
 	argNum = 3;
 	scheme = new PredicateSchema(predName, argNum);
 	args = vector<Term*>();
@@ -738,9 +831,18 @@ Invariant::Invariant()
 		args.push_back(newVar);
 	}
 	//Use index to create formulas;
-	Formula* form = new True();
+//	Formula* form = new True();
+	Formula* formPk1 = new Constraint(Constraint::NEQ, args[0], args[1]);
+	Formula* formPk2 = new Constraint(Constraint::NEQ, args[1], args[2]);
+	Formula* formPk3 = new Constraint(Constraint::NEQ, args[1], args[3]);
+	Formula* formPk4 = new Constraint(Constraint::NEQ, args[2], args[3]);
+
+	Formula* formPkConn1 = new Connective(Connective::AND, formPk1, formPk2);
+	Formula* formPkConn2 = new Connective(Connective::AND, formPkConn1, formPk3);
+	Formula* formPkConn3 = new Connective(Connective::AND, formPkConn2, formPk4);
+
 	PredicateInstance* pInst = new PredicateInstance(scheme, args);
-	Annotation newAnnot = Annotation(pInst, form);
+	Annotation newAnnot = Annotation(pInst, formPkConn3);
 	invs.insert(AnnotMap::value_type(predName, newAnnot));
 	//End invariant specification
 
@@ -756,9 +858,30 @@ Invariant::Invariant()
 		args.push_back(newVar);
 	}
 	//Use index to create formulas;
-	form = new True();
+//	form = new True();
+	Formula* formMp1 = new Constraint(Constraint::NEQ, args[0], args[1]);
+	Formula* formMp2 = new Constraint(Constraint::NEQ, args[0], args[2]);
+	Formula* formMp3 = new Constraint(Constraint::NEQ, args[0], args[3]);
+	Formula* formMp4 = new Constraint(Constraint::NEQ, args[0], args[4]);
+	Formula* formMp5 = new Constraint(Constraint::NEQ, args[1], args[2]);
+	Formula* formMp6 = new Constraint(Constraint::NEQ, args[1], args[3]);
+	Formula* formMp7 = new Constraint(Constraint::NEQ, args[1], args[4]);
+	Formula* formMp8 = new Constraint(Constraint::NEQ, args[2], args[3]);
+	Formula* formMp9 = new Constraint(Constraint::NEQ, args[2], args[4]);
+	Formula* formMp10 = new Constraint(Constraint::NEQ, args[3], args[4]);
+
+	Formula* formMpConn1 = new Connective(Connective::AND, formMp1, formMp2);
+	Formula* formMpConn2 = new Connective(Connective::AND, formMpConn1, formMp3);
+	Formula* formMpConn3 = new Connective(Connective::AND, formMpConn2, formMp4);
+	Formula* formMpConn4 = new Connective(Connective::AND, formMpConn3, formMp5);
+	Formula* formMpConn5 = new Connective(Connective::AND, formMpConn4, formMp6);
+	Formula* formMpConn6 = new Connective(Connective::AND, formMpConn5, formMp7);
+	Formula* formMpConn7 = new Connective(Connective::AND, formMpConn6, formMp8);
+	Formula* formMpConn8 = new Connective(Connective::AND, formMpConn7, formMp9);
+	Formula* formMpConn9 = new Connective(Connective::AND, formMpConn8, formMp10);
+
 	pInst = new PredicateInstance(scheme, args);
-	newAnnot = Annotation(pInst, form);
+	newAnnot = Annotation(pInst, formMpConn9);
 	invs.insert(AnnotMap::value_type(predName, newAnnot));
 	//End invariant specification
 
@@ -774,9 +897,22 @@ Invariant::Invariant()
 		args.push_back(newVar);
 	}
 	//Use index to create formulas;
-	form = new True();
+//	form = new True();
+	Formula* formFe1 = new Constraint(Constraint::NEQ, args[0], args[1]);
+	Formula* formFe2 = new Constraint(Constraint::NEQ, args[0], args[2]);
+	Formula* formFe3 = new Constraint(Constraint::NEQ, args[0], args[3]);
+	Formula* formFe4 = new Constraint(Constraint::NEQ, args[1], args[2]);
+	Formula* formFe5 = new Constraint(Constraint::NEQ, args[1], args[3]);
+	Formula* formFe6 = new Constraint(Constraint::NEQ, args[2], args[3]);
+
+	Formula* formFeConn1 = new Connective(Connective::AND, formFe1, formFe2);
+	Formula* formFeConn2 = new Connective(Connective::AND, formFeConn1, formFe3);
+	Formula* formFeConn3 = new Connective(Connective::AND, formFeConn2, formFe4);
+	Formula* formFeConn4 = new Connective(Connective::AND, formFeConn3, formFe5);
+	Formula* formFeConn5 = new Connective(Connective::AND, formFeConn4, formFe6);
+
 	pInst = new PredicateInstance(scheme, args);
-	newAnnot = Annotation(pInst, form);
+	newAnnot = Annotation(pInst, formFeConn5);
 	invs.insert(AnnotMap::value_type(predName, newAnnot));
 	//End invariant specification
 
