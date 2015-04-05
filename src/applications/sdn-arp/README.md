@@ -32,8 +32,8 @@ forall Controller, IP_A, Mac_A,
 	arpMapping(Controller, IP_A, Mac_A) 
 	->
 	exists Host, SrcIP, SrcMac, DstIP, DstMac,
-		arpReply(Host, SrcIP, SrcMac, IP_A, Mac_A) **responded to ARP request sent by A** OR
-		arpRequest(Host, Ip_A, Mac_A, DstIP, DstMac) **A has sent a broadcast request** 
+		arpReply(Host, SrcIP, SrcMac, IP_A, Mac_A) **responded to ARP request sent by A** 
+		OR arpRequest(Host, Ip_A, Mac_A, DstIP, DstMac) **A has sent a broadcast request** 
 ```
 
 ## Liveness Property
