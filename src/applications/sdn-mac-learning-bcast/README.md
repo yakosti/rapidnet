@@ -72,4 +72,11 @@ Summary: Host has received a packet
 
 Head Tuple: recvPacket(@Host, SrcMac, DstMac) 
 
+# Base Tuples Contraints
 
+## Link
+
+```
+link(a,b,c) => (a != b /\ b != c /\ a != c)
+(link(a,b,c) /\ link(e,f,g) /\ a == e /\ b == f) => (c == g)
+```
