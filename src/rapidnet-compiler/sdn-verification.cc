@@ -117,6 +117,7 @@ bool CheckWholeProp(const Property& prop,
 	const list<PredicateInstance*>& plist = prop.GetExistPred();
 	list<DpoolTupleInst>::const_iterator itt;
 	list<PredicateInstance*>::const_iterator itp;
+
 	for (itt = tplist.begin();itt != tplist.end();itt++)
 	{
 		const DpoolNode* dnode = (*itt).first;
@@ -131,6 +132,8 @@ bool CheckWholeProp(const Property& prop,
 				VarMap& instMap = instNode->headMap;
 				const vector<Term*> predArgs = (*itp)->GetArgs();
 				const vector<Variable*> args = headTp->GetArgs();
+				cout << "size of pred" << predArgs.size() << endl;
+				cout << "size of tuple" << args.size() << endl;
 				vector<Variable*>::const_iterator itvv;
 				vector<Term*>::const_iterator itp = predArgs.begin();
 				for (itvv = args.begin();itvv != args.end();itvv++, itp++)
@@ -142,6 +145,7 @@ bool CheckWholeProp(const Property& prop,
 						NS_LOG_ERROR("A non-variable argument in the predicate!");
 					}
 					headMap.insert(VarMap::value_type(predVar, varInst));
+
 				}
 
 				break;
@@ -231,87 +235,6 @@ bool CheckRecurExist(const Property& prop,
 	return false;
 }
 
-void
-ConstructBaseObl(BaseRel& bsr,
-				 list<DpoolTupleInst>& tplist,
-				 FormList& flist)
-{
-	NS_LOG_FUNCTION("Process a base relational property.");
-	Formula* newForm = bsr.baseForm->Clone();
-	VarMap vmap;
-	list<PredicateInstance*>& predList = bsr.basePreds;
-	NS_LOG_DEBUG("Number of predicates: " << predList.size());
-	list<PredicateInstance*>::iterator itlp;
-	for (itlp = predList.begin();itlp != predList.end();itlp++)
-	{
-		NS_LOG_DEBUG("Process a predicate");
-		string predName = (*itlp)->GetName();
-		list<DpoolTupleInst>::iterator itlt;
-		for (itlt = tplist.begin();itlt != tplist.end();itlt++)
-		{
-			const DpoolNode* dnode = (*itlt).first;
-			const Tuple* head = dnode->GetHead();
-			string tpName = head->GetName();
-			if (tpName == predName)
-			{
-				//Create variable unification for the predicate
-				DpoolInstNode* dInst = (*itlt).second;
-				VarMap& dVarMap = dInst->headMap;
-
-				const vector<Term*>& predArgs = (*itlp)->GetArgs();
-				const vector<Variable*> tupleArgs = head->GetArgs();
-				vector<Term*>::const_iterator itvt = predArgs.begin();
-				vector<Variable*>::const_iterator itvv = tupleArgs.begin();
-				for (;itvv != tupleArgs.end();itvv++, itvt++)
-				{
-					Variable* predVar = dynamic_cast<Variable*>(*itvt);
-					Variable* instVar = dVarMap.at(*itvv);
-					vmap.insert(VarMap::value_type(predVar, instVar));
-				}
-				break;
-			}
-		}
-	}
-
-	newForm->VarReplace(vmap);
-	flist.push_back(newForm);
-}
-
-void
-CheckRecurBase(BaseRel& bsr,
-			   list<PredicateInstance*>::iterator itbt,
-			   list<DpoolTupleInst> tplist,
-			   DpoolTupleMap& baseTupleList,
-			   FormList& flist)
-{
-	if (itbt == bsr.basePreds.end())
-	{
-		ConstructBaseObl(bsr, tplist, flist);
-		return;
-	}
-
-	string predName = (*itbt)->GetName();
-	itbt++;
-	DpoolTupleMap::iterator iteq = baseTupleList.find(predName);
-	if (iteq == baseTupleList.end())
-	{
-		//No instance of this base predicate;
-		//No proof obligation is generated.
-		return;
-	}
-	else
-	{
-		list<DpoolTupleInst>& lineageList = iteq->second;
-		list<DpoolTupleInst>::iterator ittl;
-		for (ittl = lineageList.begin();ittl != lineageList.end();ittl++)
-		{
-			tplist.push_back(*ittl);
-			CheckRecurBase(bsr, itbt, tplist, baseTupleList, flist);
-			tplist.pop_back();
-		}
-	}
-}
-
 
 //TODO: Separate the verification of universally
 //quantified constraints from CheckExistProp
@@ -334,10 +257,11 @@ bool CheckExistProp(const Property& prop,
 	for (itd = dlist.begin();itd != dlist.end();itd++)
 	{
 		//Create derivation instances
-		//NS_LOG_DEBUG("Dnode:");
-		//(*itd)->PrintDerivation();
+		NS_LOG_DEBUG("Dnode:");
+		(*itd)->PrintDerivation();
 		VarMap instMap = VarMap();
 		DpoolInstNode* instNode = (*itd)->CreateDerivInst();
+
 //		cout << "****************** Check Derivation Instance ******************" << endl;
 //		(*itd)->PrintDerivInst(instNode);
 //		cout << "******************************************************" << endl;
@@ -365,7 +289,6 @@ bool CheckExistProp(const Property& prop,
 		{
 			delete (*itcp);
 		}
-		NS_LOG_DEBUG("Delete here??");
 	}
 
 	//Add special base tuple requirements
@@ -374,7 +297,7 @@ bool CheckExistProp(const Property& prop,
 	for (itdc = dlist.begin();itdc != dlist.end();itdc++)
 	{
 		string tpName = (*itdc)->GetHead()->GetName();
-		NS_LOG_DEBUG("Search base predicates in: " << tpName);
+		cout << "Search base predicates in: " << tpName << endl;
 		const DpoolNode* dnode = *itdc;
 		DpoolInstNode* instNode = dInstMap.at(dnode);
 		(*itdc)->FindBaseTuple(instNode, baseCollection);
@@ -382,7 +305,7 @@ bool CheckExistProp(const Property& prop,
 
 	NS_LOG_DEBUG("Base tuples of derivations collected.");
 
-	//Process base tuple properties one by one
+	//Process base relational properties one by one
 	list<BaseRel*>& brlist = brp.GetPropSet();
 	list<BaseRel*>::iterator itb;
 	for (itb = brlist.begin();itb != brlist.end();itb++)
@@ -394,6 +317,17 @@ bool CheckExistProp(const Property& prop,
 	}
 
 	NS_LOG_DEBUG("Base relational properties processing finished.");
+
+	//Replace variables in flist with representative variables
+	FormList::iterator itf;
+	for (itf = flist.begin();itf != flist.end();itf++)
+	{
+		list<SimpConstraints*>::iterator itsp;
+		for (itsp = slist.begin();itsp != slist.end();itsp++)
+		{
+			(*itf)->VarReplace(**itsp);
+		}
+	}
 
 	//Create variable unification for universally quantified predicates
 	const list<PredicateInstance*>& plist = prop.GetUniPred();

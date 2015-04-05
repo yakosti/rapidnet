@@ -7,10 +7,12 @@ forall Switch, Mac_A, OutPort, Priority, flowEntry(Switch, MAC_A, OutPort, Prior
 Result: True
 Time: 60ms
 
+*********************
+
 2. 
-forall EndHost, Switch, SrcMac, DstMac, InPort, Outport, Mac, Priority,
+forall EndHost, Switch, SrcMac, DstMac, InPort, OPort, Outport, Mac, Priority,
 	packet(EndHost, Switch, SrcMac, DstMac), 
-	link(EndHost, Switch, InPort),
+	swToHst(Switch, EndHost, OPort),
 	flowEntry(Switch, Mac, Outport, Priority), DstMac != EndHost -> Mac != DstMac
 
 Base constraints:
@@ -36,8 +38,10 @@ link(v12,v13,v14) /\ link(v15,v16,v17)
 (v12 == v15 /\ v13 == v16 => v14 == v17) /\
 (v12 == v15 /\ v14 == v17 => v13 == v16)
 
-Result: 
-Time: 20ms
+Result: counter-example-second-prop.txt
+Time: 50ms
+
+*********************
 
 3. (@Switch) Not exist a routing entry to MAC address A -> (@Switch) never have received/forwarded a packet sourced from A
 QUESTION: IS THE SWITCH THE SAME IN THE ANTECEDENT AND CONSEQUENT? 
@@ -50,3 +54,21 @@ forall Switch, Mac_A, OutPort, Nei, DstMac, Mac,
 		AND (packet(Nei,Switch,Mac_A,DstMac) != packet(Nei,Switch,Mac_A,DstMac)) **forward packet sourced from from A**
 
 This is a liveness property
+
+*********************
+
+- (@EndHost) Receives a packet destined to EndHost -> 
+  	(@Switch) exist a flowEntry which matches on EndHost.
+
+Formal specification:
+forall EndHost, Switch, SrcMac, DstMac, OPort,
+	packet(EndHost, Switch, SrcMac, DstMac), 
+	swToHst(Switch, EndHost, OPort),
+		DstMac == EndHost -> 
+		       exists Switch', Mac, Outport, Priority, 
+		       	       flowEntry(Switch', Mac, Outport, Priority) /\
+			         	Switch' == Switch,
+					Mac == DstMac.
+
+Result:
+Time:
