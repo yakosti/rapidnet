@@ -142,7 +142,7 @@ Connective::PrintSimpInst(VarMap& vmap, SimpConstraints& simpCons)
 
 void
 Connective::PrintSimpInstance(const map<Variable*, int>& valueMap, VarMap& vmap,
-		   	   	   	   	   	  SimpConstraints& simpCons, bool printVar)
+		   	   	   	   	   	  SimpConstraints& simpCons, bool printVar) const
 {
 	leftF->PrintSimpInstance(valueMap, vmap, simpCons, printVar);
 	switch (conntype)
@@ -335,7 +335,7 @@ Quantifier::PrintSimpInst(VarMap& vmap, SimpConstraints& simpCons)
 
 void
 Quantifier::PrintSimpInstance(const map<Variable*, int>& valueMap, VarMap& vmap,
-		   	   	   	      	  SimpConstraints& simpCons, bool printVar)
+		   	   	   	      	  SimpConstraints& simpCons, bool printVar) const
 {
 	switch(quantype)
 	{
@@ -521,11 +521,11 @@ PredicateInstance::PrintSimpInst(VarMap& vmap, SimpConstraints& simpCons)
 
 void
 PredicateInstance::PrintSimpInstance(const map<Variable*, int>& valueMap, VarMap& vmap,
-						   	   	   	 SimpConstraints& simpCons, bool printVar)
+						   	   	   	 SimpConstraints& simpCons, bool printVar) const
 {
 	cout << schema->GetName();
 	cout << "(";
-	vector<Term*>::iterator it;
+	vector<Term*>::const_iterator it;
 	for (it = args.begin(); it != args.end(); it++)
 	{
 		if (it != args.begin())

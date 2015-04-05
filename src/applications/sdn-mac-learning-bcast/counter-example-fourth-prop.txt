@@ -1,0 +1,690 @@
+Pre-processing...
+Generated pre-processed file /home/chen/tests/sdn-mac-learning-bcast.olg.cpp
+Parsing NDlog...
+Dependency graph generated!
+
+^^^^^^^^^^^^ Invariant Properties ^^^^^^^^^^^^^
+flowEntry(var166,var167,var168,var169)
+var166!=var167 /\ var166!=var168 /\ var166!=var169 /\ var167!=var168 /\ var167!=var169 /\ var168!=var169
+
+matchingPacket(var161,var162,var163,var164,var165)
+var161!=var162 /\ var161!=var163 /\ var161!=var164 /\ var161!=var165 /\ var162!=var163 /\ var162!=var164 /\ var162!=var165 /\ var163!=var164 /\ var163!=var165 /\ var164!=var165
+
+packet(var157,var158,var159,var160)
+var157!=var158 /\ var158!=var159 /\ var158!=var160 /\ var159!=var160
+
+^^^^^^^^^^^^^^^^^^^^^^^^^
+Constructing MiniGraph...
+Creating Dpool...
+Topological sorting...
+Topological sorting completed!
+Process base tuples...
+Create circle nodes...
+Process rules based on topological sorting...
+ofPacket(var74,var75,var76,var77,var78)rs4
+
+matchingPacket(var36,var37,var38,var39,var40)rs2
+
+packet(var55,var56,var57,var58)rs3
+
+maxPriority(var100,var101)rs6
+
+packet(var119,var120,var121,var122)rh1
+
+recvPacket(var130,var131,var132)rh2
+
+flowMod(var1,var2,var3)rc1
+
+broadcast(var11,var12,var13,var14)rc2
+
+matchingPacket(var22,var23,var24,var25,var26)rs1
+
+flowEntry(var87,var88,var89,var90)rs5
+
+packet(var106,var107,var108,var109)rs7
+
+Dpool Constructed!
+
+********** User-defined Property ***********
+forall var273,var274,var275,var276,var277,var278,var279,
+packet(var273,var274,var275,var276) /\ 
+swToHst(var277,var278,var279) /\ 
+	var276=var273
+	var277=var274
+	var278=var273
+
+->exists var280,var281,var282,var283,
+flowEntry(var280,var281,var282,var283) /\ 
+	var280=var274
+	var281=var276
+*********************
+----------------- Check property ----------------
+
+$$$$$$$$$$$$ Derivation Node $$$$$$$$$$$
+Head:packet(var240,var241,var242,var243)
+Rule name:rs3
+Body tuples:
+matchingPacket(var221,var222,var223,var224,var225)
+flowEntry(var217,var218,var219,var220)
+swToHst(var207,var208,var209)
+Constraints:
+	var241=var221
+	var242=var222
+	var243=var223
+	var241=var217
+	var225=var220
+	var241=var207
+	var240=var208
+	var219=var209
+	var225=var71
+	var71>0
+	var243=var72
+	var218=var73
+	var72=var73
+
+$$$$$$$$$$$$$$$$$$$$$$$$$
+
+++++++++++++ Recursive Node +++++++++++
+matchingPacket(var221,var222,var223,var224,var225)
+User-annotated formula:
+var221!=var222 /\ var221!=var223 /\ var221!=var224 /\ var221!=var225 /\ var222!=var223 /\ var222!=var224 /\ var222!=var225 /\ var223!=var224 /\ var223!=var225 /\ var224!=var225
++++++++++++++++++++++++
+
+
+++++++++++++ Recursive Node +++++++++++
+flowEntry(var217,var218,var219,var220)
+User-annotated formula:
+var217!=var218 /\ var217!=var219 /\ var217!=var220 /\ var218!=var219 /\ var218!=var220 /\ var219!=var220
++++++++++++++++++++++++
+
+
+******* Base Node ********
+Head: swToHst(var207,var208,var209)
+	var207!=var208
+	var208!=var209
+	var207!=var209
+
+
+Deriv Inst !!!
+BaseNode Inst !!!swToHst
+BaseNode Inst Finished!!!
+
+******* Base Node ********
+Head: swToHst(var207,var208,var209)
+	var207!=var208
+	var208!=var209
+	var207!=var209
+
+BaseNode Inst !!!swToHst
+BaseNode Inst Finished!!!
+Search base predicates in: packet
+Find base tuple: swToHst
+Search base predicates in: swToHst
+Find base tuple: swToHst
+Number of predicates: 2
+What is the form?
+var297=var297 /\ var298=var298 -> var299=var299 /\ var297=var297 /\ var299=var299 -> var298=var298
+Number of predicates: 2
+What is the form?
+var297=var303 /\ var298=var304 -> var299=var305 /\ var297=var303 /\ var299=var305 -> var298=var304
+Number of predicates: 2
+What is the form?
+var303=var297 /\ var304=var298 -> var305=var299 /\ var303=var297 /\ var305=var299 -> var304=var298
+Number of predicates: 2
+What is the form?
+var303=var303 /\ var304=var304 -> var305=var305 /\ var303=var303 /\ var305=var305 -> var304=var304
+Check satisfiability of the assumption:
+var296>0var288!=var298var298!=var299var288!=var299var303!=var304var304!=var305var303!=var305var290=var298var303=var288var304=var298
+ Testing if this is satisfiable: 
+(declare-fun var288 () Int)
+(declare-fun var289 () Int)
+(declare-fun var290 () Int)
+(declare-fun var291 () Int)
+(declare-fun var296 () Int)
+(declare-fun var298 () Int)
+(declare-fun var299 () Int)
+(declare-fun var303 () Int)
+(declare-fun var304 () Int)
+(declare-fun var305 () Int)
+(assert (> var296 0))
+(assert (not (= var288 var298)))
+(assert (not (= var298 var299)))
+(assert (not (= var288 var299)))
+(assert (not (= var303 var304)))
+(assert (not (= var304 var305)))
+(assert (not (= var303 var305)))
+(assert (= var290 var298))
+(assert (= var303 var288))
+(assert (= var304 var298))
+(assert (and (and (and (and (and (and (and (and (and (not (= var288 var289)) (not (= var288 var290))) (not (= var288 var291))) (not (= var288 var296))) (not (= var289 var290))) (not (= var289 var291))) (not (= var289 var296))) (not (= var290 var291))) (not (= var290 var296))) (not (= var291 var296))))
+(assert (and (and (and (and (and (not (= var288 var290)) (not (= var288 var299))) (not (= var288 var296))) (not (= var290 var299))) (not (= var290 var296))) (not (= var299 var296))))
+(assert (and (=> (and (= var288 var288) (= var298 var298)) (= var299 var299)) (=> (and (= var288 var288) (= var299 var299)) (= var298 var298))))
+(assert (and (=> (and (= var288 var303) (= var298 var304)) (= var299 var305)) (=> (and (= var288 var303) (= var299 var305)) (= var298 var304))))
+(assert (and (=> (and (= var303 var288) (= var304 var298)) (= var305 var299)) (=> (and (= var303 var288) (= var305 var299)) (= var304 var298))))
+(assert (and (=> (and (= var303 var303) (= var304 var304)) (= var305 var305)) (=> (and (= var303 var303) (= var305 var305)) (= var304 var304))))
+
+@@@@@@@ SAT MODEL @@@@@@@@
+(define-fun var298 () Int
+  3)
+(define-fun var296 () Int
+  1)
+(define-fun var299 () Int
+  0)
+(define-fun var288 () Int
+  (- 1))
+(define-fun var289 () Int
+  (- 2))
+(define-fun var291 () Int
+  2)
+(define-fun var305 () Int
+  0)
+(define-fun var304 () Int
+  3)
+(define-fun var303 () Int
+  (- 1))
+(define-fun var290 () Int
+  3)
+
+******** Printing Rapidnet -> Int Subst map **********
+Variable is mapped to: var303 = -1
+Variable is mapped to: var305 = 0
+Variable is mapped to: var291 = 2
+Variable is mapped to: var288 = -1
+Variable is mapped to: var289 = -2
+Variable is mapped to: var299 = 0
+Variable is mapped to: var290 = 3
+Variable is mapped to: var296 = 1
+Variable is mapped to: var298 = 3
+Variable is mapped to: var304 = 3
+******** Printing Rapidnet -> Int Subst map **********
+
+Process existential quantified tuples.
+size of pred4
+size of tuple4
+var296>0var288!=var298var298!=var299var288!=var299var303!=var304var304!=var305var303!=var305var290=var298var303=var288var304=var298var288!=var274var290!=var276
+ Testing if this is satisfiable: 
+(declare-fun var288 () Int)
+(declare-fun var289 () Int)
+(declare-fun var290 () Int)
+(declare-fun var291 () Int)
+(declare-fun var296 () Int)
+(declare-fun var298 () Int)
+(declare-fun var299 () Int)
+(declare-fun var303 () Int)
+(declare-fun var304 () Int)
+(declare-fun var305 () Int)
+(assert (> var296 0))
+(assert (not (= var288 var298)))
+(assert (not (= var298 var299)))
+(assert (not (= var288 var299)))
+(assert (not (= var303 var304)))
+(assert (not (= var304 var305)))
+(assert (not (= var303 var305)))
+(assert (= var290 var298))
+(assert (= var303 var288))
+(assert (= var304 var298))
+(assert (not (= var288 var274)))
+(assert (not (= var290 var276)))
+(assert (and (and (and (and (and (and (and (and (and (not (= var288 var289)) (not (= var288 var290))) (not (= var288 var291))) (not (= var288 var296))) (not (= var289 var290))) (not (= var289 var291))) (not (= var289 var296))) (not (= var290 var291))) (not (= var290 var296))) (not (= var291 var296))))
+(assert (and (and (and (and (and (not (= var288 var290)) (not (= var288 var299))) (not (= var288 var296))) (not (= var290 var299))) (not (= var290 var296))) (not (= var299 var296))))
+(assert (and (=> (and (= var288 var288) (= var298 var298)) (= var299 var299)) (=> (and (= var288 var288) (= var299 var299)) (= var298 var298))))
+(assert (and (=> (and (= var288 var303) (= var298 var304)) (= var299 var305)) (=> (and (= var288 var303) (= var299 var305)) (= var298 var304))))
+(assert (and (=> (and (= var303 var288) (= var304 var298)) (= var305 var299)) (=> (and (= var303 var288) (= var305 var299)) (= var304 var298))))
+(assert (and (=> (and (= var303 var303) (= var304 var304)) (= var305 var305)) (=> (and (= var303 var303) (= var305 var305)) (= var304 var304))))
+
+(error "line 21 column 23: unknown constant var274")
+(error "line 22 column 23: unknown constant var276")
+@@@@@@@ SAT MODEL @@@@@@@@
+
+
+******** Printing Rapidnet -> Int Subst map **********
+******** Printing Rapidnet -> Int Subst map **********
+
+###### Simplified constraints ######
+	var296>0
+	var288!=var298
+	var298!=var299
+	var288!=var299
+
+--------- Equivalent Classes --------
+Class 0:(var288)var288,var285,var293,var297,
+Class 1:(var289)var289,var286,
+Class 2:(var299)var299,var295,
+Class 3:(var290)var287,var290,var294,var301,var302,
+Class 4:(var296)var296,var292,var300,
+Class 5:(var298)var284,var298,
+####################################
+###### Simplified constraints ######
+	var303!=var304
+	var304!=var305
+	var303!=var305
+
+--------- Equivalent Classes --------
+Class 0:(var303)var303,
+Class 1:(var305)var305,
+Class 2:(var304)var304,
+####################################
+
+$$$$$$$$$$$$ Derivation Node $$$$$$$$$$$
+Head:packet(var246,var247,var248,var249)
+Rule name:rh1
+Body tuples:
+initPacket(var210,var211,var212,var213)
+hstToSw(var214,var215,var216)
+Constraints:
+	var247=var210
+	var246=var211
+	var248=var212
+	var249=var213
+	var247=var214
+	var246=var215
+
+$$$$$$$$$$$$$$$$$$$$$$$$$
+
+******* Base Node ********
+Head: initPacket(var210,var211,var212,var213)
+	var210!=var211
+
+
+
+******* Base Node ********
+Head: hstToSw(var214,var215,var216)
+
+
+Deriv Inst !!!
+BaseNode Inst !!!initPacket
+BaseNode Inst Finished!!!
+BaseNode Inst !!!hstToSw
+BaseNode Inst Finished!!!
+
+******* Base Node ********
+Head: swToHst(var207,var208,var209)
+	var207!=var208
+	var208!=var209
+	var207!=var209
+
+BaseNode Inst !!!swToHst
+BaseNode Inst Finished!!!
+Search base predicates in: packet
+Find base tuple: initPacket
+Find base tuple: hstToSw
+Search base predicates in: swToHst
+Find base tuple: swToHst
+Number of predicates: 2
+What is the form?
+var317=var317 /\ var318=var318 -> var319=var319 /\ var317=var317 /\ var319=var319 -> var318=var318
+Check satisfiability of the assumption:
+var310!=var311var317!=var318var318!=var319var317!=var319var313=var311var317=var310var318=var311
+ Testing if this is satisfiable: 
+(declare-fun var310 () Int)
+(declare-fun var311 () Int)
+(declare-fun var313 () Int)
+(declare-fun var317 () Int)
+(declare-fun var318 () Int)
+(declare-fun var319 () Int)
+(assert (not (= var310 var311)))
+(assert (not (= var317 var318)))
+(assert (not (= var318 var319)))
+(assert (not (= var317 var319)))
+(assert (= var313 var311))
+(assert (= var317 var310))
+(assert (= var318 var311))
+(assert (and (=> (and (= var317 var317) (= var318 var318)) (= var319 var319)) (=> (and (= var317 var317) (= var319 var319)) (= var318 var318))))
+
+@@@@@@@ SAT MODEL @@@@@@@@
+(define-fun var319 () Int
+  (- 2))
+(define-fun var310 () Int
+  0)
+(define-fun var311 () Int
+  (- 1))
+(define-fun var318 () Int
+  (- 1))
+(define-fun var317 () Int
+  0)
+(define-fun var313 () Int
+  (- 1))
+
+******** Printing Rapidnet -> Int Subst map **********
+Variable is mapped to: var318 = -1
+Variable is mapped to: var317 = 0
+Variable is mapped to: var311 = -1
+Variable is mapped to: var310 = 0
+Variable is mapped to: var319 = -2
+Variable is mapped to: var313 = -1
+******** Printing Rapidnet -> Int Subst map **********
+
+Process existential quantified tuples.
+No matching for existentially quantified predicate: flowEntry
+
+==================== Generate Counter Example ==================
+************* Execution Trace of packet *************
+
+~~~~~~~~~~~~~~~ Execution Trace ~~~~~~~~~~~~~~
+
+%%%%%%%%%%%%%% Simplified Derivation Instance %%%%%%%%%%%%%
+Head:packet((var311)-1,(var310)0,(var312)0,(var313)-1)
+Rule name:rh1
+Rule constraints:
+Body tuples:
+initPacket((var310)0,(var311)-1,(var312)0,(var313)-1)
+hstToSw((var310)0,(var311)-1,(var316)0)
+Constraints:
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@@@@@@@@@@ Base Instance @@@@@@@@@
+Head instance: 
+initPacket((var310)0,(var311)-1,(var312)0,(var313)-1)
+	(var310)0!=(var311)-1
+@@@@@@@@@@@@@@@@@@@@@
+
+
+@@@@@@@@@@ Base Instance @@@@@@@@@
+Head instance: 
+hstToSw((var310)0,(var311)-1,(var316)0)
+@@@@@@@@@@@@@@@@@@@@@
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*******************************
+************* Execution Trace of swToHst *************
+
+@@@@@@@@@@ Base Instance @@@@@@@@@
+Head instance: 
+swToHst((var317)0,(var318)-1,(var319)-2)
+	(var317)0!=(var318)-1
+	(var318)-1!=(var319)-2
+	(var317)0!=(var319)-2
+@@@@@@@@@@@@@@@@@@@@@
+*******************************
+===================================
+
+$$$$$$$$$$$$ Derivation Node $$$$$$$$$$$
+Head:packet(var269,var270,var271,var272)
+Rule name:rs7
+Body tuples:
+broadcast(var256,var257,var258,var259)
+swToHst(var207,var208,var209)
+Constraints:
+	var270=var256
+	var271=var258
+	var272=var259
+	var270=var207
+	var269=var208
+	var209=var117
+	var257=var118
+	var117!=var118
+
+$$$$$$$$$$$$$$$$$$$$$$$$$
+
+$$$$$$$$$$$$ Derivation Node $$$$$$$$$$$
+Head:broadcast(var256,var257,var258,var259)
+Rule name:rc2
+Body tuples:
+ofconn(var205,var206)
+ofPacket(var230,var231,var232,var233,var234)
+Constraints:
+	var256=var206
+	var205=var230
+	var256=var231
+	var257=var232
+	var258=var233
+	var259=var234
+
+$$$$$$$$$$$$$$$$$$$$$$$$$
+
+******* Base Node ********
+Head: ofconn(var205,var206)
+	var205!=var206
+
+
+
+$$$$$$$$$$$$ Derivation Node $$$$$$$$$$$
+Head:ofPacket(var230,var231,var232,var233,var234)
+Rule name:rs4
+Body tuples:
+ofconn(var205,var206)
+matchingPacket(var221,var222,var223,var224,var225)
+Constraints:
+	var231=var205
+	var230=var206
+	var231=var221
+	var233=var222
+	var234=var223
+	var232=var224
+	var225=var86
+	var86=0
+
+$$$$$$$$$$$$$$$$$$$$$$$$$
+
+******* Base Node ********
+Head: ofconn(var205,var206)
+	var205!=var206
+
+
+
+++++++++++++ Recursive Node +++++++++++
+matchingPacket(var221,var222,var223,var224,var225)
+User-annotated formula:
+var221!=var222 /\ var221!=var223 /\ var221!=var224 /\ var221!=var225 /\ var222!=var223 /\ var222!=var224 /\ var222!=var225 /\ var223!=var224 /\ var223!=var225 /\ var224!=var225
++++++++++++++++++++++++
+
+
+
+
+******* Base Node ********
+Head: swToHst(var207,var208,var209)
+	var207!=var208
+	var208!=var209
+	var207!=var209
+
+
+Deriv Inst !!!
+Deriv Inst !!!
+BaseNode Inst !!!ofconn
+BaseNode Inst Finished!!!
+Deriv Inst !!!
+BaseNode Inst !!!ofconn
+BaseNode Inst Finished!!!
+BaseNode Inst !!!swToHst
+BaseNode Inst Finished!!!
+
+******* Base Node ********
+Head: swToHst(var207,var208,var209)
+	var207!=var208
+	var208!=var209
+	var207!=var209
+
+BaseNode Inst !!!swToHst
+BaseNode Inst Finished!!!
+Search base predicates in: packet
+Find base tuple: ofconn
+Find base tuple: ofconn
+Find base tuple: swToHst
+Search base predicates in: swToHst
+Find base tuple: swToHst
+Number of predicates: 2
+What is the form?
+var343=var343 /\ var344=var344 -> var345=var345 /\ var343=var343 /\ var345=var345 -> var344=var344
+Number of predicates: 2
+What is the form?
+var343=var348 /\ var344=var349 -> var345=var350 /\ var343=var348 /\ var345=var350 -> var344=var349
+Number of predicates: 2
+What is the form?
+var348=var343 /\ var349=var344 -> var350=var345 /\ var348=var343 /\ var350=var345 -> var349=var344
+Number of predicates: 2
+What is the form?
+var348=var348 /\ var349=var349 -> var350=var350 /\ var348=var348 /\ var350=var350 -> var349=var349
+Check satisfiability of the assumption:
+var346!=var347var330!=var324var342=0var324!=var330var324!=var344var344!=var346var324!=var346var348!=var349var349!=var350var348!=var350var327=var344var348=var324var349=var344
+ Testing if this is satisfiable: 
+(declare-fun var324 () Int)
+(declare-fun var326 () Int)
+(declare-fun var327 () Int)
+(declare-fun var330 () Int)
+(declare-fun var342 () Int)
+(declare-fun var344 () Int)
+(declare-fun var346 () Int)
+(declare-fun var347 () Int)
+(declare-fun var348 () Int)
+(declare-fun var349 () Int)
+(declare-fun var350 () Int)
+(assert (not (= var346 var347)))
+(assert (not (= var330 var324)))
+(assert (= var342 0))
+(assert (not (= var324 var330)))
+(assert (not (= var324 var344)))
+(assert (not (= var344 var346)))
+(assert (not (= var324 var346)))
+(assert (not (= var348 var349)))
+(assert (not (= var349 var350)))
+(assert (not (= var348 var350)))
+(assert (= var327 var344))
+(assert (= var348 var324))
+(assert (= var349 var344))
+(assert (and (and (and (and (and (and (and (and (and (not (= var324 var326)) (not (= var324 var327))) (not (= var324 var347))) (not (= var324 var342))) (not (= var326 var327))) (not (= var326 var347))) (not (= var326 var342))) (not (= var327 var347))) (not (= var327 var342))) (not (= var347 var342))))
+(assert (and (=> (and (= var324 var324) (= var344 var344)) (= var346 var346)) (=> (and (= var324 var324) (= var346 var346)) (= var344 var344))))
+(assert (and (=> (and (= var324 var348) (= var344 var349)) (= var346 var350)) (=> (and (= var324 var348) (= var346 var350)) (= var344 var349))))
+(assert (and (=> (and (= var348 var324) (= var349 var344)) (= var350 var346)) (=> (and (= var348 var324) (= var350 var346)) (= var349 var344))))
+(assert (and (=> (and (= var348 var348) (= var349 var349)) (= var350 var350)) (=> (and (= var348 var348) (= var350 var350)) (= var349 var349))))
+
+@@@@@@@ SAT MODEL @@@@@@@@
+(define-fun var346 () Int
+  (- 3))
+(define-fun var324 () Int
+  (- 5))
+(define-fun var347 () Int
+  (- 4))
+(define-fun var344 () Int
+  (- 2))
+(define-fun var330 () Int
+  (- 4))
+(define-fun var326 () Int
+  (- 1))
+(define-fun var350 () Int
+  (- 3))
+(define-fun var349 () Int
+  (- 2))
+(define-fun var348 () Int
+  (- 5))
+(define-fun var327 () Int
+  (- 2))
+(define-fun var342 () Int
+  0)
+
+******** Printing Rapidnet -> Int Subst map **********
+Variable is mapped to: var326 = -1
+Variable is mapped to: var347 = -4
+Variable is mapped to: var330 = -4
+Variable is mapped to: var324 = -5
+Variable is mapped to: var346 = -3
+Variable is mapped to: var344 = -2
+Variable is mapped to: var327 = -2
+Variable is mapped to: var350 = -3
+Variable is mapped to: var342 = 0
+Variable is mapped to: var349 = -2
+Variable is mapped to: var348 = -5
+******** Printing Rapidnet -> Int Subst map **********
+
+Process existential quantified tuples.
+No matching for existentially quantified predicate: flowEntry
+
+==================== Generate Counter Example ==================
+************* Execution Trace of packet *************
+
+~~~~~~~~~~~~~~~ Execution Trace ~~~~~~~~~~~~~~
+
+%%%%%%%%%%%%%% Simplified Derivation Instance %%%%%%%%%%%%%
+Head:packet((var344)-2,(var324)-5,(var326)-1,(var327)-2)
+Rule name:rs7
+Rule constraints:
+Body tuples:
+broadcast((var324)-5,(var347)-4,(var326)-1,(var327)-2)
+swToHst((var324)-5,(var344)-2,(var346)-3)
+Constraints:
+	(var346)-3!=(var347)-4
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+~~~~~~~~~~~~~~~ Execution Trace ~~~~~~~~~~~~~~
+
+%%%%%%%%%%%%%% Simplified Derivation Instance %%%%%%%%%%%%%
+Head:broadcast((var324)-5,(var347)-4,(var326)-1,(var327)-2)
+Rule name:rc2
+Rule constraints:
+Body tuples:
+ofconn((var330)-4,(var324)-5)
+ofPacket((var330)-4,(var324)-5,(var347)-4,(var326)-1,(var327)-2)
+Constraints:
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@@@@@@@@@@ Base Instance @@@@@@@@@
+Head instance: 
+ofconn((var330)-4,(var324)-5)
+	(var330)-4!=(var324)-5
+@@@@@@@@@@@@@@@@@@@@@
+
+
+~~~~~~~~~~~~~~~ Execution Trace ~~~~~~~~~~~~~~
+
+%%%%%%%%%%%%%% Simplified Derivation Instance %%%%%%%%%%%%%
+Head:ofPacket((var330)-4,(var324)-5,(var347)-4,(var326)-1,(var327)-2)
+Rule name:rs4
+Rule constraints:
+Body tuples:
+ofconn((var324)-5,(var330)-4)
+matchingPacket((var324)-5,(var326)-1,(var327)-2,(var347)-4,(var342)0)
+Constraints:
+	(var342)0=0
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@@@@@@@@@@ Base Instance @@@@@@@@@
+Head instance: 
+ofconn((var324)-5,(var330)-4)
+	(var324)-5!=(var330)-4
+@@@@@@@@@@@@@@@@@@@@@
+
+
+++++++++++++ Recursive Instance +++++++++++
+Head:matchingPacket((var324)-5,(var326)-1,(var327)-2,(var347)-4,(var342)0)
+User-annotated formula:
+(var324)-5!=(var326)-1 /\ (var324)-5!=(var327)-2 /\ (var324)-5!=(var347)-4 /\ (var324)-5!=(var342)0 /\ (var326)-1!=(var327)-2 /\ (var326)-1!=(var347)-4 /\ (var326)-1!=(var342)0 /\ (var327)-2!=(var347)-4 /\ (var327)-2!=(var342)0 /\ (var347)-4!=(var342)0
++++++++++++++++++++++++
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+@@@@@@@@@@ Base Instance @@@@@@@@@
+Head instance: 
+swToHst((var324)-5,(var344)-2,(var346)-3)
+	(var324)-5!=(var344)-2
+	(var344)-2!=(var346)-3
+	(var324)-5!=(var346)-3
+@@@@@@@@@@@@@@@@@@@@@
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*******************************
+************* Execution Trace of swToHst *************
+
+@@@@@@@@@@ Base Instance @@@@@@@@@
+Head instance: 
+swToHst((var348)-5,(var349)-2,(var350)-3)
+	(var348)-5!=(var349)-2
+	(var349)-2!=(var350)-3
+	(var348)-5!=(var350)-3
+@@@@@@@@@@@@@@@@@@@@@
+*******************************
+===================================
+
+Is the property valid? No
+Running time: 40ms
+Compiling /home/chen/tests/sdn-mac-learning-bcast.olg
+./waf --run rapidnet-dpcompiler --command-template=" %s --ndlog=/home/chen/tests/sdn-mac-learning-bcast.olg"

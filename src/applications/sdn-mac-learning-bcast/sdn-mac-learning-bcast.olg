@@ -6,13 +6,13 @@ materialize(ofconn,infinity,infinity,keys(2)). /*Openflow connection to switch*/
 /*Database for switch*/
 materialize(ofconn,infinity,infinity,keys(2)). /*Openflow connection to controller*/
 materialize(flowEntry,infinity,infinity,keys(2:str)). /*Flow table at switch*/
-materialize(link,infinity,infinity,keys(2)). /*Neighboring relationship*/
+materialize(swToHst,infinity,infinity,keys(2)). /*Neighboring relationship*/
 materialize(maxPriority,infinity,1,keys(1)). /*Records the maximum priority, initial value == 0*/
 
 /*Database for host*/
 materialize(initPacket,infinity,infinity,keys(2,3:str,4:str)). /*Packet for simulation initialization*/
 materialize(recvPacket,infinity,infinity,keys(2:str,3:str)). /*Packet for simulation initialization*/
-
+materialize(hstToSw,infinity,infinity,keys(2)). /*Neighboring relationship*/
 
 
 /*Controller program*/
@@ -31,7 +31,7 @@ rc2 broadcast(@Switch, InPort, SrcMac, DstMac) :-
 /*Query the controller when receiving unknown packets */
 rs1 matchingPacket(@Switch, SrcMac, DstMac, InPort, TopPriority) :-
 	packet(@Switch, Nei, SrcMac, DstMac),
-	link(@Switch, Nei, InPort),
+	swToHst(@Switch, Nei, InPort),
 	maxPriority(@Switch, TopPriority).
 
 /*Recursively matching flow entries*/
@@ -46,7 +46,7 @@ rs2 matchingPacket(@Switch, SrcMac, DstMac, InPort, NextPriority) :-
 rs3 packet(@OutNei, Switch, SrcMac, DstMac) :-
 	matchingPacket(@Switch, SrcMac, DstMac, InPort, Priority),
 	flowEntry(@Switch, MacAdd, OutPort, Priority),
-	link(@Switch, OutNei, OutPort),
+	swToHst(@Switch, OutNei, OutPort),
 	Priority > 0,
 	DstMac == MacAdd.
 
@@ -71,7 +71,7 @@ rs6 maxPriority(@Switch, Priority) :-
 /*Following the controller's instruction, send out the packet as broadcast*/
 rs7 packet(@OutNei, Switch, SrcMac, DstMac) :-
 	broadcast(@Switch, InPort, SrcMac, DstMac),
-	link(@Switch, OutNei, OutPort),
+	swToHst(@Switch, OutNei, OutPort),
         OutPort != InPort.
 
 
@@ -79,11 +79,11 @@ rs7 packet(@OutNei, Switch, SrcMac, DstMac) :-
 /*Packet initialization*/
 rh1 packet(@Switch, Host, SrcMac, DstMac) :-
 	initPacket(@Host, Switch, SrcMac, DstMac),
-	link(@Host, Switch, OutPort).
+	hstToSw(@Host, Switch, OutPort).
 
 /*Receive a packet*/
 rh2 recvPacket(@Host, SrcMac, DstMac) :-
 	packet(@Host, Switch, SrcMac, DstMac),
-	link(@Host, Switch, InPort).
+	hstToSw(@Host, Switch, InPort).
 
 	
