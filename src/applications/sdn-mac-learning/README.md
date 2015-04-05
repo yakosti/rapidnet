@@ -24,8 +24,8 @@ Forall: (@End-host) Have received a frame B that is not destined to end-host A
 
 ```
 forall Switch, Nei, Mac, Outport, 
-	packet(Switch, Nei, Mac, Mac_B) AND Mac!=Mac_A AND Mac!=Mac_B ->
- (flowEntry(Switch, Mac, Outport) AND Mac!=Mac_B)
+  packet(Switch, Nei, Mac, Mac_B) AND Mac!=Mac_A AND Mac!=Mac_B ->
+  (flowEntry(Switch, Mac, Outport) AND Mac!=Mac_B)
 ```
 
 ### Property 3
