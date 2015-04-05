@@ -4,13 +4,13 @@
 
 ### RC1
 
-Summary: Install rules on switch
+Summary: Controller installs flow rule on switch
 
 Head Tuple: flowMod(@Switch, SrcMac, InPort)
 
 ### RC2
 
-Summary: Instruct the switch to send out the unmatching packet
+Summary: Controller instructs the switch to send out the unmatching packet
 
 Head Tuple: broadcast(@Switch, InPort, SrcMac, DstMac)
 
@@ -18,13 +18,13 @@ Head Tuple: broadcast(@Switch, InPort, SrcMac, DstMac)
 
 ### rs1
 
-Summary: Query the controller when receiving unknown packets
+Summary: Begin querying the controller upon receiving an unknown
 
 Head Tuple: matchingPacket(@Switch, SrcMac, DstMac, InPort, TopPriority)
 
 ### rs2 
 
-Summary: Recursively matching flow entries
+Summary: Recursively querying flow table in order of decreasing priority for matching flow entries
 
 Head Tuple: matchingPacket(@Switch, SrcMac, DstMac, InPort, NextPriority)
 
@@ -36,25 +36,25 @@ Head Tuple: packet(@OutNei, Switch, SrcMac, DstMac)
 
 ### rs4 
 
-Summary: If no flow matches, send the packet to the controller
+Summary: No flow matches found, send the packet to the controller for processing
 
 Head Tuple: ofPacket(@Controller, Switch, InPort, SrcMac, DstMac) 
 
 ### rs5
 
-Summary: Insert a flow entry into forwarding table
+Summary: Controller has sent the switch a flow rule for the unknown packet. Use it to insert an appropriate flow entry into forwarding table
 
 Head Tuple: flowEntry(@Switch, DstMac, OutPort, Priority)
 
 ### rs6
 
-Summary: should be a_MAX<Priority> in the head tuple
+Summary: NEEDS WORK / REMOVE 
 
 HeadTuple: maxPriority(@Switch, Priority)
 
 ### rs7 
 
-Summary: Following the controller's instruction, send out the packet as broadcast
+Summary: Following instructions from the controller, the switch sends out an unknown packet as broadcast  
 
 Head Tuple: packet(@OutNei, Switch, SrcMac, DstMac)
 
@@ -62,13 +62,13 @@ Head Tuple: packet(@OutNei, Switch, SrcMac, DstMac)
 
 ### rh1
 
-Summary: Packet initialization
+Summary: Host initializes a packet to be sent to some destination via a switch 
 
 Head Tuple: packet(@Switch, Host, SrcMac, DstMac)
 
 ### rh2
 
-Summary: Receive a packet
+Summary: Host has received a packet
 
 Head Tuple: recvPacket(@Host, SrcMac, DstMac) 
 
