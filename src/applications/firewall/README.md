@@ -9,12 +9,12 @@ forall Switch, Src, SrcPort, Dst,
   pktIn(Switch, Src, SrcPort, Dst) AND SrcPort = UNTRUSTED_PORT 
     ->
     exists Controller
-      pktFromSwitch(@Controller, Switch, Src, SrcPort, Dst)
+      pktFromSwitch(Controller, Switch, Src, SrcPort, Dst)
 ```
 
 ## Safety Invariant 2
 
-If the flow table on the switch contains an entry between Source (via untrusted port) and destination (via trusted port), then in the past the source (via untrusted port) has received a packet from some trusted host (via trusted port) from Switch
+If the flow table on the switch contains an entry between Src (via untrusted port) and Dst (via trusted port), then in the past the switch has received a packet send from some Host (via trusted port) to Src
 
 ```
 forall Switch, Src, SrcPort, Dst, DstPort,
@@ -23,7 +23,7 @@ forall Switch, Src, SrcPort, Dst, DstPort,
   AND DstPort = TRUSTED_PORT 
   ->
   exists Host, HostPort,
-    pktReceived(Src, SrcPort, Host, HostPort, Switch),
+    pktIn(Switch, Host, HostPort, Src),
     HostPort = TRUSTED_PORT
 ```
 
