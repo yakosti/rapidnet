@@ -29,8 +29,7 @@ namespace firewall {
 class Firewall : public RapidNetApplicationBase
 {
 public:
-  static const string CONTROLLERCONNECTION;
-  static const string OPENCONNECTIONTOCONTROLLER;
+  static const string CONNECTION;
   static const string PERFLOWRULE;
   static const string PKTFROMSWITCH;
   static const string PKTIN;
@@ -68,15 +67,17 @@ protected:
 
   virtual void R2Eca0Del (Ptr<Tuple> pktIn);
 
-  virtual void R2Eca1Ins (Ptr<Tuple> openConnectionToController);
+  virtual void R2Eca1Ins (Ptr<Tuple> connection);
 
-  virtual void R2Eca1Del (Ptr<Tuple> openConnectionToController);
+  virtual void R2Eca1Del (Ptr<Tuple> connection);
 
   virtual void R3Eca0Ins (Ptr<Tuple> pktIn);
 
   virtual void R3Eca1Ins (Ptr<Tuple> perFlowRule);
 
-  virtual void R4_eca (Ptr<Tuple> controllerConnection);
+  virtual void R4Eca0Ins (Ptr<Tuple> pktIn);
+
+  virtual void R4Eca1Ins (Ptr<Tuple> connection);
 
   virtual void R5ECAMat (Ptr<Tuple> r5perFlowRulesend);
 
