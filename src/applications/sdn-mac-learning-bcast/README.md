@@ -36,38 +36,40 @@ Head Tuple: packet(@OutNei, Switch, SrcMac, DstMac)
 
 ### rs4 
 
-Summary:
+Summary: If no flow matches, send the packet to the controller
 
-Head Tuple:
+Head Tuple: ofPacket(@Controller, Switch, InPort, SrcMac, DstMac) 
 
 ### rs5
 
-Summary:
+Summary: Insert a flow entry into forwarding table
 
-Head Tuple:
+Head Tuple: flowEntry(@Switch, DstMac, OutPort, Priority)
 
 ### rs6
 
-Summary:
+Summary: should be a_MAX<Priority> in the head tuple
+
+HeadTuple: maxPriority(@Switch, Priority)
 
 ### rs7 
 
-Summary:
+Summary: Following the controller's instruction, send out the packet as broadcast
 
-Head Tuple:
+Head Tuple: packet(@OutNei, Switch, SrcMac, DstMac)
 
 ## Host Program
 
 ### rh1
 
-Summary:
+Summary: Packet initialization
 
-Head Tuple:
+Head Tuple: packet(@Switch, Host, SrcMac, DstMac)
 
 ### rh2
 
-Summary:
+Summary: Receive a packet
 
-Head Tuple:
+Head Tuple: recvPacket(@Host, SrcMac, DstMac) 
 
 
