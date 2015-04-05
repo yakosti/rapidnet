@@ -43,6 +43,7 @@ all_modules = (
     'applications/arp',
     'applications/sdn-arp',
     'applications/load-balancing',
+    'applications/load-balancer-learning',
     'applications/firewall',
     'applications/sdn-mac-learning',
     'applications/sdn-mac-learning-bcast',

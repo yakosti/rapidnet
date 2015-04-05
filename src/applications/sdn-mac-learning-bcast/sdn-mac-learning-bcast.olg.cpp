@@ -86,4 +86,3 @@ rh2 recvPacket(@Host, SrcMac, DstMac) :-
 	packet(@Host, Switch, SrcMac, DstMac),
 	link(@Host, Switch, InPort).
 
-	

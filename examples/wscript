@@ -207,6 +207,9 @@ def build(bld):
 
     obj = bld.create_ns3_program('load-balancing-test')
     obj.source = 'load-balancing-test.cc'
+
+    obj = bld.create_ns3_program('load-balancer-learning-test')
+    obj.source = 'load-balancer-learning-test.cc'
     
     obj = bld.create_ns3_program('pathvector-prov-test')
     obj.source = 'pathvector-prov-test.cc'
