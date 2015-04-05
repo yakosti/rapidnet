@@ -30,8 +30,6 @@ const string SdnArp::OFCONNSWC = "ofconnSwc";
 const string SdnArp::PACKET = "packet";
 const string SdnArp::PACKETIN = "packetIn";
 const string SdnArp::PACKETOUT = "packetOut";
-const string SdnArp::PORTANDSRCMAPPING = "portAndSrcMapping";
-const string SdnArp::RH2PACKETHOST = "rh2packetHost";
 
 NS_LOG_COMPONENT_DEFINE ("SdnArp");
 NS_OBJECT_ENSURE_REGISTERED (SdnArp);
@@ -120,10 +118,6 @@ SdnArp::InitDatabase ()
   AddRelationWithKeys (OFCONNSWC, attrdeflist (
     attrdef ("ofconnSwc_attr2", IPV4)));
 
-  AddRelationWithKeys (PORTANDSRCMAPPING, attrdeflist (
-    attrdef ("portAndSrcMapping_attr2", INT32),
-    attrdef ("portAndSrcMapping_attr3", IPV4)));
-
 }
 
 void
@@ -141,11 +135,7 @@ SdnArp::DemuxRecv (Ptr<Tuple> tuple)
     }
   if (IsRecvEvent (tuple, PACKET))
     {
-      Rh2Local1_eca (tuple);
-    }
-  if (IsRecvEvent (tuple, RH2PACKETHOST))
-    {
-      Rh2Local2_eca (tuple);
+      Rh2_eca (tuple);
     }
   if (IsRecvEvent (tuple, PACKETIN))
     {
@@ -165,7 +155,7 @@ SdnArp::DemuxRecv (Ptr<Tuple> tuple)
     }
   if (IsRecvEvent (tuple, ARPREPLYCTL))
     {
-      Rc6_eca (tuple);
+      Rc5_eca (tuple);
     }
   if (IsRecvEvent (tuple, PACKET))
     {
@@ -192,23 +182,25 @@ SdnArp::Rh1Eca0Ins (Ptr<Tuple> linkHst)
   result->Assign (Assignor::New ("Arptype",
     ValueExpr::New (Int32Value::New (1))));
 
-  result->Assign (Assignor::New ("Type",
-    ValueExpr::New (StrValue::New ("ARP"))));
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("linkHst_attr1"),
+      VarExpr::New ("SrcIP"))));
 
-  result->Assign (Assignor::New ("Dst",
-    ValueExpr::New (StrValue::New ("ff:ff:ff:ff:ff"))));
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("arpRequest_attr5"),
+      VarExpr::New ("BROADCAST"))));
 
   result = result->Project (
     PACKET,
     strlist ("linkHst_attr2",
       "linkHst_attr1",
-      "Dst",
       "arpRequest_attr5",
       "arpRequest_attr4",
       "arpRequest_attr3",
       "arpRequest_attr2",
       "Arptype",
-      "Type",
       "linkHst_attr2"),
     strlist ("packet_attr1",
       "packet_attr2",
@@ -217,8 +209,6 @@ SdnArp::Rh1Eca0Ins (Ptr<Tuple> linkHst)
       "packet_attr5",
       "packet_attr6",
       "packet_attr7",
-      "packet_attr8",
-      "packet_attr9",
       RN_DEST));
 
   Send (result);
@@ -239,23 +229,25 @@ SdnArp::Rh1Eca1Ins (Ptr<Tuple> arpRequest)
   result->Assign (Assignor::New ("Arptype",
     ValueExpr::New (Int32Value::New (1))));
 
-  result->Assign (Assignor::New ("Type",
-    ValueExpr::New (StrValue::New ("ARP"))));
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("arpRequest_attr1"),
+      VarExpr::New ("SrcIP"))));
 
-  result->Assign (Assignor::New ("Dst",
-    ValueExpr::New (StrValue::New ("ff:ff:ff:ff:ff"))));
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("arpRequest_attr5"),
+      VarExpr::New ("BROADCAST"))));
 
   result = result->Project (
     PACKET,
     strlist ("linkHst_attr2",
       "arpRequest_attr1",
-      "Dst",
       "arpRequest_attr5",
       "arpRequest_attr4",
       "arpRequest_attr3",
       "arpRequest_attr2",
       "Arptype",
-      "Type",
       "linkHst_attr2"),
     strlist ("packet_attr1",
       "packet_attr2",
@@ -264,70 +256,45 @@ SdnArp::Rh1Eca1Ins (Ptr<Tuple> arpRequest)
       "packet_attr5",
       "packet_attr6",
       "packet_attr7",
-      "packet_attr8",
-      "packet_attr9",
       RN_DEST));
 
   Send (result);
 }
 
 void
-SdnArp::Rh2Local1_eca (Ptr<Tuple> packet)
+SdnArp::Rh2_eca (Ptr<Tuple> packet)
 {
-  RAPIDNET_LOG_INFO ("Rh2Local1_eca triggered");
-
-  Ptr<Tuple> result = packet;
-
-  result = result->Project (
-    RH2PACKETHOST,
-    strlist ("packet_attr1",
-      "packet_attr2",
-      "packet_attr3",
-      "packet_attr4",
-      "packet_attr5",
-      "packet_attr6",
-      "packet_attr7",
-      "packet_attr8",
-      "packet_attr9",
-      "packet_attr2"),
-    strlist ("rh2packetHost_attr1",
-      "rh2packetHost_attr2",
-      "rh2packetHost_attr3",
-      "rh2packetHost_attr4",
-      "rh2packetHost_attr5",
-      "rh2packetHost_attr6",
-      "rh2packetHost_attr7",
-      "rh2packetHost_attr8",
-      "rh2packetHost_attr9",
-      RN_DEST));
-
-  Send (result);
-}
-
-void
-SdnArp::Rh2Local2_eca (Ptr<Tuple> rh2packetHost)
-{
-  RAPIDNET_LOG_INFO ("Rh2Local2_eca triggered");
+  RAPIDNET_LOG_INFO ("Rh2_eca triggered");
 
   Ptr<RelationBase> result;
 
   result = GetRelation (LINKHST)->Join (
-    rh2packetHost,
+    packet,
     strlist ("linkHst_attr1", "linkHst_attr2"),
-    strlist ("rh2packetHost_attr2", "rh2packetHost_attr1"));
+    strlist ("packet_attr1", "packet_attr2"));
 
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
-      VarExpr::New ("rh2packetHost_attr3"),
-      VarExpr::New ("rh2packetHost_attr2"))));
+      VarExpr::New ("packet_attr7"),
+      ValueExpr::New (Int32Value::New (2)))));
+
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("Type"),
+      ValueExpr::New (Int32Value::New (2054)))));
+
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("packet_attr3"),
+      VarExpr::New ("packet_attr1"))));
 
   result = result->Project (
     ARPREPLY,
-    strlist ("rh2packetHost_attr2",
-      "rh2packetHost_attr7",
-      "rh2packetHost_attr6",
-      "rh2packetHost_attr5",
-      "rh2packetHost_attr4"),
+    strlist ("packet_attr1",
+      "packet_attr6",
+      "packet_attr5",
+      "packet_attr4",
+      "packet_attr3"),
     strlist ("arpReply_attr1",
       "arpReply_attr2",
       "arpReply_attr3",
@@ -349,15 +316,20 @@ SdnArp::Rc1_eca (Ptr<Tuple> packetIn)
     strlist ("ofconnCtl_attr1", "ofconnCtl_attr2"),
     strlist ("packetIn_attr1", "packetIn_attr2"));
 
-  result = GetRelation (PORTANDSRCMAPPING)->Join (
-    result,
-    strlist ("portAndSrcMapping_attr1", "portAndSrcMapping_attr2"),
-    strlist ("packetIn_attr1", "packetIn_attr3"));
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("packetIn_attr8"),
+      ValueExpr::New (Int32Value::New (1)))));
+
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("packetIn_attr4"),
+      VarExpr::New ("BROADCAST"))));
 
   result = result->Project (
     HOSTPOS,
     strlist ("packetIn_attr1",
-      "portAndSrcMapping_attr3",
+      "packetIn_attr7",
       "packetIn_attr2",
       "packetIn_attr3"),
     strlist ("hostPos_attr1",
@@ -379,11 +351,6 @@ SdnArp::Rc2_eca (Ptr<Tuple> packetIn)
     packetIn,
     strlist ("ofconnCtl_attr1", "ofconnCtl_attr2"),
     strlist ("packetIn_attr1", "packetIn_attr2"));
-
-  result = result->Select (Selector::New (
-    Operation::New (RN_EQ,
-      VarExpr::New ("packetIn_attr9"),
-      ValueExpr::New (StrValue::New ("ARP")))));
 
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
@@ -454,9 +421,9 @@ SdnArp::Rc4_eca (Ptr<Tuple> arpReqCtl)
 }
 
 void
-SdnArp::Rc6_eca (Ptr<Tuple> arpReplyCtl)
+SdnArp::Rc5_eca (Ptr<Tuple> arpReplyCtl)
 {
-  RAPIDNET_LOG_INFO ("Rc6_eca triggered");
+  RAPIDNET_LOG_INFO ("Rc5_eca triggered");
 
   Ptr<RelationBase> result;
 
@@ -468,13 +435,10 @@ SdnArp::Rc6_eca (Ptr<Tuple> arpReplyCtl)
   result = GetRelation (HOSTPOS)->Join (
     result,
     strlist ("hostPos_attr1", "hostPos_attr2", "hostPos_attr3"),
-    strlist ("arpReplyCtl_attr1", "arpReplyCtl_attr2", "ofconnCtl_attr2"));
+    strlist ("arpReplyCtl_attr1", "arpReplyCtl_attr4", "ofconnCtl_attr2"));
 
   result->Assign (Assignor::New ("Arptype",
     ValueExpr::New (Int32Value::New (2))));
-
-  result->Assign (Assignor::New ("Type",
-    ValueExpr::New (StrValue::New ("ARP"))));
 
   result = result->Project (
     PACKETOUT,
@@ -486,7 +450,6 @@ SdnArp::Rc6_eca (Ptr<Tuple> arpReplyCtl)
       "arpReplyCtl_attr3",
       "arpReplyCtl_attr2",
       "Arptype",
-      "Type",
       "ofconnCtl_attr2"),
     strlist ("packetOut_attr1",
       "packetOut_attr2",
@@ -496,7 +459,6 @@ SdnArp::Rc6_eca (Ptr<Tuple> arpReplyCtl)
       "packetOut_attr6",
       "packetOut_attr7",
       "packetOut_attr8",
-      "packetOut_attr9",
       RN_DEST));
 
   Send (result);
@@ -521,13 +483,8 @@ SdnArp::Rs1_eca (Ptr<Tuple> packet)
 
   result = GetRelation (FLOWENTRY)->Join (
     result,
-    strlist ("flowEntry_attr1"),
-    strlist ("packet_attr1"));
-
-  result = result->Select (Selector::New (
-    Operation::New (RN_EQ,
-      VarExpr::New ("packet_attr9"),
-      ValueExpr::New (StrValue::New ("ARP")))));
+    strlist ("flowEntry_attr2", "flowEntry_attr1"),
+    strlist ("packet_attr7", "packet_attr1"));
 
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
@@ -537,19 +494,23 @@ SdnArp::Rs1_eca (Ptr<Tuple> packet)
   result = result->Select (Selector::New (
     Operation::New (RN_EQ,
       VarExpr::New ("flowEntry_attr4"),
-      ValueExpr::New (StrValue::New ("controller")))));
+      ValueExpr::New (Int32Value::New (100)))));
+
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("packet_attr3"),
+      VarExpr::New ("BROADCAST"))));
 
   result = result->Project (
     PACKETIN,
     strlist ("ofconnSwc_attr2",
       "packet_attr1",
       "linkSwc_attr3",
+      "packet_attr3",
       "packet_attr4",
       "packet_attr5",
       "packet_attr6",
       "packet_attr7",
-      "packet_attr8",
-      "packet_attr9",
       "ofconnSwc_attr2"),
     strlist ("packetIn_attr1",
       "packetIn_attr2",
@@ -559,7 +520,6 @@ SdnArp::Rs1_eca (Ptr<Tuple> packet)
       "packetIn_attr6",
       "packetIn_attr7",
       "packetIn_attr8",
-      "packetIn_attr9",
       RN_DEST));
 
   Send (result);
@@ -574,23 +534,23 @@ SdnArp::Rs2_eca (Ptr<Tuple> packetOut)
 
   result = GetRelation (LINKSWC)->Join (
     packetOut,
-    strlist ("linkSwc_attr1"),
-    strlist ("packetOut_attr1"));
+    strlist ("linkSwc_attr3", "linkSwc_attr1"),
+    strlist ("packetOut_attr3", "packetOut_attr1"));
 
-  result->Assign (Assignor::New ("$1",
-    VarExpr::New ("linkSwc_attr2")));
+  result = result->Select (Selector::New (
+    Operation::New (RN_EQ,
+      VarExpr::New ("packetOut_attr8"),
+      ValueExpr::New (Int32Value::New (2)))));
 
   result = result->Project (
     PACKET,
     strlist ("linkSwc_attr2",
       "packetOut_attr1",
-      "$1",
       "packetOut_attr4",
       "packetOut_attr5",
       "packetOut_attr6",
       "packetOut_attr7",
       "packetOut_attr8",
-      "packetOut_attr9",
       "linkSwc_attr2"),
     strlist ("packet_attr1",
       "packet_attr2",
@@ -599,8 +559,6 @@ SdnArp::Rs2_eca (Ptr<Tuple> packetOut)
       "packet_attr5",
       "packet_attr6",
       "packet_attr7",
-      "packet_attr8",
-      "packet_attr9",
       RN_DEST));
 
   Send (result);

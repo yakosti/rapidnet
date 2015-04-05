@@ -43,8 +43,6 @@ public:
   static const string PACKET;
   static const string PACKETIN;
   static const string PACKETOUT;
-  static const string PORTANDSRCMAPPING;
-  static const string RH2PACKETHOST;
 
   static TypeId GetTypeId (void);
 
@@ -68,9 +66,7 @@ protected:
 
   virtual void Rh1Eca1Ins (Ptr<Tuple> arpRequest);
 
-  virtual void Rh2Local1_eca (Ptr<Tuple> packet);
-
-  virtual void Rh2Local2_eca (Ptr<Tuple> rh2packetHost);
+  virtual void Rh2_eca (Ptr<Tuple> packet);
 
   virtual void Rc1_eca (Ptr<Tuple> packetIn);
 
@@ -80,7 +76,7 @@ protected:
 
   virtual void Rc4_eca (Ptr<Tuple> arpReqCtl);
 
-  virtual void Rc6_eca (Ptr<Tuple> arpReplyCtl);
+  virtual void Rc5_eca (Ptr<Tuple> arpReplyCtl);
 
   virtual void Rs1_eca (Ptr<Tuple> packet);
 
