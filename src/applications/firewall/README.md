@@ -29,14 +29,14 @@ forall Switch, Src, SrcPort, Dst, DstPort,
 
 ## Safety Invariant 3
 
-If trusted controller memory records that a Switch trusts Host2, then Host2 once received a packet sent by Switch from trusted Host1 to Host2.
+If trusted controller memory records a connection between Switch and a host, then in a past some trusted source had sent a packet to that host
 
 ```
 forall Controller, Switch, Host
   trustedControllerMemory(Controller, Switch, Host) 
   ->
-  exists HostPort, Src, SrcPort
-    pktReceived(Host, HostPort, Src, SrcPort, Switch)
+  exists Src, SrcPort, 
+    pktIn(Switch, Src, SrcPort, Host),
     AND SrcPort = TRUSTED_PORT
 ```
 
