@@ -389,7 +389,7 @@ public:
 
 	void UpdateDerivNode(string tpName, DerivNode* dnode);
 
-	void VerifyInvariants(const Invariant&) const;
+	void VerifyInvariants(const Invariant&, BaseRelProperty&) const;
 
 	const DerivMap& GetDerivation() const{return derivations;}
 
@@ -411,5 +411,19 @@ private:
 	BaseMap baseMap;
 	PropMap recurMap;
 };
+
+
+void
+ConstructBaseObl(BaseRel&,
+				 list<DpoolTupleInst>&,
+				 FormList&);
+
+void
+CheckRecurBase(BaseRel&,
+			   list<PredicateInstance*>::iterator,
+			   list<DpoolTupleInst>,
+			   DpoolTupleMap&,
+			   FormList&);
+
 
 #endif /* SDN_DERIVATION_H_ */

@@ -168,58 +168,58 @@ void parseOverlog (string overlogFile, Ptr<OlContext> ctxt,
  */
 void compile (string overlogFile, bool provenanceEnabled)
 {
-  NS_LOG_INFO ("Compiling NDLog file:\t" << overlogFile);
+	NS_LOG_INFO ("Compiling NDLog file:\t" << overlogFile);
 
-  // Parse
-  Ptr<OlContext> ctxt (new OlContext ());
-  Ptr<TableStore> tableStore (new TableStore (ctxt));
-  parseOverlog (overlogFile, ctxt, tableStore, provenanceEnabled);
+	// Parse
+	Ptr<OlContext> ctxt (new OlContext ());
+	Ptr<TableStore> tableStore (new TableStore (ctxt));
+	parseOverlog (overlogFile, ctxt, tableStore, provenanceEnabled);
 
-  //Construct the dependency graph
-  Ptr<DPGraph> graphNdlog (new DPGraph(ctxt));
-  //graphNdlog->PrintGraph();
+	//Construct the dependency graph
+	Ptr<DPGraph> graphNdlog (new DPGraph(ctxt));
+	//graphNdlog->PrintGraph();
 
-  //Input recursive invariant
-  Invariant inv = Invariant();
-  inv.Print();
-  Ptr<NewDPGraph> newGraph (new NewDPGraph(graphNdlog, inv));
-  //newGraph->Print();
+	//Base properties
+	BaseProperty baseProp = BaseProperty();
 
-  //Construct mini graph for topological sorting
-  Ptr<MiniGraph> miniGraph (new MiniGraph(newGraph, inv));
-  //miniGraph->PrintGraph();
+	//Base relational properties
+	BaseRelProperty baseRel = BaseRelProperty();
+	//baseRel.Print();
 
-  //Base properties
-  BaseProperty baseProp = BaseProperty();
+	//Input recursive invariant
+	Invariant inv = Invariant();
+	inv.Print();
+	Ptr<NewDPGraph> newGraph (new NewDPGraph(graphNdlog, inv));
+	//newGraph->Print();
 
-  //Base relational properties
-  BaseRelProperty baseRel = BaseRelProperty();
-  //baseRel.Print();
+	//Construct mini graph for topological sorting
+	Ptr<MiniGraph> miniGraph (new MiniGraph(newGraph, inv));
+	//miniGraph->PrintGraph();
 
-  //Dpool construction
-  Ptr<Dpool> dpool (new Dpool(newGraph, miniGraph, baseProp, inv));
+	//Dpool construction
+	Ptr<Dpool> dpool (new Dpool(newGraph, miniGraph, baseProp, inv));
 //  dpool->PrintDpool();
 //  dpool->PrintAllDeriv();
 
-  //Verify invariant property
-  //dpool->VerifyInvariants(inv);
+	//Verify invariant property
+	//dpool->VerifyInvariants(inv, baseRel);
 
-  //Property verification
-  //User-defined property
+	//Property verification
+	//User-defined property
 
-  Property p = Property();
-  p.Print();
+	Property p = Property();
+	p.Print();
 
-  NS_LOG_DEBUG("Property constructed.");
-  //Verify the property
-  int start_s=clock();
-  bool res = CheckProperty(*dpool, p, baseRel);
-  cout << endl;
-  cout << "Is the property valid? " << (res?"Yes":"No");
-  cout << endl;
+	NS_LOG_DEBUG("Property constructed.");
+	//Verify the property
+	int start_s=clock();
+	bool res = CheckProperty(*dpool, p, baseRel);
+	cout << endl;
+	cout << "Is the property valid? " << (res?"Yes":"No");
+	cout << endl;
 
-  int stop_s=clock();
-  cout << "Running time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << "ms" << endl;
+	int stop_s=clock();
+	cout << "Running time: " << (stop_s-start_s)/double(CLOCKS_PER_SEC)*1000 << "ms" << endl;
 
   //test_check_sat();
 }

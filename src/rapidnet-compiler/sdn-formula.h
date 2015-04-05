@@ -532,7 +532,7 @@ public:
 	void PrintSimpInst(VarMap&, SimpConstraints&);
 
 	void PrintSimpInstance(const map<Variable*, int>&, VarMap&,
-						   SimpConstraints&, bool);
+						   SimpConstraints&, bool) const;
 
 	~Connective();
 
@@ -578,7 +578,7 @@ public:
 	void PrintSimpInst(VarMap&, SimpConstraints&);
 
 	void PrintSimpInstance(const map<Variable*, int>&, VarMap&,
-						   SimpConstraints&, bool);
+						   SimpConstraints&, bool) const;
 
 	~Quantifier();
 
@@ -637,7 +637,7 @@ public:
 	void PrintSimpInst(VarMap&, SimpConstraints&);
 
 	void PrintSimpInstance(const map<Variable*, int>&, VarMap&,
-						   SimpConstraints&, bool);
+						   SimpConstraints&, bool) const;
 
 	~PredicateInstance();
 
