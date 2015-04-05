@@ -78,7 +78,7 @@ r3 pktReceived(@Dst, PortDst, Src, PortSrc, Switch) :-
 /* ************************************************* */
 
 /* (@Switch) Program
- * Packet from unstrusted host appeared on switch
+ * Packet from untrusted host appeared on switch
  * Send it to the controller to check if it is trused
  */
 r4 pktFromSwitch(@Controller, Switch, Src, Uport, Dst) :- 
@@ -90,7 +90,7 @@ r4 pktFromSwitch(@Controller, Switch, Src, Uport, Dst) :-
  * Packet from untrusted host appeared on switch
  * the controller checked, and tells the switch the Src is trusted
  * Controller tells the switch it can forward the packet to the trusted hosts
- *  	by inserting a per flow rule into the swtich for that host
+ *  	by inserting a per flow rule into the switch for that host
  */
 r5 perFlowRule(@Switch, Src, Uport, Dst, Tport) :-  
 	pktFromSwitch(@Controller, Switch, Src, Uport, Dst), 

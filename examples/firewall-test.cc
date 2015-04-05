@@ -139,8 +139,9 @@
 
 #define CONTROLLER 1
 #define SWITCH 2
-#define HOST3 3
-#define HOST4 4 
+#define HOST3 3 // TRUSTED
+#define HOST4 4 // UNTRUSTED
+#define HOST5 5 // UNTRUSTED
 
 #define TRUSTED_PORT 1
 #define UNTRUSTED_PORT 2
@@ -165,56 +166,51 @@ SimulatePktIn1 ()
 }
 
 /*
- * Switch receives a packet sent by HOST3 (TRUSTED_PORT)
- * to Host Dst 4 (untrusted port 2)
- * 
- * This is sent, since InitControllerMemory remembers this
+ * SWITCH receives a packet sent by HOST4 (UNTRUSTED_PORT)
+ * to Host3 (TRUSTED_PORT)
  */
 void
 SimulatePktIn2 ()
 {
-  insert_pktIn(1,1,1,4);
+  insert_pktIn(SWITCH, HOST4, UNTRUSTED_PORT, HOST3);
 }
 
 /*
- * Switch 1 receives a packet sent by Host Src 3 ( Trusted port 1)
- * to Host Dst 5 (untrusted port 2)
- * 
- * This is sent, since InitControllerMemory remembers this
+ * SWITH receives a packet sent by HOST3 (TRUSTED_PORT) to HOST 5 (UNTRUSTED_PORT)
  */
 void
 SimulatePktIn3 ()
 {
-  insert_pktIn(1,3,1,5);
+  insert_pktIn(SWITCH, HOST3, TRUSTED_PORT, HOST5);
 }
 
 /*
  * The controller remembers that 
- * Switch 1 should trust Host 4 (from untrusted port 2)
+ * SWITCH should trust HOST4 (UNTRUSTED_PORT)
  */
 void 
 InitControllerMemory() 
 {
-  insert_trustedControllerMemory(1,1,4);
+  insert_trustedControllerMemory(CONTROLLER,SWITCH,HOST4);
 }
 
 /*
- * Switch 1 can talk to the controller 
+ * Switch can talk to the controller 
  */
 void 
 InitConnection() 
 {
-  insert_connection(1,1);
+  insert_connection(SWITCH, CONTROLLER);
 }
 
 /*
- * Switch 1 can send packets from 
- * Src Host 3 (trusted port 1) -> Dst Host 5 (untrusted port 2)
+ * SWITCH can send packets from 
+ * HOST3 (TRUSTED_PORT) -> HOST5 (UNTRUSTED_PORT)
  */
 void 
 InitPerFlowRule()
 {
-  insert_perFlowRule(1,3,1,5,2);
+  insert_perFlowRule(SWITCH, HOST3, TRUSTED_PORT, HOST5, UNTRUSTED_PORT);
 }
 
 void PrintRelation()

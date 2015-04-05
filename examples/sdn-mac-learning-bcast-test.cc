@@ -86,8 +86,8 @@
   tuple(SdnMacLearningBcast::FLOWENTRY,\
 	attr("flowEntry_attr1", Ipv4Value, sw),\
 	attr("flowEntry_attr2", StrValue, mac),\
-	attr("flowEntry_attr4", Int32Value, outport),	\
-	attr("flowEntry_attr3", Int32Value, priority))
+	attr("flowEntry_attr3", Int32Value, outport),	\
+	attr("flowEntry_attr4", Int32Value, priority))
 
 #define insert_flowentry(sw, mac, outport, priority)				\
   app(sw) -> Insert(flowentry(addr(sw), mac, outport, priority))
