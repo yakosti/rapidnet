@@ -1,15 +1,13 @@
 # ARP
 
+[ARP Explained](http://www.omnisecu.com/tcpip/address-resolution-protocol-arp.php)
+
 ## Properties for testing
 
 ### Test 1
 
-#### English
-
 Forall: (@Host1) receive a ARP response for IP A -> 
 	(@Host2) have sent a broadcast ARP request message for IP A. 
-
-#### Logic
 
 ```
 forall Host1, IP_A, Mac_A, DstIP, DstMac,
@@ -19,13 +17,9 @@ forall Host1, IP_A, Mac_A, DstIP, DstMac,
 
 ### Test 2
 
-#### English
-
 Forall: (@Controller )have a map between IP A and MAC A -> 
 	either (@Host) A has responded to an ARP request 
 	or (@Host) A has sent a broadcast ARP request
-
-#### Logic
 
 ```
 forall Controller, IP_A, Mac_A,
@@ -40,12 +34,8 @@ forall Controller, IP_A, Mac_A,
 
 ### Liveness 1
 
-#### English
-
 Forall: (@Switch)Send a broadcast ARP message for IP A -> 
 	@(Controller) no entry that maps IP A to a MAC address
-
-#### Logic
 
 ```
 forall Switch, Controller, Port, DstMac, DstIp, SrcMac, SrcIP, Mac_A, IP_A,
