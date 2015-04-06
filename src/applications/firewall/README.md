@@ -43,3 +43,12 @@ forall Controller, Switch, Host
     AND SrcPort = TRUSTED_PORT
 ```
 
+# Liveness Properties
+
+## No Black Holes violated
+
+all packets are delivered to their intended destination. A counter example is the case when packets are sent from untrusted host -> untrusted host are dropped. 
+
+## Host migration unsupported
+
+Assume that a host is trusted if it either sent/received (on some switch) a message through/from a trusted port. Thus, when a trusted host migrates to a new switch, the controller will remember it was trusted before and will allow communication from either port. The implementation we have doesn't support it yet, as trust is specified relative to a switch. 
