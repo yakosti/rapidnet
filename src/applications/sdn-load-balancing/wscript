@@ -1,0 +1,13 @@
+## -*- Mode: python; py-indent-offset: 4; indent-tabs-mode: nil; coding: utf-8; -*-
+
+def build(bld):
+    module = bld.create_ns3_module('sdn-load-balancing', ['internet-stack'])
+    module.source = [
+        'sdn-load-balancing.cc',
+        ]
+    headers = bld.new_task_gen('ns3header')
+    headers.module = 'sdn-load-balancing'
+    headers.source = [
+        'sdn-load-balancing.h',
+        'sdn-load-balancing-helper.h',
+        ]
