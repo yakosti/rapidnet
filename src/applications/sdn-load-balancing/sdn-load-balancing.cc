@@ -98,6 +98,10 @@ SdnLoadBalancing::DemuxRecv (Ptr<Tuple> tuple)
 {
   RapidNetApplicationBase::DemuxRecv (tuple);
 
+  if (IsInsertEvent (tuple, INITPACKET))
+    {
+      R1Eca0Ins (tuple);
+    }
   if (IsRecvEvent (tuple, PACKET))
     {
       R2_eca (tuple);
@@ -110,6 +114,27 @@ SdnLoadBalancing::DemuxRecv (Ptr<Tuple> tuple)
     {
       R4_eca (tuple);
     }
+}
+
+void
+SdnLoadBalancing::R1Eca0Ins (Ptr<Tuple> initPacket)
+{
+  RAPIDNET_LOG_INFO ("R1Eca0Ins triggered");
+
+  Ptr<Tuple> result = initPacket;
+
+  result = result->Project (
+    PACKET,
+    strlist ("initPacket_attr3",
+      "initPacket_attr1",
+      "initPacket_attr2",
+      "initPacket_attr3"),
+    strlist ("packet_attr1",
+      "packet_attr2",
+      "packet_attr3",
+      RN_DEST));
+
+  Send (result);
 }
 
 void
@@ -181,7 +206,17 @@ SdnLoadBalancing::R4_eca (Ptr<Tuple> packet)
 {
   RAPIDNET_LOG_INFO ("R4_eca triggered");
 
-  Ptr<Tuple> result = packet;
+  Ptr<RelationBase> result;
+
+  result = GetRelation (DESIGNATED)->Join (
+    packet,
+    strlist ("designated_attr1"),
+    strlist ("packet_attr1"));
+
+  result = result->Select (Selector::New (
+    Operation::New (RN_NEQ,
+      VarExpr::New ("packet_attr3"),
+      VarExpr::New ("designated_attr2"))));
 
   result = result->Project (
     RECVPACKET,

@@ -54,6 +54,8 @@ protected:
 
   virtual void DemuxRecv (Ptr<Tuple> tuple);
 
+  virtual void R1Eca0Ins (Ptr<Tuple> initPacket);
+
   virtual void R2_eca (Ptr<Tuple> packet);
 
   virtual void R3_eca (Ptr<Tuple> hashed);
