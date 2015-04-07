@@ -1,0 +1,4 @@
+ECA Rule r1Eca0Ins ACTION_REMOTE_SEND<packet(@LoadBalancer, Client, Server)> :- EVENT_INSERT<initPacket(@Client, Server, LoadBalancer)>.
+ECA Rule r2_eca ACTION_LOCAL_SEND<hashed(@LoadBalancer, Client, ServerNum)> :- EVENT_RECV<packet(@LoadBalancer, Client, Server)>, designated(@LoadBalancer, DesignatedDst), DesignatedDst == Server, Value := f_hashIp(Client), ServerNum := 1+ f_modulo(Value, 5).
+ECA Rule r3_eca ACTION_REMOTE_SEND<recvPacket(@Server, Client)> :- EVENT_RECV<hashed(@LoadBalancer, Client, ServerNum)>, serverMapping(@LoadBalancer, Server, ServerNum).
+ECA Rule r4_eca ACTION_REMOTE_SEND<recvPacket(@Server, Client)> :- EVENT_RECV<packet(@LoadBalancer, Client, Server)>, designated(@LoadBalancer, DesignatedDst), Server != DesignatedDst.
