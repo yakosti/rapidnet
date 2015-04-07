@@ -1,0 +1,38 @@
+Base Tuple requirements:
+initPacket(v1,v2,v3)
+v1 != v2
+v2 != v3
+v1 != v3
+
+designated(v4,v5)
+v4 != v5
+
+serverMapping(v6,v7,v8)
+v6 != v7
+v7 != v8
+v6 != v8
+
+designated(v9,v10) /\
+designated(v11,v12)
+v9 == v11 => v10 == v12
+
+serverMapping(v13,v14,v15)
+serverMapping(v16,v17,v18)
+v13 == v16 /\ v14 == v17 => v15 == v18 /\
+v13 == v16 /\ v15 == v18 => v14 == v17
+
+Property: Flow affinity
+
+Packets on different servers cannot share the same source address
+
+forall, Server1, Server2, Src1, Src2,
+	recvPacket(Server1, Src1, ServiceAddr) /\
+	recvPacket(Server2, Src2, ServiceAddr),
+	Server1 != Server2 =>
+	Src1 != Src2.
+
+Result: 
+Time:
+
+
+	

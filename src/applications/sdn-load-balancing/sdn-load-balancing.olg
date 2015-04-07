@@ -61,18 +61,18 @@ r1 packet(@LoadBalancer, Client, Server) :-
 // LoadBalancer had received a packet to be sent to its designated destination
 // Hash the Client (source) and use that result modulo the number of servers
 // to get a number corresponding to a server
-r2 hashed(@LoadBalancer, Client, ServerNum) :- 
+r2 hashed(@LoadBalancer, Client, ServerNum, Server) :- 
     packet(@LoadBalancer, Client, Server),
  	designated(@LoadBalancer, DesignatedDst),
  	DesignatedDst == Server,
  	Value := f_hashIp(Client),
-	ServerNum := 1+f_modulo(Value, NUM_SERVERS).
+	ServerNum := 1+f_modulo(Value, NumServers),
+	NumServers := NUM_SERVERS.
 
 // Match ServerNum obtained by hashing to a server to send the packet to 
-r3 recvPacket(@Server, Client) :- 
-	hashed(@LoadBalancer, Client, ServerNum),
+r3 recvPacket(@Server, Client, ServiceAddr) :- 
+	hashed(@LoadBalancer, Client, ServerNum, ServiceAddr),
 	serverMapping(@LoadBalancer, Server, ServerNum).
-
 
 
 
@@ -81,10 +81,11 @@ r3 recvPacket(@Server, Client) :-
 
 // LoadBalancer received a packet to be sent to a server that is NOT its designated destination
 // forwards the packet directly to the destination as prescribed by the packet
-r4 recvPacket(@Server, Client) :- 
+r4 recvPacket(@Server, Client, Server) :- 
 	packet(@LoadBalancer, Client, Server),
 	designated(@LoadBalancer, DesignatedDst),
-	Server != DesignatedDst.
+	Server != DesignatedDst,
+	ServiceAddr := Server.
 
 
 
