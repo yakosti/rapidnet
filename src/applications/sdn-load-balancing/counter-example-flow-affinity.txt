@@ -1,0 +1,1492 @@
+Pre-processing...
+Generated pre-processed file /home/cchen/tests/sdn-load-balancing.olg.cpp
+Parsing NDlog...
+Dependency graph generated!
+
+^^^^^^^^^^^^ Invariant Properties ^^^^^^^^^^^^^
+packetOut(var66,var67,var68,var69,var70,var71,var72,var73)
+True
+
+^^^^^^^^^^^^^^^^^^^^^^^^^
+Constructing MiniGraph...
+Creating Dpool...
+Topological sorting...
+Topological sorting completed!
+Process base tuples...
+Create circle nodes...
+Process rules based on topological sorting...
+packet(var1,var2,var3)r1
+
+hashed(var7,var8,var9,var10)r2
+
+recvPacket(var34,var35,var36)r4
+
+recvPacket(var24,var25,var26)r3
+
+Dpool Constructed!
+
+********** User-defined Property ***********
+forall var103,var104,var105,var106,var107,var108,
+recvPacket(var103,var104,var105) /\ 
+recvPacket(var106,var107,var108) /\ 
+	var103!=var106
+	var105=var108
+
+->exists 
+	var104!=var107
+*********************
+----------------- Check property ----------------
+
+$$$$$$$$$$$$ Derivation Node $$$$$$$$$$$
+Head:recvPacket(var97,var98,var99)
+Rule name:r4
+Body tuples:
+packet(var90,var91,var92)
+designated(var77,var78)
+Constraints:
+	var99=var37
+	var97=var38
+	var37=var38
+	var98=var91
+	var97=var92
+	var90=var77
+	var97=var44
+	var78=var45
+	var44!=var45
+	var97=var47
+	var46=var47
+
+$$$$$$$$$$$$$$$$$$$$$$$$$
+
+$$$$$$$$$$$$ Derivation Node $$$$$$$$$$$
+Head:packet(var90,var91,var92)
+Rule name:r1
+Body tuples:
+initPacket(var74,var75,var76)
+Constraints:
+	var91=var74
+	var92=var75
+	var90=var76
+
+$$$$$$$$$$$$$$$$$$$$$$$$$
+
+******* Base Node ********
+Head: initPacket(var74,var75,var76)
+	var74!=var75
+	var74!=var76
+	var75!=var76
+
+
+
+
+******* Base Node ********
+Head: designated(var77,var78)
+	var77!=var78
+
+
+Deriv Inst !!!
+Deriv Inst !!!
+BaseNode Inst !!!initPacket
+BaseNode Inst Finished!!!
+BaseNode Inst !!!designated
+BaseNode Inst Finished!!!
+
+$$$$$$$$$$$$ Derivation Node $$$$$$$$$$$
+Head:recvPacket(var97,var98,var99)
+Rule name:r4
+Body tuples:
+packet(var90,var91,var92)
+designated(var77,var78)
+Constraints:
+	var99=var37
+	var97=var38
+	var37=var38
+	var98=var91
+	var97=var92
+	var90=var77
+	var97=var44
+	var78=var45
+	var44!=var45
+	var97=var47
+	var46=var47
+
+$$$$$$$$$$$$$$$$$$$$$$$$$
+
+$$$$$$$$$$$$ Derivation Node $$$$$$$$$$$
+Head:packet(var90,var91,var92)
+Rule name:r1
+Body tuples:
+initPacket(var74,var75,var76)
+Constraints:
+	var91=var74
+	var92=var75
+	var90=var76
+
+$$$$$$$$$$$$$$$$$$$$$$$$$
+
+******* Base Node ********
+Head: initPacket(var74,var75,var76)
+	var74!=var75
+	var74!=var76
+	var75!=var76
+
+
+
+
+******* Base Node ********
+Head: designated(var77,var78)
+	var77!=var78
+
+
+Deriv Inst !!!
+Deriv Inst !!!
+BaseNode Inst !!!initPacket
+BaseNode Inst Finished!!!
+BaseNode Inst !!!designated
+BaseNode Inst Finished!!!
+Search base predicates in: recvPacket
+Find base tuple: initPacket
+Find base tuple: designated
+Search base predicates in: recvPacket
+Find base tuple: initPacket
+Find base tuple: designated
+Number of predicates: 2
+What is the form?
+var118=var118 -> var119=var119
+Number of predicates: 2
+What is the form?
+var118=var118 -> var119=var119
+Number of predicates: 2
+What is the form?
+var118=var118 -> var119=var119
+Number of predicates: 2
+What is the form?
+var118=var118 -> var119=var119
+Check satisfiability of the assumption:
+var121!=var123var113!=var121var113!=var118var121!=var118var118!=var123var138!=var140var130!=var138var130!=var135var138!=var135var135!=var140var121!=var121var121=var121
+ Testing if this is satisfiable: 
+(declare-fun var113 () Int)
+(declare-fun var118 () Int)
+(declare-fun var121 () Int)
+(declare-fun var123 () Int)
+(declare-fun var130 () Int)
+(declare-fun var135 () Int)
+(declare-fun var138 () Int)
+(declare-fun var140 () Int)
+(assert (not (= var121 var123)))
+(assert (not (= var113 var121)))
+(assert (not (= var113 var118)))
+(assert (not (= var121 var118)))
+(assert (not (= var118 var123)))
+(assert (not (= var138 var140)))
+(assert (not (= var130 var138)))
+(assert (not (= var130 var135)))
+(assert (not (= var138 var135)))
+(assert (not (= var135 var140)))
+(assert (not (= var121 var121)))
+(assert (= var121 var121))
+(assert (=> (= var118 var118) (= var123 var123)))
+(assert (=> (= var118 var118) (= var123 var123)))
+(assert (=> (= var118 var118) (= var123 var123)))
+(assert (=> (= var118 var118) (= var123 var123)))
+
+@@@@@@@ UNSAT MODEL @@@@@@@@
+
+Assumption of the property is unsatisfiable for this derivation branch.
+
+$$$$$$$$$$$$ Derivation Node $$$$$$$$$$$
+Head:recvPacket(var97,var98,var99)
+Rule name:r4
+Body tuples:
+packet(var90,var91,var92)
+designated(var77,var78)
+Constraints:
+	var99=var37
+	var97=var38
+	var37=var38
+	var98=var91
+	var97=var92
+	var90=var77
+	var97=var44
+	var78=var45
+	var44!=var45
+	var97=var47
+	var46=var47
+
+$$$$$$$$$$$$$$$$$$$$$$$$$
+
+$$$$$$$$$$$$ Derivation Node $$$$$$$$$$$
+Head:packet(var90,var91,var92)
+Rule name:r1
+Body tuples:
+initPacket(var74,var75,var76)
+Constraints:
+	var91=var74
+	var92=var75
+	var90=var76
+
+$$$$$$$$$$$$$$$$$$$$$$$$$
+
+******* Base Node ********
+Head: initPacket(var74,var75,var76)
+	var74!=var75
+	var74!=var76
+	var75!=var76
+
+
+
+
+******* Base Node ********
+Head: designated(var77,var78)
+	var77!=var78
+
+
+Deriv Inst !!!
+Deriv Inst !!!
+BaseNode Inst !!!initPacket
+BaseNode Inst Finished!!!
+BaseNode Inst !!!designated
+BaseNode Inst Finished!!!
+
+$$$$$$$$$$$$ Derivation Node $$$$$$$$$$$
+Head:recvPacket(var100,var101,var102)
+Rule name:r3
+Body tuples:
+hashed(var93,var94,var95,var96)
+serverMapping(var79,var80,var81)
+Constraints:
+	var101=var94
+	var102=var96
+	var93=var79
+	var100=var80
+	var95=var81
+
+$$$$$$$$$$$$$$$$$$$$$$$$$
+
+$$$$$$$$$$$$ Derivation Node $$$$$$$$$$$
+Head:hashed(var93,var94,var95,var96)
+Rule name:r2
+Body tuples:
+packet(var90,var91,var92)
+designated(var77,var78)
+Constraints:
+	var93=var90
+	var94=var91
+	var96=var92
+	var93=var77
+	var78=var16
+	var96=var17
+	var16=var17
+	var94=var19
+	var18=f_hashIp(var19)
+	var95=var20
+	var18=var21
+	var20=1+f_modulo(var21,var22)
+	var22=var23
+	var23=5
+
+$$$$$$$$$$$$$$$$$$$$$$$$$
+
+$$$$$$$$$$$$ Derivation Node $$$$$$$$$$$
+Head:packet(var90,var91,var92)
+Rule name:r1
+Body tuples:
+initPacket(var74,var75,var76)
+Constraints:
+	var91=var74
+	var92=var75
+	var90=var76
+
+$$$$$$$$$$$$$$$$$$$$$$$$$
+
+******* Base Node ********
+Head: initPacket(var74,var75,var76)
+	var74!=var75
+	var74!=var76
+	var75!=var76
+
+
+
+
+******* Base Node ********
+Head: designated(var77,var78)
+	var77!=var78
+
+
+
+
+******* Base Node ********
+Head: serverMapping(var79,var80,var81)
+	var79!=var80
+	var79!=var81
+	var80!=var81
+
+
+Deriv Inst !!!
+Deriv Inst !!!
+Deriv Inst !!!
+BaseNode Inst !!!initPacket
+BaseNode Inst Finished!!!
+BaseNode Inst !!!designated
+BaseNode Inst Finished!!!
+BaseNode Inst !!!serverMapping
+BaseNode Inst Finished!!!
+Search base predicates in: recvPacket
+Find base tuple: initPacket
+Find base tuple: designated
+Search base predicates in: recvPacket
+Find base tuple: initPacket
+Find base tuple: designated
+Find base tuple: serverMapping
+Number of predicates: 2
+What is the form?
+var152=var152 -> var153=var153
+Number of predicates: 2
+What is the form?
+var152=var173 -> var153=var174
+Number of predicates: 2
+What is the form?
+var173=var152 -> var174=var153
+Number of predicates: 2
+What is the form?
+var173=var173 -> var174=var174
+Number of predicates: 2
+What is the form?
+var183=var183 /\ var184=var184 -> var185=var185 /\ var183=var183 /\ var185=var185 -> var184=var184
+Check satisfiability of the assumption:
+var155!=var157var147!=var155var147!=var152var155!=var152var152!=var157var180=f_hashIp(var19)var185=1+f_modulo(var21,var22)var182=5var164!=var166var164!=var183var166!=var183var183!=var166var183!=var184var183!=var185var184!=var185var155!=var184var155=var166
+ Testing if this is satisfiable: 
+(declare-fun var147 () Int)
+(declare-fun var152 () Int)
+(declare-fun var155 () Int)
+(declare-fun var157 () Int)
+(declare-fun var164 () Int)
+(declare-fun var166 () Int)
+(declare-fun var180 () Int)
+(declare-fun var182 () Int)
+(declare-fun var183 () Int)
+(declare-fun var184 () Int)
+(declare-fun var185 () Int)
+(declare-fun var19 () Int)
+(declare-fun var21 () Int)
+(declare-fun var22 () Int)
+(declare-fun f_hashIp (Int ) Int)
+(declare-fun f_modulo (Int Int ) Int)
+(assert (not (= var155 var157)))
+(assert (not (= var147 var155)))
+(assert (not (= var147 var152)))
+(assert (not (= var155 var152)))
+(assert (not (= var152 var157)))
+(assert (= var180 (f_hashIp var19 )))
+(assert (= var185 (+ 1 (f_modulo var21 var22 ))))
+(assert (= var182 5))
+(assert (not (= var164 var166)))
+(assert (not (= var164 var183)))
+(assert (not (= var166 var183)))
+(assert (not (= var183 var166)))
+(assert (not (= var183 var184)))
+(assert (not (= var183 var185)))
+(assert (not (= var184 var185)))
+(assert (not (= var155 var184)))
+(assert (= var155 var166))
+(assert (=> (= var152 var152) (= var157 var157)))
+(assert (=> (= var152 var183) (= var157 var166)))
+(assert (=> (= var183 var152) (= var166 var157)))
+(assert (=> (= var183 var183) (= var166 var166)))
+(assert (and (=> (and (= var183 var183) (= var184 var184)) (= var185 var185)) (=> (and (= var183 var183) (= var185 var185)) (= var184 var184))))
+
+@@@@@@@ SAT MODEL @@@@@@@@
+(define-fun var184 () Int
+  13)
+(define-fun var183 () Int
+  12)
+(define-fun var22 () Int
+  3)
+(define-fun var182 () Int
+  5)
+(define-fun var147 () Int
+  6)
+(define-fun var155 () Int
+  11)
+(define-fun var152 () Int
+  7)
+(define-fun var166 () Int
+  11)
+(define-fun var185 () Int
+  0)
+(define-fun var164 () Int
+  10)
+(define-fun var21 () Int
+  2)
+(define-fun var19 () Int
+  8)
+(define-fun var180 () Int
+  9)
+(define-fun var157 () Int
+  4)
+(define-fun f_modulo ((x!1 Int) (x!2 Int)) Int
+  (ite (and (= x!1 2) (= x!2 3)) (- 1)
+    (- 1)))
+(define-fun f_hashIp ((x!1 Int)) Int
+  (ite (= x!1 8) 9
+    9))
+
+******** Printing Rapidnet -> Int Subst map **********
+Variable is mapped to: var19 = 8
+Variable is mapped to: var21 = 2
+Variable is mapped to: var22 = 3
+Variable is mapped to: var152 = 7
+Variable is mapped to: var147 = 6
+Variable is mapped to: var155 = 11
+Variable is mapped to: var157 = 4
+Variable is mapped to: var180 = 9
+Variable is mapped to: var184 = 13
+Variable is mapped to: var185 = 0
+Variable is mapped to: var183 = 12
+Variable is mapped to: var164 = 10
+Variable is mapped to: var166 = 11
+Variable is mapped to: var182 = 5
+******** Printing Rapidnet -> Int Subst map **********
+
+No existentially quantified predicates.
+	var104!=var107
+	var147=var164
+var155!=var157var147!=var155var147!=var152var155!=var152var152!=var157var180=f_hashIp(var19)var185=1+f_modulo(var21,var22)var182=5var164!=var166var164!=var183var166!=var183var183!=var166var183!=var184var183!=var185var184!=var185var155!=var184var155=var166var147=var164
+ Testing if this is satisfiable: 
+(declare-fun var147 () Int)
+(declare-fun var152 () Int)
+(declare-fun var155 () Int)
+(declare-fun var157 () Int)
+(declare-fun var164 () Int)
+(declare-fun var166 () Int)
+(declare-fun var180 () Int)
+(declare-fun var182 () Int)
+(declare-fun var183 () Int)
+(declare-fun var184 () Int)
+(declare-fun var185 () Int)
+(declare-fun var19 () Int)
+(declare-fun var21 () Int)
+(declare-fun var22 () Int)
+(declare-fun f_hashIp (Int ) Int)
+(declare-fun f_modulo (Int Int ) Int)
+(assert (not (= var155 var157)))
+(assert (not (= var147 var155)))
+(assert (not (= var147 var152)))
+(assert (not (= var155 var152)))
+(assert (not (= var152 var157)))
+(assert (= var180 (f_hashIp var19 )))
+(assert (= var185 (+ 1 (f_modulo var21 var22 ))))
+(assert (= var182 5))
+(assert (not (= var164 var166)))
+(assert (not (= var164 var183)))
+(assert (not (= var166 var183)))
+(assert (not (= var183 var166)))
+(assert (not (= var183 var184)))
+(assert (not (= var183 var185)))
+(assert (not (= var184 var185)))
+(assert (not (= var155 var184)))
+(assert (= var155 var166))
+(assert (= var147 var164))
+(assert (=> (= var152 var152) (= var157 var157)))
+(assert (=> (= var152 var183) (= var157 var166)))
+(assert (=> (= var183 var152) (= var166 var157)))
+(assert (=> (= var183 var183) (= var166 var166)))
+(assert (and (=> (and (= var183 var183) (= var184 var184)) (= var185 var185)) (=> (and (= var183 var183) (= var185 var185)) (= var184 var184))))
+
+@@@@@@@ SAT MODEL @@@@@@@@
+(define-fun var184 () Int
+  12)
+(define-fun var183 () Int
+  11)
+(define-fun var22 () Int
+  3)
+(define-fun var182 () Int
+  5)
+(define-fun var147 () Int
+  9)
+(define-fun var155 () Int
+  10)
+(define-fun var152 () Int
+  6)
+(define-fun var166 () Int
+  10)
+(define-fun var185 () Int
+  0)
+(define-fun var164 () Int
+  9)
+(define-fun var21 () Int
+  2)
+(define-fun var19 () Int
+  7)
+(define-fun var180 () Int
+  8)
+(define-fun var157 () Int
+  4)
+(define-fun f_modulo ((x!1 Int) (x!2 Int)) Int
+  (ite (and (= x!1 2) (= x!2 3)) (- 1)
+    (- 1)))
+(define-fun f_hashIp ((x!1 Int)) Int
+  (ite (= x!1 7) 8
+    8))
+
+******** Printing Rapidnet -> Int Subst map **********
+Variable is mapped to: var19 = 7
+Variable is mapped to: var21 = 2
+Variable is mapped to: var22 = 3
+Variable is mapped to: var152 = 6
+Variable is mapped to: var147 = 9
+Variable is mapped to: var155 = 10
+Variable is mapped to: var157 = 4
+Variable is mapped to: var180 = 8
+Variable is mapped to: var184 = 12
+Variable is mapped to: var185 = 0
+Variable is mapped to: var183 = 11
+Variable is mapped to: var164 = 9
+Variable is mapped to: var166 = 10
+Variable is mapped to: var182 = 5
+******** Printing Rapidnet -> Int Subst map **********
+
+
+==================== Generate Counter Example ==================
+************* Execution Trace of recvPacket *************
+
+~~~~~~~~~~~~~~~ Execution Trace ~~~~~~~~~~~~~~
+
+%%%%%%%%%%%%%% Simplified Derivation Instance %%%%%%%%%%%%%
+Head:recvPacket((var155)10,(var147)9,(var155)10)
+Rule name:r4
+Rule constraints:
+Body tuples:
+packet((var152)6,(var147)9,(var155)10)
+designated((var152)6,(var157)4)
+Constraints:
+	(var155)10!=(var157)4
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+~~~~~~~~~~~~~~~ Execution Trace ~~~~~~~~~~~~~~
+
+%%%%%%%%%%%%%% Simplified Derivation Instance %%%%%%%%%%%%%
+Head:packet((var152)6,(var147)9,(var155)10)
+Rule name:r1
+Rule constraints:
+Body tuples:
+initPacket((var147)9,(var155)10,(var152)6)
+Constraints:
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@@@@@@@@@@ Base Instance @@@@@@@@@
+Head instance: 
+initPacket((var147)9,(var155)10,(var152)6)
+	(var147)9!=(var155)10
+	(var147)9!=(var152)6
+	(var155)10!=(var152)6
+@@@@@@@@@@@@@@@@@@@@@
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+@@@@@@@@@@ Base Instance @@@@@@@@@
+Head instance: 
+designated((var152)6,(var157)4)
+	(var152)6!=(var157)4
+@@@@@@@@@@@@@@@@@@@@@
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*******************************
+************* Execution Trace of recvPacket *************
+
+~~~~~~~~~~~~~~~ Execution Trace ~~~~~~~~~~~~~~
+
+%%%%%%%%%%%%%% Simplified Derivation Instance %%%%%%%%%%%%%
+Head:recvPacket((var184)12,(var164)9,(var166)10)
+Rule name:r3
+Rule constraints:
+Body tuples:
+hashed((var183)11,(var164)9,(var185)0,(var166)10)
+serverMapping((var183)11,(var184)12,(var185)0)
+Constraints:
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+~~~~~~~~~~~~~~~ Execution Trace ~~~~~~~~~~~~~~
+
+%%%%%%%%%%%%%% Simplified Derivation Instance %%%%%%%%%%%%%
+Head:hashed((var183)11,(var164)9,(var185)0,(var166)10)
+Rule name:r2
+Rule constraints:
+Body tuples:
+packet((var183)11,(var164)9,(var166)10)
+designated((var183)11,(var166)10)
+Constraints:
+	(var180)8=f_hashIp((var164)9)
+	(var185)0=1+f_modulo((var180)8,(var182)5)
+	(var182)5=5
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+~~~~~~~~~~~~~~~ Execution Trace ~~~~~~~~~~~~~~
+
+%%%%%%%%%%%%%% Simplified Derivation Instance %%%%%%%%%%%%%
+Head:packet((var183)11,(var164)9,(var166)10)
+Rule name:r1
+Rule constraints:
+Body tuples:
+initPacket((var164)9,(var166)10,(var183)11)
+Constraints:
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@@@@@@@@@@ Base Instance @@@@@@@@@
+Head instance: 
+initPacket((var164)9,(var166)10,(var183)11)
+	(var164)9!=(var166)10
+	(var164)9!=(var183)11
+	(var166)10!=(var183)11
+@@@@@@@@@@@@@@@@@@@@@
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+@@@@@@@@@@ Base Instance @@@@@@@@@
+Head instance: 
+designated((var183)11,(var166)10)
+	(var183)11!=(var166)10
+@@@@@@@@@@@@@@@@@@@@@
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+@@@@@@@@@@ Base Instance @@@@@@@@@
+Head instance: 
+serverMapping((var183)11,(var184)12,(var185)0)
+	(var183)11!=(var184)12
+	(var183)11!=(var185)0
+	(var184)12!=(var185)0
+@@@@@@@@@@@@@@@@@@@@@
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*******************************
+===================================
+###### Simplified constraints ######
+	var155!=var157
+	var147!=var155
+	var147!=var152
+	var155!=var152
+	var152!=var157
+
+--------- Equivalent Classes --------
+Class 0:(var152)var152,var151,var146,
+Class 1:(var147)var147,var149,var144,
+Class 2:(var155)var156,var154,var150,var155,var148,var145,var158,var159,var143,
+Class 3:(var157)var157,var153,
+####################################
+###### Simplified constraints ######
+	var180=f_hashIp(var19)
+	var185=1+f_modulo(var21,var22)
+	var182=5
+	var164!=var166
+	var164!=var183
+	var166!=var183
+	var183!=var166
+	var183!=var184
+	var183!=var185
+	var184!=var185
+
+--------- Equivalent Classes --------
+Class 0:(var19)var19,
+Class 1:(var21)var21,
+Class 2:(var22)var22,
+Class 3:(var180)var180,var178,
+Class 4:(var184)var184,var160,
+Class 5:(var185)var179,var165,var185,
+Class 6:(var183)var172,var183,var163,var173,var167,
+Class 7:(var164)var170,var161,var164,var168,var177,
+Class 8:(var166)var171,var174,var169,var166,var162,var175,var176,
+Class 9:(var182)var181,var182,
+####################################
+
+$$$$$$$$$$$$ Derivation Node $$$$$$$$$$$
+Head:recvPacket(var100,var101,var102)
+Rule name:r3
+Body tuples:
+hashed(var93,var94,var95,var96)
+serverMapping(var79,var80,var81)
+Constraints:
+	var101=var94
+	var102=var96
+	var93=var79
+	var100=var80
+	var95=var81
+
+$$$$$$$$$$$$$$$$$$$$$$$$$
+
+$$$$$$$$$$$$ Derivation Node $$$$$$$$$$$
+Head:hashed(var93,var94,var95,var96)
+Rule name:r2
+Body tuples:
+packet(var90,var91,var92)
+designated(var77,var78)
+Constraints:
+	var93=var90
+	var94=var91
+	var96=var92
+	var93=var77
+	var78=var16
+	var96=var17
+	var16=var17
+	var94=var19
+	var18=f_hashIp(var19)
+	var95=var20
+	var18=var21
+	var20=1+f_modulo(var21,var22)
+	var22=var23
+	var23=5
+
+$$$$$$$$$$$$$$$$$$$$$$$$$
+
+$$$$$$$$$$$$ Derivation Node $$$$$$$$$$$
+Head:packet(var90,var91,var92)
+Rule name:r1
+Body tuples:
+initPacket(var74,var75,var76)
+Constraints:
+	var91=var74
+	var92=var75
+	var90=var76
+
+$$$$$$$$$$$$$$$$$$$$$$$$$
+
+******* Base Node ********
+Head: initPacket(var74,var75,var76)
+	var74!=var75
+	var74!=var76
+	var75!=var76
+
+
+
+
+******* Base Node ********
+Head: designated(var77,var78)
+	var77!=var78
+
+
+
+
+******* Base Node ********
+Head: serverMapping(var79,var80,var81)
+	var79!=var80
+	var79!=var81
+	var80!=var81
+
+
+Deriv Inst !!!
+Deriv Inst !!!
+Deriv Inst !!!
+BaseNode Inst !!!initPacket
+BaseNode Inst Finished!!!
+BaseNode Inst !!!designated
+BaseNode Inst Finished!!!
+BaseNode Inst !!!serverMapping
+BaseNode Inst Finished!!!
+
+$$$$$$$$$$$$ Derivation Node $$$$$$$$$$$
+Head:recvPacket(var97,var98,var99)
+Rule name:r4
+Body tuples:
+packet(var90,var91,var92)
+designated(var77,var78)
+Constraints:
+	var99=var37
+	var97=var38
+	var37=var38
+	var98=var91
+	var97=var92
+	var90=var77
+	var97=var44
+	var78=var45
+	var44!=var45
+	var97=var47
+	var46=var47
+
+$$$$$$$$$$$$$$$$$$$$$$$$$
+
+$$$$$$$$$$$$ Derivation Node $$$$$$$$$$$
+Head:packet(var90,var91,var92)
+Rule name:r1
+Body tuples:
+initPacket(var74,var75,var76)
+Constraints:
+	var91=var74
+	var92=var75
+	var90=var76
+
+$$$$$$$$$$$$$$$$$$$$$$$$$
+
+******* Base Node ********
+Head: initPacket(var74,var75,var76)
+	var74!=var75
+	var74!=var76
+	var75!=var76
+
+
+
+
+******* Base Node ********
+Head: designated(var77,var78)
+	var77!=var78
+
+
+Deriv Inst !!!
+Deriv Inst !!!
+BaseNode Inst !!!initPacket
+BaseNode Inst Finished!!!
+BaseNode Inst !!!designated
+BaseNode Inst Finished!!!
+Search base predicates in: recvPacket
+Find base tuple: initPacket
+Find base tuple: designated
+Find base tuple: serverMapping
+Search base predicates in: recvPacket
+Find base tuple: initPacket
+Find base tuple: designated
+Number of predicates: 2
+What is the form?
+var199=var199 -> var200=var200
+Number of predicates: 2
+What is the form?
+var199=var221 -> var200=var222
+Number of predicates: 2
+What is the form?
+var221=var199 -> var222=var200
+Number of predicates: 2
+What is the form?
+var221=var221 -> var222=var222
+Number of predicates: 2
+What is the form?
+var209=var209 /\ var210=var210 -> var211=var211 /\ var209=var209 /\ var211=var211 -> var210=var210
+Check satisfiability of the assumption:
+var206=f_hashIp(var19)var211=1+f_modulo(var21,var22)var208=5var190!=var192var190!=var209var192!=var209var209!=var192var209!=var210var209!=var211var210!=var211var224!=var226var216!=var224var216!=var221var224!=var221var221!=var226var210!=var224var192=var224
+ Testing if this is satisfiable: 
+(declare-fun var19 () Int)
+(declare-fun var190 () Int)
+(declare-fun var192 () Int)
+(declare-fun var206 () Int)
+(declare-fun var208 () Int)
+(declare-fun var209 () Int)
+(declare-fun var21 () Int)
+(declare-fun var210 () Int)
+(declare-fun var211 () Int)
+(declare-fun var216 () Int)
+(declare-fun var22 () Int)
+(declare-fun var221 () Int)
+(declare-fun var224 () Int)
+(declare-fun var226 () Int)
+(declare-fun f_hashIp (Int ) Int)
+(declare-fun f_modulo (Int Int ) Int)
+(assert (= var206 (f_hashIp var19 )))
+(assert (= var211 (+ 1 (f_modulo var21 var22 ))))
+(assert (= var208 5))
+(assert (not (= var190 var192)))
+(assert (not (= var190 var209)))
+(assert (not (= var192 var209)))
+(assert (not (= var209 var192)))
+(assert (not (= var209 var210)))
+(assert (not (= var209 var211)))
+(assert (not (= var210 var211)))
+(assert (not (= var224 var226)))
+(assert (not (= var216 var224)))
+(assert (not (= var216 var221)))
+(assert (not (= var224 var221)))
+(assert (not (= var221 var226)))
+(assert (not (= var210 var224)))
+(assert (= var192 var224))
+(assert (=> (= var209 var209) (= var192 var192)))
+(assert (=> (= var209 var221) (= var192 var226)))
+(assert (=> (= var221 var209) (= var226 var192)))
+(assert (=> (= var221 var221) (= var226 var226)))
+(assert (and (=> (and (= var209 var209) (= var210 var210)) (= var211 var211)) (=> (and (= var209 var209) (= var211 var211)) (= var210 var210))))
+
+@@@@@@@ SAT MODEL @@@@@@@@
+(define-fun var226 () Int
+  11)
+(define-fun var22 () Int
+  3)
+(define-fun var209 () Int
+  8)
+(define-fun var221 () Int
+  13)
+(define-fun var206 () Int
+  6)
+(define-fun var211 () Int
+  0)
+(define-fun var224 () Int
+  10)
+(define-fun var208 () Int
+  5)
+(define-fun var21 () Int
+  2)
+(define-fun var19 () Int
+  4)
+(define-fun var190 () Int
+  7)
+(define-fun var210 () Int
+  9)
+(define-fun var216 () Int
+  12)
+(define-fun var192 () Int
+  10)
+(define-fun f_modulo ((x!1 Int) (x!2 Int)) Int
+  (ite (and (= x!1 2) (= x!2 3)) (- 1)
+    (- 1)))
+(define-fun f_hashIp ((x!1 Int)) Int
+  (ite (= x!1 4) 6
+    6))
+
+******** Printing Rapidnet -> Int Subst map **********
+Variable is mapped to: var19 = 4
+Variable is mapped to: var21 = 2
+Variable is mapped to: var22 = 3
+Variable is mapped to: var226 = 11
+Variable is mapped to: var192 = 10
+Variable is mapped to: var224 = 10
+Variable is mapped to: var209 = 8
+Variable is mapped to: var206 = 6
+Variable is mapped to: var208 = 5
+Variable is mapped to: var210 = 9
+Variable is mapped to: var190 = 7
+Variable is mapped to: var211 = 0
+Variable is mapped to: var216 = 12
+Variable is mapped to: var221 = 13
+******** Printing Rapidnet -> Int Subst map **********
+
+No existentially quantified predicates.
+	var104!=var107
+	var190=var216
+var206=f_hashIp(var19)var211=1+f_modulo(var21,var22)var208=5var190!=var192var190!=var209var192!=var209var209!=var192var209!=var210var209!=var211var210!=var211var224!=var226var216!=var224var216!=var221var224!=var221var221!=var226var210!=var224var192=var224var190=var216
+ Testing if this is satisfiable: 
+(declare-fun var19 () Int)
+(declare-fun var190 () Int)
+(declare-fun var192 () Int)
+(declare-fun var206 () Int)
+(declare-fun var208 () Int)
+(declare-fun var209 () Int)
+(declare-fun var21 () Int)
+(declare-fun var210 () Int)
+(declare-fun var211 () Int)
+(declare-fun var216 () Int)
+(declare-fun var22 () Int)
+(declare-fun var221 () Int)
+(declare-fun var224 () Int)
+(declare-fun var226 () Int)
+(declare-fun f_hashIp (Int ) Int)
+(declare-fun f_modulo (Int Int ) Int)
+(assert (= var206 (f_hashIp var19 )))
+(assert (= var211 (+ 1 (f_modulo var21 var22 ))))
+(assert (= var208 5))
+(assert (not (= var190 var192)))
+(assert (not (= var190 var209)))
+(assert (not (= var192 var209)))
+(assert (not (= var209 var192)))
+(assert (not (= var209 var210)))
+(assert (not (= var209 var211)))
+(assert (not (= var210 var211)))
+(assert (not (= var224 var226)))
+(assert (not (= var216 var224)))
+(assert (not (= var216 var221)))
+(assert (not (= var224 var221)))
+(assert (not (= var221 var226)))
+(assert (not (= var210 var224)))
+(assert (= var192 var224))
+(assert (= var190 var216))
+(assert (=> (= var209 var209) (= var192 var192)))
+(assert (=> (= var209 var221) (= var192 var226)))
+(assert (=> (= var221 var209) (= var226 var192)))
+(assert (=> (= var221 var221) (= var226 var226)))
+(assert (and (=> (and (= var209 var209) (= var210 var210)) (= var211 var211)) (=> (and (= var209 var209) (= var211 var211)) (= var210 var210))))
+
+@@@@@@@ SAT MODEL @@@@@@@@
+(define-fun var226 () Int
+  10)
+(define-fun var22 () Int
+  3)
+(define-fun var209 () Int
+  7)
+(define-fun var221 () Int
+  12)
+(define-fun var206 () Int
+  6)
+(define-fun var211 () Int
+  0)
+(define-fun var224 () Int
+  9)
+(define-fun var208 () Int
+  5)
+(define-fun var21 () Int
+  2)
+(define-fun var19 () Int
+  4)
+(define-fun var190 () Int
+  11)
+(define-fun var210 () Int
+  8)
+(define-fun var216 () Int
+  11)
+(define-fun var192 () Int
+  9)
+(define-fun f_modulo ((x!1 Int) (x!2 Int)) Int
+  (ite (and (= x!1 2) (= x!2 3)) (- 1)
+    (- 1)))
+(define-fun f_hashIp ((x!1 Int)) Int
+  (ite (= x!1 4) 6
+    6))
+
+******** Printing Rapidnet -> Int Subst map **********
+Variable is mapped to: var19 = 4
+Variable is mapped to: var21 = 2
+Variable is mapped to: var22 = 3
+Variable is mapped to: var226 = 10
+Variable is mapped to: var192 = 9
+Variable is mapped to: var224 = 9
+Variable is mapped to: var209 = 7
+Variable is mapped to: var206 = 6
+Variable is mapped to: var208 = 5
+Variable is mapped to: var210 = 8
+Variable is mapped to: var190 = 11
+Variable is mapped to: var211 = 0
+Variable is mapped to: var216 = 11
+Variable is mapped to: var221 = 12
+******** Printing Rapidnet -> Int Subst map **********
+
+
+==================== Generate Counter Example ==================
+************* Execution Trace of recvPacket *************
+
+~~~~~~~~~~~~~~~ Execution Trace ~~~~~~~~~~~~~~
+
+%%%%%%%%%%%%%% Simplified Derivation Instance %%%%%%%%%%%%%
+Head:recvPacket((var210)8,(var190)11,(var192)9)
+Rule name:r3
+Rule constraints:
+Body tuples:
+hashed((var209)7,(var190)11,(var211)0,(var192)9)
+serverMapping((var209)7,(var210)8,(var211)0)
+Constraints:
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+~~~~~~~~~~~~~~~ Execution Trace ~~~~~~~~~~~~~~
+
+%%%%%%%%%%%%%% Simplified Derivation Instance %%%%%%%%%%%%%
+Head:hashed((var209)7,(var190)11,(var211)0,(var192)9)
+Rule name:r2
+Rule constraints:
+Body tuples:
+packet((var209)7,(var190)11,(var192)9)
+designated((var209)7,(var192)9)
+Constraints:
+	(var206)6=f_hashIp((var190)11)
+	(var211)0=1+f_modulo((var206)6,(var208)5)
+	(var208)5=5
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+~~~~~~~~~~~~~~~ Execution Trace ~~~~~~~~~~~~~~
+
+%%%%%%%%%%%%%% Simplified Derivation Instance %%%%%%%%%%%%%
+Head:packet((var209)7,(var190)11,(var192)9)
+Rule name:r1
+Rule constraints:
+Body tuples:
+initPacket((var190)11,(var192)9,(var209)7)
+Constraints:
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@@@@@@@@@@ Base Instance @@@@@@@@@
+Head instance: 
+initPacket((var190)11,(var192)9,(var209)7)
+	(var190)11!=(var192)9
+	(var190)11!=(var209)7
+	(var192)9!=(var209)7
+@@@@@@@@@@@@@@@@@@@@@
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+@@@@@@@@@@ Base Instance @@@@@@@@@
+Head instance: 
+designated((var209)7,(var192)9)
+	(var209)7!=(var192)9
+@@@@@@@@@@@@@@@@@@@@@
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+@@@@@@@@@@ Base Instance @@@@@@@@@
+Head instance: 
+serverMapping((var209)7,(var210)8,(var211)0)
+	(var209)7!=(var210)8
+	(var209)7!=(var211)0
+	(var210)8!=(var211)0
+@@@@@@@@@@@@@@@@@@@@@
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*******************************
+************* Execution Trace of recvPacket *************
+
+~~~~~~~~~~~~~~~ Execution Trace ~~~~~~~~~~~~~~
+
+%%%%%%%%%%%%%% Simplified Derivation Instance %%%%%%%%%%%%%
+Head:recvPacket((var224)9,(var216)11,(var224)9)
+Rule name:r4
+Rule constraints:
+Body tuples:
+packet((var221)12,(var216)11,(var224)9)
+designated((var221)12,(var226)10)
+Constraints:
+	(var224)9!=(var226)10
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+~~~~~~~~~~~~~~~ Execution Trace ~~~~~~~~~~~~~~
+
+%%%%%%%%%%%%%% Simplified Derivation Instance %%%%%%%%%%%%%
+Head:packet((var221)12,(var216)11,(var224)9)
+Rule name:r1
+Rule constraints:
+Body tuples:
+initPacket((var216)11,(var224)9,(var221)12)
+Constraints:
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+@@@@@@@@@@ Base Instance @@@@@@@@@
+Head instance: 
+initPacket((var216)11,(var224)9,(var221)12)
+	(var216)11!=(var224)9
+	(var216)11!=(var221)12
+	(var224)9!=(var221)12
+@@@@@@@@@@@@@@@@@@@@@
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+@@@@@@@@@@ Base Instance @@@@@@@@@
+Head instance: 
+designated((var221)12,(var226)10)
+	(var221)12!=(var226)10
+@@@@@@@@@@@@@@@@@@@@@
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*******************************
+===================================
+###### Simplified constraints ######
+	var206=f_hashIp(var19)
+	var211=1+f_modulo(var21,var22)
+	var208=5
+	var190!=var192
+	var190!=var209
+	var192!=var209
+	var209!=var192
+	var209!=var210
+	var209!=var211
+	var210!=var211
+
+--------- Equivalent Classes --------
+Class 0:(var19)var19,
+Class 1:(var21)var21,
+Class 2:(var22)var22,
+Class 3:(var192)var188,var192,var201,var200,var195,var197,var202,
+Class 4:(var209)var193,var199,var198,var209,var189,
+Class 5:(var206)var206,var204,
+Class 6:(var208)var208,var207,
+Class 7:(var210)var210,var186,
+Class 8:(var190)var194,var196,var190,var187,var203,
+Class 9:(var211)var205,var191,var211,
+####################################
+###### Simplified constraints ######
+	var224!=var226
+	var216!=var224
+	var216!=var221
+	var224!=var221
+	var221!=var226
+
+--------- Equivalent Classes --------
+Class 0:(var226)var226,var222,
+Class 1:(var224)var227,var225,var228,var224,var223,var219,var214,var212,var217,
+Class 2:(var216)var218,var216,var213,
+Class 3:(var221)var220,var215,var221,
+####################################
+
+$$$$$$$$$$$$ Derivation Node $$$$$$$$$$$
+Head:recvPacket(var100,var101,var102)
+Rule name:r3
+Body tuples:
+hashed(var93,var94,var95,var96)
+serverMapping(var79,var80,var81)
+Constraints:
+	var101=var94
+	var102=var96
+	var93=var79
+	var100=var80
+	var95=var81
+
+$$$$$$$$$$$$$$$$$$$$$$$$$
+
+$$$$$$$$$$$$ Derivation Node $$$$$$$$$$$
+Head:hashed(var93,var94,var95,var96)
+Rule name:r2
+Body tuples:
+packet(var90,var91,var92)
+designated(var77,var78)
+Constraints:
+	var93=var90
+	var94=var91
+	var96=var92
+	var93=var77
+	var78=var16
+	var96=var17
+	var16=var17
+	var94=var19
+	var18=f_hashIp(var19)
+	var95=var20
+	var18=var21
+	var20=1+f_modulo(var21,var22)
+	var22=var23
+	var23=5
+
+$$$$$$$$$$$$$$$$$$$$$$$$$
+
+$$$$$$$$$$$$ Derivation Node $$$$$$$$$$$
+Head:packet(var90,var91,var92)
+Rule name:r1
+Body tuples:
+initPacket(var74,var75,var76)
+Constraints:
+	var91=var74
+	var92=var75
+	var90=var76
+
+$$$$$$$$$$$$$$$$$$$$$$$$$
+
+******* Base Node ********
+Head: initPacket(var74,var75,var76)
+	var74!=var75
+	var74!=var76
+	var75!=var76
+
+
+
+
+******* Base Node ********
+Head: designated(var77,var78)
+	var77!=var78
+
+
+
+
+******* Base Node ********
+Head: serverMapping(var79,var80,var81)
+	var79!=var80
+	var79!=var81
+	var80!=var81
+
+
+Deriv Inst !!!
+Deriv Inst !!!
+Deriv Inst !!!
+BaseNode Inst !!!initPacket
+BaseNode Inst Finished!!!
+BaseNode Inst !!!designated
+BaseNode Inst Finished!!!
+BaseNode Inst !!!serverMapping
+BaseNode Inst Finished!!!
+
+$$$$$$$$$$$$ Derivation Node $$$$$$$$$$$
+Head:recvPacket(var100,var101,var102)
+Rule name:r3
+Body tuples:
+hashed(var93,var94,var95,var96)
+serverMapping(var79,var80,var81)
+Constraints:
+	var101=var94
+	var102=var96
+	var93=var79
+	var100=var80
+	var95=var81
+
+$$$$$$$$$$$$$$$$$$$$$$$$$
+
+$$$$$$$$$$$$ Derivation Node $$$$$$$$$$$
+Head:hashed(var93,var94,var95,var96)
+Rule name:r2
+Body tuples:
+packet(var90,var91,var92)
+designated(var77,var78)
+Constraints:
+	var93=var90
+	var94=var91
+	var96=var92
+	var93=var77
+	var78=var16
+	var96=var17
+	var16=var17
+	var94=var19
+	var18=f_hashIp(var19)
+	var95=var20
+	var18=var21
+	var20=1+f_modulo(var21,var22)
+	var22=var23
+	var23=5
+
+$$$$$$$$$$$$$$$$$$$$$$$$$
+
+$$$$$$$$$$$$ Derivation Node $$$$$$$$$$$
+Head:packet(var90,var91,var92)
+Rule name:r1
+Body tuples:
+initPacket(var74,var75,var76)
+Constraints:
+	var91=var74
+	var92=var75
+	var90=var76
+
+$$$$$$$$$$$$$$$$$$$$$$$$$
+
+******* Base Node ********
+Head: initPacket(var74,var75,var76)
+	var74!=var75
+	var74!=var76
+	var75!=var76
+
+
+
+
+******* Base Node ********
+Head: designated(var77,var78)
+	var77!=var78
+
+
+
+
+******* Base Node ********
+Head: serverMapping(var79,var80,var81)
+	var79!=var80
+	var79!=var81
+	var80!=var81
+
+
+Deriv Inst !!!
+Deriv Inst !!!
+Deriv Inst !!!
+BaseNode Inst !!!initPacket
+BaseNode Inst Finished!!!
+BaseNode Inst !!!designated
+BaseNode Inst Finished!!!
+BaseNode Inst !!!serverMapping
+BaseNode Inst Finished!!!
+Search base predicates in: recvPacket
+Find base tuple: initPacket
+Find base tuple: designated
+Find base tuple: serverMapping
+Search base predicates in: recvPacket
+Find base tuple: initPacket
+Find base tuple: designated
+Find base tuple: serverMapping
+Number of predicates: 2
+What is the form?
+var242=var242 -> var243=var243
+Number of predicates: 2
+What is the form?
+var242=var242 -> var243=var243
+Number of predicates: 2
+What is the form?
+var242=var242 -> var243=var243
+Number of predicates: 2
+What is the form?
+var242=var242 -> var243=var243
+Number of predicates: 2
+What is the form?
+var252=var252 /\ var253=var253 -> var254=var254 /\ var252=var252 /\ var254=var254 -> var253=var253
+Number of predicates: 2
+What is the form?
+var252=var252 /\ var253=var253 -> var254=var254 /\ var252=var252 /\ var254=var254 -> var253=var253
+Number of predicates: 2
+What is the form?
+var252=var252 /\ var253=var253 -> var254=var254 /\ var252=var252 /\ var254=var254 -> var253=var253
+Number of predicates: 2
+What is the form?
+var252=var252 /\ var253=var253 -> var254=var254 /\ var252=var252 /\ var254=var254 -> var253=var253
+Check satisfiability of the assumption:
+var249=f_hashIp(var19)var254=1+f_modulo(var21,var22)var251=5var233!=var235var233!=var252var235!=var252var252!=var235var252!=var253var252!=var254var253!=var254var275=f_hashIp(var19)var280=1+f_modulo(var21,var22)var277=5var259!=var261var259!=var278var261!=var278var278!=var261var278!=var279var278!=var280var279!=var280var253!=var253var235=var235
+ Testing if this is satisfiable: 
+(declare-fun var19 () Int)
+(declare-fun var21 () Int)
+(declare-fun var22 () Int)
+(declare-fun var233 () Int)
+(declare-fun var235 () Int)
+(declare-fun var249 () Int)
+(declare-fun var251 () Int)
+(declare-fun var252 () Int)
+(declare-fun var253 () Int)
+(declare-fun var254 () Int)
+(declare-fun var259 () Int)
+(declare-fun var261 () Int)
+(declare-fun var275 () Int)
+(declare-fun var277 () Int)
+(declare-fun var278 () Int)
+(declare-fun var279 () Int)
+(declare-fun var280 () Int)
+(declare-fun f_hashIp (Int ) Int)
+(declare-fun f_modulo (Int Int ) Int)
+(assert (= var249 (f_hashIp var19 )))
+(assert (= var254 (+ 1 (f_modulo var21 var22 ))))
+(assert (= var251 5))
+(assert (not (= var233 var235)))
+(assert (not (= var233 var252)))
+(assert (not (= var235 var252)))
+(assert (not (= var252 var235)))
+(assert (not (= var252 var253)))
+(assert (not (= var252 var254)))
+(assert (not (= var253 var254)))
+(assert (= var275 (f_hashIp var19 )))
+(assert (= var280 (+ 1 (f_modulo var21 var22 ))))
+(assert (= var277 5))
+(assert (not (= var259 var261)))
+(assert (not (= var259 var278)))
+(assert (not (= var261 var278)))
+(assert (not (= var278 var261)))
+(assert (not (= var278 var279)))
+(assert (not (= var278 var280)))
+(assert (not (= var279 var280)))
+(assert (not (= var253 var253)))
+(assert (= var235 var235))
+(assert (=> (= var252 var252) (= var235 var235)))
+(assert (=> (= var252 var252) (= var235 var235)))
+(assert (=> (= var252 var252) (= var235 var235)))
+(assert (=> (= var252 var252) (= var235 var235)))
+(assert (and (=> (and (= var252 var252) (= var253 var253)) (= var254 var254)) (=> (and (= var252 var252) (= var254 var254)) (= var253 var253))))
+(assert (and (=> (and (= var252 var252) (= var253 var253)) (= var254 var254)) (=> (and (= var252 var252) (= var254 var254)) (= var253 var253))))
+(assert (and (=> (and (= var252 var252) (= var253 var253)) (= var254 var254)) (=> (and (= var252 var252) (= var254 var254)) (= var253 var253))))
+(assert (and (=> (and (= var252 var252) (= var253 var253)) (= var254 var254)) (=> (and (= var252 var252) (= var254 var254)) (= var253 var253))))
+
+@@@@@@@ UNSAT MODEL @@@@@@@@
+
+Assumption of the property is unsatisfiable for this derivation branch.
+
+Is the property valid? No
+Running time: 40ms
+Compiling /home/cchen/tests/sdn-load-balancing.olg
+./waf --run rapidnet-dpcompiler --command-template=" %s --ndlog=/home/cchen/tests/sdn-load-balancing.olg"
