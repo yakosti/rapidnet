@@ -230,18 +230,18 @@ void compile (string overlogFile, bool provenanceEnabled)
 int main (int argc, char** argv)
 {
 //  LogComponentEnable ("RapidNetDPGraph", LOG_LEVEL_FUNCTION);
-//  LogComponentEnable ("DPGraph", LOG_LEVEL_FUNCTION);
-//  LogComponentEnable ("Formula", LOG_LEVEL_FUNCTION);
-//  LogComponentEnable ("Dpool", LOG_LEVEL_FUNCTION);
-//  LogComponentEnable ("Verification", LOG_LEVEL_FUNCTION);
-//  LogComponentEnable ("Property", LOG_LEVEL_FUNCTION);
+  LogComponentEnable ("DPGraph", LOG_LEVEL_FUNCTION);
+  LogComponentEnable ("Formula", LOG_LEVEL_FUNCTION);
+  LogComponentEnable ("Dpool", LOG_LEVEL_FUNCTION);
+  LogComponentEnable ("Verification", LOG_LEVEL_FUNCTION);
+  LogComponentEnable ("Property", LOG_LEVEL_FUNCTION);
 
 //  LogComponentEnable ("RapidNetDPGraph", LOG_INFO);
-  LogComponentEnable ("Dpool", LOG_INFO);
-  LogComponentEnable ("DPGraph", LOG_INFO);
-  LogComponentEnable ("Formula", LOG_INFO);
-  LogComponentEnable ("Property", LOG_INFO);
-  LogComponentEnable ("Verification", LOG_INFO);
+//  LogComponentEnable ("Dpool", LOG_INFO);
+//  LogComponentEnable ("DPGraph", LOG_INFO);
+//  LogComponentEnable ("Formula", LOG_INFO);
+//  LogComponentEnable ("Property", LOG_INFO);
+//  LogComponentEnable ("Verification", LOG_INFO);
   //test_parsing();
 
   string overlogFile;

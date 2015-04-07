@@ -3,11 +3,15 @@
 /* Constants 
  * ---------
  */
-#define BROADCAST "ff:ff:ff:ff:ff"
+/*#define BROADCAST "ff:ff:ff:ff:ff"/*
+#define BROADCAST 255
 #define ALL_PORT 0
-#define ARP_TYPE "ARP"
-#define IPV4_TYPE "IPV4"
-#define CONTROLLER "controller"
+/*#define ARP_TYPE "ARP"*/
+#define ARP_TYPE 2054
+/*#define IPV4_TYPE "IPV4"*/
+#define IPV4_TYPE 2048
+/*#define CONTROLLER "controller"*/
+#define CONTROLLER 100
 #define ARP_REQUEST 1
 #define ARP_REPLY 2
 #define ARP_PRIO 1
@@ -26,7 +30,7 @@
  *     Controller knows that Ip is mapped to Mac
  * 
  * hostPos(@Controller, Host, Switch, Port)
- *     Controller registers that Host sent a packet to Switch via Port
+ *     Host is connected to Switch through Port
  */
 materialize(ofconnCtl,infinity,infinity,keys(2)). //Openflow connection to switches
 /*Arguments: (controller, switch)*/
@@ -38,8 +42,6 @@ materialize(hostPos,infinity,infinity,keys(2)). //Position of host
 
 
 
-
-
 /*
  * Database for switch
  * -------------------
@@ -47,10 +49,10 @@ materialize(hostPos,infinity,infinity,keys(2)). //Position of host
  *     Switch can talk to Controller
  *
  * linkSwc(@Switch, Host, Port)
- *     Host has sent a packet to Switch via Port 
+ *     Switch connects to Host through Port
  *
  * flowEntry(@Switch, Match, Prio, Actions)
- *     Match, Prio, Action store values of constants 
+ *     
  */
 materialize(ofconnSwc,infinity,infinity,keys(2)). //Openflow connection to controller
 /*Arguments: (switch, controller)*/
@@ -58,11 +60,6 @@ materialize(linkSwc,infinity,infinity,keys(3:int32)). //Inter-switch and switch-
 /*Arguments: (switch, switch/host, port)*/
 materialize(flowEntry,infinity,infinity,keys(2:str)). //Flow table at switch
 /*Arguments: (switch, match, priority, action)*/
-
-
-
-
-
 
 
 
@@ -88,52 +85,34 @@ materialize(arpReply,infinity,infinity,keys(2,3:str,4,5:str)). //ARP replys
 /*Arguments: (host, src_ip, src_mac, dst_ip, dst_mac)*/
 
 
-
-
-
-
-
-/* mapping
- * -------
- * portAndSrcMapping(@Controller, Port, Host)
- *    Controller has a mapping between Port and Host, where Host is an Ip/Mac address
- */
-materialize(portAndSrcMapping,infinity,infinity,keys(2:int32,3)).
-
-
-
-
-
-
-
-
-
 /* 
  * Non-materialized tuples
  * -----------------------
- * packet(@Switch, Host, Dst, DstMac, DstIp, SrcMac, SrcIp, Arptype, Type)
- * packetOut(@Switch, Controller, Port, DstMac, DstIp, SrcMac, SrcIp, Arptype, Type)
- * packetIn(@Controller, Switch, InPort, DstMac, DstIp, SrcMac, SrcIp, Arptype, Type)
+ * packet(@Switch, Host, DstMac, DstIp, SrcMac, SrcIp, Arptype)
+ * packetOut(@Switch, Controller, Port, DstMac, DstIp, SrcMac, SrcIp, Arptype)
+ * packetIn(@Controller, Switch, InPort, DstMac, DstIp, SrcMac, SrcIp, Arptype)
  */
 
 /* ********************************************************** */
 
 /* 
- * Host program 
+ * Host program
  * Send ARP request to directly connected switch
  */
-rh1 packet(@Switch, Host, Dst, DstMac, DstIp, SrcMac, SrcIp, Arptype, Type) :-
+rh1 packet(@Switch, Host, DstMac, DstIp, SrcMac, SrcIp, Arptype) :-
 	linkHst(@Host, Switch, Port),
 	arpRequest(@Host, SrcIp, SrcMac, DstIp, DstMac),
+	Host == SrcIP,
 	Arptype := ARP_REQUEST,
-	Type := ARP_TYPE,
-	Dst := BROADCAST.
+	DstMac == BROADCAST.
 
 /* Received packet from switch and extract ARP reply packets */
 rh2 arpReply(@Host, SrcIp, SrcMac, DstIp, DstMac) :-
 	linkHst(@Host, Switch, Port),
-	packet(@Switch, Host, Dst, DstMac, DstIp, SrcMac, SrcIp, Arptype, Type),
-	Dst == Host.
+	packet(@Host, Switch, DstMac, DstIp, SrcMac, SrcIp, Arptype),
+	Arptype == ARP_REPLY,
+	Type == ARP_TYPE,
+	DstMac == Host.
 
 /* ********************************************************** */
 
@@ -141,16 +120,16 @@ rh2 arpReply(@Host, SrcIp, SrcMac, DstIp, DstMac) :-
  * Controller program
  * Register host position
  */
-rc1 hostPos(@Controller, SrcHost, Switch, InPort) :-
+rc1 hostPos(@Controller, SrcIp, Switch, InPort) :-
 	ofconnCtl(@Controller, Switch),
-	portAndSrcMapping(@Controller, InPort, SrcHost),
-	packetIn(@Controller, Switch, InPort, DstMac, DstIp, SrcMac, SrcIp, Arptype, Type).
+	packetIn(@Controller, Switch, InPort, DstMac, DstIp, SrcMac, SrcIp, Arptype),
+	Arptype == ARP_REQUEST,
+	DstMac == BROADCAST.
 
 /*Recover ARP request*/
 rc2 arpReqCtl(@Controller, SrcIp, SrcMac, DstIp, DstMac) :-
-	packetIn(@Controller, Switch, InPort, DstMac, DstIp, SrcMac, SrcIp, Arptype, Type),
+	packetIn(@Controller, Switch, InPort, DstMac, DstIp, SrcMac, SrcIp, Arptype),
 	ofconnCtl(@Controller, Switch),
-	Type == ARP_TYPE,
 	Arptype == ARP_REQUEST.
 
 /*Learn ARP mapping*/
@@ -163,27 +142,27 @@ rc4 arpReplyCtl(@Controller, DstIp, Mac, SrcIp, SrcMac) :-
 	arpMapping(@Controller, DstIp, Mac).
 
 /*Send out packet_out message*/
-rc6 packetOut(@Switch, Controller, Port, DstMac, DstIp, SrcMac, SrcIp, Arptype, Type) :-
+rc5 packetOut(@Switch, Controller, Port, DstMac, DstIp, SrcMac, SrcIp, Arptype) :-
 	arpReplyCtl(@Controller, SrcIp, SrcMac, DstIp, DstMac),
 	ofconnCtl(@Controller, Switch),
-	hostPos(@Controller, SrcIp, Switch, Port),
-	Arptype := ARP_REPLY,
-	Type := ARP_TYPE.
+	hostPos(@Controller, DstIp, Switch, Port),
+	Arptype := ARP_REPLY.
 
 /************************************************************/
 /*Switch program*/
-rs1 packetIn(@Controller, Switch, InPort, DstMac, DstIp, SrcMac, SrcIp, Arptype, Type) :-
+rs1 packetIn(@Controller, Switch, InPort, DstMac, DstIp, SrcMac, SrcIp, Arptype) :-
 	ofconnSwc(@Switch, Controller),
-	packet(@Switch, Host, Dst, DstMac, DstIp, SrcMac, SrcIp, Arptype, Type),
+	packet(@Switch, Host, DstMac, DstIp, SrcMac, SrcIp, Arptype),
 	linkSwc(@Switch, Host, InPort),
-	Type == ARP_TYPE,
+	flowEntry(@Switch, Arptype, Prio, Actions),
 	Prio == ARP_PRIO,
 	Actions == CONTROLLER,
-	flowEntry(@Switch, Match, Prio, Actions).
+	DstMac == BROADCAST.
 
-rs2 packet(@Host, Switch, Host, DstMac, DstIp, SrcMac, SrcIp, Arptype, Type) :-
-	packetOut(@Switch, Controller, OutPort, DstMac, DstIp, SrcMac, SrcIp, Arptype, Type),
-	linkSwc(@Switch, Host, Port).
+rs2 packet(@Host, Switch, DstMac, DstIp, SrcMac, SrcIp, Arptype) :-
+	packetOut(@Switch, Controller, OutPort, DstMac, DstIp, SrcMac, SrcIp, Arptype),
+	linkSwc(@Switch, Host, OutPort),
+	Arptype == ARP_REPLY.
 
 
 

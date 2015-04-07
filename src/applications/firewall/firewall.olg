@@ -79,7 +79,7 @@ r3 pktReceived(@Dst, PortDst, Src, PortSrc, Switch) :-
 
 /* (@Switch) Program
  * Packet from untrusted host appeared on switch
- * Send it to the controller to check if it is trused
+ * Send it to the controller to check if it is trusted
  */
 r4 pktFromSwitch(@Controller, Switch, Src, Uport, Dst) :- 
 	pktIn(@Switch, Src, Uport, Dst),
