@@ -29,7 +29,7 @@ v5 != v6
 ofconn(v7,v8)
 v7 != v8
 
-link(v9,v10,v11):
+swToHst(v9,v10,v11):
 v9 != v10
 v10 != v11
 v9 != v11
@@ -37,6 +37,12 @@ v9 != v11
 link(v12,v13,v14) /\ link(v15,v16,v17)
 (v12 == v15 /\ v13 == v16 => v14 == v17) /\
 (v12 == v15 /\ v14 == v17 => v13 == v16)
+
+ofconn(v18,v19) /\ ofconn(v20,v21)
+v18 == v20 => v19 == v21
+
+ofconn(v22,v23) /\ initPacket(v24,v25,v26,v27)
+v23 != v24 /\ v23 != v25 /\ v23 != v26 /\ v23 != v27
 
 Result: counter-example-second-prop.txt
 Time: 50ms
